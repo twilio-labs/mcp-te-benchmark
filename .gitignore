@@ -1,3 +1,22 @@
+# Environment variables
 .env
-.cursor
-.vscode
+
+# Dependencies
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+.cursor/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test results
+results/raw/
+results/analysis/
+
+# OS files
+.DS_Store
+Thumbs.db

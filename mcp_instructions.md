@@ -46,7 +46,7 @@ Success Criteria:
 
 ### Task 3: Create a Queue and Task Filter
 
-Goal: Create a workflow with a task filter that prevents routing tasks to workers in the "Bathroom" activity using MCP functions.
+Goal: Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity using MCP functions.
 
 Requirements:
 - Create a new queue with an appropriate name

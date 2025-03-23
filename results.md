@@ -30,5 +30,5 @@
 
 ### Success Criteria
 - Task 1: Successfully purchase and record a Canadian phone number
-- Task 2: Create a working call forwarding flow
-- Task 3: Successfully connect the phone number to the flow 
+- Task 2: Create a TaskRouter activity named "Bathroom"
+- Task 3: Create a workflow with task filter preventing routing to workers in "Bathroom" activity 

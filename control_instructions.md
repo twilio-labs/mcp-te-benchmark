@@ -42,14 +42,15 @@ Success Criteria:
 - Activity is properly named "Bathroom"
 - Activity SID is stored and accessible
 
-### Task 3: Create a Workflow and Task Filter
+### Task 3: Create a Queue and Task Filter
 
-Goal: Create a workflow with a task filter that prevents routing tasks to workers in the "Bathroom" activity.
+Goal: Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity using MCP functions.
 
 Requirements:
-- Create a new workflow with an appropriate name
-- Configure a task filter that prevents routing to workers with "Bathroom" activity
-- Use the Activity SID from Task 2
+- Create a new queue with an appropriate name
+- Configure a task filter that prevents routing to workers with "Bathroom" activity in the new queue
+- Use the Activity Name or SID from Task 2
+- Use appropriate MCP functions for workflow and filter creation
 
 Success Criteria:
 - Workflow is created successfully
