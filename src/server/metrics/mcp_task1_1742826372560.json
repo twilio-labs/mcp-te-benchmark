@@ -1,11 +1,11 @@
 {
-  "mode": "control",
+  "mode": "mcp",
   "taskNumber": 1,
-  "startTime": 1742824350673,
+  "startTime": 1742826372560,
   "apiCalls": 0,
   "interactions": 0,
   "completed": true,
   "success": true,
-  "endTime": 1742824361993,
-  "duration": 11320
+  "endTime": 1742826423461,
+  "duration": 50901
 }

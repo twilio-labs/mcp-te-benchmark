@@ -1,0 +1,13 @@
+[
+  {
+    "taskId": 1,
+    "mode": "mcp",
+    "startTime": 1742826372560,
+    "endTime": 1742826423461,
+    "duration": 50901,
+    "apiCalls": 0,
+    "interactions": 0,
+    "success": true,
+    "notes": ""
+  }
+]

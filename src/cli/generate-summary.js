@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Create metrics directory if it doesn't exist
-const METRICS_DIR = path.join(__dirname, 'metrics');
+const METRICS_DIR = path.join(__dirname, '..', 'server', 'metrics');
 if (!fs.existsSync(METRICS_DIR)) {
   fs.mkdirSync(METRICS_DIR);
 }
@@ -22,13 +22,13 @@ function generateSummary() {
       // Only include completed sessions
       if (sessionData.endTime) {
         sessions.push({
-          taskId: sessionData.taskId,
+          taskId: sessionData.taskNumber || sessionData.taskId,
           mode: sessionData.mode,
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
           duration: sessionData.duration,
-          apiCalls: sessionData.apiCalls.length,
-          interactions: sessionData.interactions.length,
+          apiCalls: Array.isArray(sessionData.apiCalls) ? sessionData.apiCalls.length : sessionData.apiCalls,
+          interactions: Array.isArray(sessionData.interactions) ? sessionData.interactions.length : sessionData.interactions,
           success: sessionData.success,
           notes: sessionData.notes || ''
         });
