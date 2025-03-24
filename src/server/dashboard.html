@@ -55,17 +55,35 @@
         .sessions tr:hover {
             background-color: #f8f9fa;
         }
+        /* Add new styles for model sections */
+        .model-section {
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .model-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>MCP Performance Dashboard</h1>
         <div class="metrics" id="summary"></div>
+        
+        <!-- New section for model-specific metrics -->
+        <div id="modelMetrics"></div>
+        
         <table class="sessions" id="sessionsTable">
             <thead>
                 <tr>
                     <th>Task ID</th>
                     <th>Mode</th>
+                    <th>Model</th>
                     <th>Duration (s)</th>
                     <th>API Calls</th>
                     <th>Interactions</th>
@@ -85,6 +103,7 @@
                 
                 // Process and display the data
                 displayMetrics(data);
+                displayModelMetrics(data);  // New function to display model metrics
                 displaySessions(data);
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -115,15 +134,81 @@
             };
 
             const summaryEl = document.getElementById('summary');
-            summaryEl.innerHTML = Object.entries(metrics)
-                .map(([title, values]) => `
-                    <div class="metric-card">
-                        <div class="metric-title">${title}</div>
-                        <div>Control: ${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
-                        <div>MCP: ${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
-                        <div>Change: ${percentageChange(values.mcp, values.control)}%</div>
+            summaryEl.innerHTML = '<h2>Overall Performance (All Models)</h2>' + 
+                Object.entries(metrics)
+                    .map(([title, values]) => `
+                        <div class="metric-card">
+                            <div class="metric-title">${title}</div>
+                            <div>Control: ${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                            <div>MCP: ${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                            <div>Change: ${percentageChange(values.mcp, values.control)}%</div>
+                        </div>
+                    `).join('');
+        }
+
+        // New function to display metrics by model
+        function displayModelMetrics(sessions) {
+            // Group sessions by model
+            const models = {};
+            sessions.forEach(session => {
+                const model = session.model || 'unknown';
+                if (!models[model]) {
+                    models[model] = {
+                        control: [],
+                        mcp: []
+                    };
+                }
+                
+                if (session.mode === 'control') {
+                    models[model].control.push(session);
+                } else if (session.mode === 'mcp') {
+                    models[model].mcp.push(session);
+                }
+            });
+            
+            // Create metrics per model
+            const modelMetricsEl = document.getElementById('modelMetrics');
+            modelMetricsEl.innerHTML = '<h2>Performance by Model</h2>';
+            
+            for (const [model, data] of Object.entries(models)) {
+                const metrics = {
+                    'Duration': {
+                        control: average(data.control.map(s => s.duration)),
+                        mcp: average(data.mcp.map(s => s.duration))
+                    },
+                    'API Calls': {
+                        control: average(data.control.map(s => s.apiCalls)),
+                        mcp: average(data.mcp.map(s => s.apiCalls))
+                    },
+                    'Interactions': {
+                        control: average(data.control.map(s => s.interactions)),
+                        mcp: average(data.mcp.map(s => s.interactions))
+                    },
+                    'Success Rate': {
+                        control: percentage(data.control.filter(s => s.success).length, data.control.length),
+                        mcp: percentage(data.mcp.filter(s => s.success).length, data.mcp.length)
+                    }
+                };
+                
+                const section = document.createElement('div');
+                section.className = 'model-section';
+                
+                section.innerHTML = `
+                    <div class="model-title">Model: ${model}</div>
+                    <div class="metrics">
+                        ${Object.entries(metrics).map(([title, values]) => `
+                            <div class="metric-card">
+                                <div class="metric-title">${title}</div>
+                                <div>Control: ${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                                <div>MCP: ${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                                <div>Change: ${percentageChange(values.mcp, values.control)}%</div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('');
+                `;
+                
+                modelMetricsEl.appendChild(section);
+            }
         }
 
         function displaySessions(sessions) {
@@ -133,6 +218,7 @@
                     <tr>
                         <td>${s.taskId}</td>
                         <td>${s.mode}</td>
+                        <td>${s.model || 'unknown'}</td>
                         <td>${(s.duration/1000).toFixed(1)}</td>
                         <td>${s.apiCalls}</td>
                         <td>${s.interactions}</td>

@@ -3,13 +3,15 @@
 
 # Verify arguments
 if [ $# -lt 2 ]; then
-  echo "Usage: ./scripts/run-test.sh [control|mcp] [1|2|3]"
-  echo "Example: ./scripts/run-test.sh control 1"
+  echo "Usage: ./scripts/run-test.sh [control|mcp] [1|2|3] [model-name]"
+  echo "Example: ./scripts/run-test.sh control 1 gpt-4"
+  echo "Example: ./scripts/run-test.sh mcp 2 3.7-sonnet"
   exit 1
 fi
 
 MODE=$1
 TASK_ID=$2
+MODEL=${3:-"unknown"}  # Default to "unknown" if not provided
 
 # Validate arguments
 if [[ "$MODE" != "control" && "$MODE" != "mcp" ]]; then
@@ -29,7 +31,7 @@ if ! curl -s http://localhost:3000/metrics/status > /dev/null; then
 fi
 
 echo "===================================="
-echo "Starting $MODE test for Task $TASK_ID"
+echo "Starting $MODE test for Task $TASK_ID using model $MODEL"
 echo "===================================="
 echo ""
 echo "Instructions:"
@@ -41,7 +43,7 @@ echo "Press Enter when you're ready to start, or Ctrl+C to cancel..."
 read
 
 # Start the test and capture test ID
-TEST_ID=$(curl -s -X POST http://localhost:3000/metrics/start -H "Content-Type: application/json" -d "{\"mode\": \"$MODE\", \"taskNumber\": $TASK_ID}" | jq -r '.testId')
+TEST_ID=$(curl -s -X POST http://localhost:3000/metrics/start -H "Content-Type: application/json" -d "{\"mode\": \"$MODE\", \"taskNumber\": $TASK_ID, \"model\": \"$MODEL\"}" | jq -r '.testId')
 
 if [ -z "$TEST_ID" ]; then
   echo "Error: Failed to get test ID from server"

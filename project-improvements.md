@@ -1,311 +1,446 @@
-# Twilio MCP Performance Framework Refactoring Recommendations
+# Adding "model" Metric to Twilio MCP Performance Testing Framework
 
-After reviewing your Twilio MCP Performance Testing Framework, I've identified several opportunities for improvement. Here's how I would refactor this repository to enhance maintainability, reliability, and developer experience.
+I'll provide step-by-step instructions to add the "model" metric to track which AI model was used in each test.
 
-## 1. Project Structure Reorganization
+## 1. Update `scripts/run-test.sh`
 
+First, modify the run-test.sh script to accept and process the model parameter:
+
+```bash
+#!/bin/bash
+# run-test.sh
+
+# Verify arguments
+if [ $# -lt 2 ]; then
+  echo "Usage: ./scripts/run-test.sh [control|mcp] [1|2|3] [model-name]"
+  echo "Example: ./scripts/run-test.sh control 1 gpt-4"
+  echo "Example: ./scripts/run-test.sh mcp 2 3.7-sonnet"
+  exit 1
+fi
+
+MODE=$1
+TASK_ID=$2
+MODEL=${3:-"unknown"}  # Default to "unknown" if not provided
+
+# Validate arguments
+if [[ "$MODE" != "control" && "$MODE" != "mcp" ]]; then
+  echo "Error: Mode must be 'control' or 'mcp'"
+  exit 1
+fi
+
+if [[ "$TASK_ID" != "1" && "$TASK_ID" != "2" && "$TASK_ID" != "3" ]]; then
+  echo "Error: Task ID must be 1, 2, or 3"
+  exit 1
+fi
+
+# Check if metrics server is running
+if ! curl -s http://localhost:3000/metrics/status > /dev/null; then
+  echo "Error: Metrics server is not running. Start it with: npm run start:metrics"
+  exit 1
+fi
+
+echo "===================================="
+echo "Starting $MODE test for Task $TASK_ID using model $MODEL"
+echo "===================================="
+echo ""
+echo "Instructions:"
+echo "1. Open Cursor and start a new chat"
+echo "2. Load the docs/${MODE}_instructions.md file as context"
+echo "3. Start the test by sending: 'Complete Task $TASK_ID using the commands in the instructions'"
+echo ""
+echo "Press Enter when you're ready to start, or Ctrl+C to cancel..."
+read
+
+# Start the test and capture test ID
+TEST_ID=$(curl -s -X POST http://localhost:3000/metrics/start -H "Content-Type: application/json" -d "{\"mode\": \"$MODE\", \"taskNumber\": $TASK_ID, \"model\": \"$MODEL\"}" | jq -r '.testId')
+
+if [ -z "$TEST_ID" ]; then
+  echo "Error: Failed to get test ID from server"
+  exit 1
+fi
+
+START_TIME=$(date +%s)
+echo "Test started at $(date)"
+echo "Test ID: $TEST_ID"
+echo ""
+echo "Press Enter when the test is complete..."
+read
+END_TIME=$(date +%s)
+
+# Complete the test
+curl -s -X POST http://localhost:3000/metrics/complete -H "Content-Type: application/json" -d "{\"testId\": \"$TEST_ID\", \"success\": true}"
+
+DURATION=$((END_TIME - START_TIME))
+
+echo ""
+echo "Test completed in $DURATION seconds"
+echo ""
+echo "Generating summary..."
+echo ""
+npm run generate-summary
+
+echo ""
+echo "View dashboard with: open src/client/dashboard/index.html"
 ```
-twilio-mcp-performance/
-├── package.json
-├── README.md
-├── .env.example
-├── .gitignore                 # Add proper gitignore file
-├── src/
-│   ├── server/                # Server-side code
-│   │   ├── metrics-server.js  
-│   │   └── dashboard-server.js
-│   ├── client/                # Client-side code
-│   │   ├── metrics-client.js
-│   │   └── dashboard/
-│   │       ├── index.html
-│   │       ├── css/
-│   │       └── js/
-│   ├── utils/                 # Shared utilities
-│   │   ├── config.js          # Centralized configuration
-│   │   └── logger.js
-│   └── cli/                   # Command-line tools
-│       ├── run-test.js
-│       └── generate-summary.js
-├── scripts/                   # Scripts
-│   ├── setup.sh
-│   └── run-test.sh
-├── docs/                      # Documentation
-│   ├── control_instructions.md
-│   ├── mcp_instructions.md
-│   └── testing_protocol.md
-├── tests/                     # Add tests for the framework
-│   ├── metrics-server.test.js
-│   └── metrics-client.test.js
-└── data/                      # Store metrics data
-    └── metrics/
-```
 
-## 2. API Standardization and Documentation
+## 2. Update `src/server/metrics-server.js`
 
-There's inconsistency between the API endpoints in metrics-server.js and the client calls in metrics-client.js:
+Modify the metrics server to store the model information:
 
 ```javascript
-// Current inconsistency:
-// In metrics-server.js:
-app.post('/test/start', ...)
-
-// In metrics-client.js:
-await axios.post(`${METRICS_URL}/start`, ...)
-```
-
-I'd standardize all API endpoints and document them using OpenAPI/Swagger:
-
-```javascript
-// In src/server/metrics-server.js
-app.post('/api/metrics/sessions', createSession);
-app.post('/api/metrics/sessions/:sessionId/api-calls', recordApiCall);
-app.post('/api/metrics/sessions/:sessionId/interactions', recordInteraction);
-app.post('/api/metrics/sessions/:sessionId/complete', completeSession);
-app.get('/api/metrics/sessions', getSessions);
-```
-
-## 3. Enhanced Error Handling
-
-The error handling is inconsistent. I'd implement:
-
-```javascript
-// Create a centralized error handler
-// In src/utils/error-handler.js
-class AppError extends Error {
-  constructor(message, statusCode = 500) {
-    super(message);
-    this.statusCode = statusCode;
-    this.isOperational = true;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-// In API routes
-const handleApiError = (fn) => {
-  return async (req, res, next) => {
-    try {
-      await fn(req, res, next);
-    } catch (err) {
-      next(new AppError(err.message, 400));
-    }
-  };
-};
-
-app.post('/api/metrics/sessions', handleApiError(createSession));
-```
-
-## 4. Modernize JavaScript
-
-Update to use modern JavaScript patterns consistently:
-
-```javascript
-// Replace callbacks with async/await throughout
-// Before
-fs.readFile(filePath, (err, content) => {
-  if (err) {
-    // Error handling
-  } else {
-    // Success
-  }
-});
-
-// After
-try {
-  const content = await fs.promises.readFile(filePath);
-  // Success handling
-} catch (err) {
-  // Error handling
-}
-```
-
-## 5. Improved Configuration Management
-
-Create a centralized configuration system:
-
-```javascript
-// In src/utils/config.js
-const dotenv = require('dotenv');
-const path = require('path');
-
-// Load environment variables
-dotenv.config({ path: path.join(__dirname, '../../.env') });
-
-module.exports = {
-  metrics: {
-    port: process.env.METRICS_PORT || 3000,
-    dataDir: path.join(__dirname, '../../data/metrics')
-  },
-  dashboard: {
-    port: process.env.DASHBOARD_PORT || 3001
-  },
-  twilio: {
-    accountSid: process.env.TWILIO_ACCOUNT_SID,
-    authToken: process.env.TWILIO_AUTH_TOKEN,
-    apiKey: process.env.TWILIO_API_KEY,
-    apiSecret: process.env.TWILIO_API_SECRET
-  }
-};
-```
-
-## 6. Enhanced Dependency Management
-
-Update package.json to properly include all dependencies:
-
-```json
-{
-  "name": "twilio-mcp-performance",
-  "version": "1.0.0",
-  "description": "Twilio MCP Performance Testing Framework",
-  "main": "src/server/dashboard-server.js",
-  "scripts": {
-    "start": "node src/server/dashboard-server.js",
-    "metrics": "node src/server/metrics-server.js",
-    "setup": "bash scripts/setup.sh",
-    "test": "jest",
-    "summary": "node src/cli/generate-summary.js"
-  },
-  "dependencies": {
-    "axios": "^1.6.7",
-    "commander": "^12.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.18.2",
-    "inquirer": "^8.2.6"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "supertest": "^6.3.4"
-  }
-}
-```
-
-## 7. Enhanced Data Consistency
-
-Standardize metric data structure:
-
-```javascript
-// In src/server/metrics-server.js
-const createSession = (req, res) => {
-  const { mode, taskNumber } = req.body;
-  const sessionId = `${mode}_task${taskNumber}_${Date.now()}`;
-  
-  const session = {
-    id: sessionId,
-    mode,
-    taskNumber,
-    startTime: Date.now(),
-    apiCalls: [],
-    interactions: [],
-    completed: false
-  };
-  
-  // Save to memory and file
-  activeTests.set(sessionId, session);
-  saveSessionToFile(sessionId, session);
-  
-  res.json({ sessionId, session });
-};
-```
-
-## 8. Add Testing
-
-Add basic tests for critical functionality:
-
-```javascript
-// In tests/metrics-server.test.js
-const request = require('supertest');
-const app = require('../src/server/metrics-server');
-
-describe('Metrics Server API', () => {
-  test('POST /api/metrics/sessions should create a new session', async () => {
-    const response = await request(app)
-      .post('/api/metrics/sessions')
-      .send({
-        mode: 'control',
-        taskNumber: 1
-      });
+// Start a new test session
+app.post('/metrics/start', (req, res) => {
+    const { mode, taskNumber, model } = req.body;
+    const testId = `${mode}_task${taskNumber}_${Date.now()}`;
     
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toHaveProperty('sessionId');
-    expect(response.body.session).toHaveProperty('startTime');
+    const test = {
+        mode,
+        taskNumber,
+        model: model || 'unknown', // Add model parameter with default fallback
+        startTime: Date.now(),
+        completed: false,
+        apiCalls: [],
+        interactions: []
+    };
+    
+    // Save test to memory and file
+    activeTests.set(testId, test);
+    const filename = path.join(metricsDir, `${testId}.json`);
+    fs.writeFileSync(filename, JSON.stringify(test, null, 2));
+    
+    res.json({ testId });
+});
+```
+
+## 3. Update `src/cli/generate-summary.js`
+
+Modify the summary generator to include model information:
+
+```javascript
+// Process all session files and generate summary
+function generateSummary() {
+  const files = fs.readdirSync(METRICS_DIR)
+    .filter(file => file.endsWith('.json') && !file.startsWith('summary'));
+  
+  const sessions = [];
+  
+  files.forEach(file => {
+    try {
+      const sessionData = JSON.parse(fs.readFileSync(path.join(METRICS_DIR, file)));
+      
+      // Only include completed sessions
+      if (sessionData.endTime) {
+        sessions.push({
+          taskId: sessionData.taskNumber || sessionData.taskId,
+          mode: sessionData.mode,
+          model: sessionData.model || 'unknown', // Include model information
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
+          duration: sessionData.duration,
+          apiCalls: Array.isArray(sessionData.apiCalls) ? sessionData.apiCalls.length : sessionData.apiCalls,
+          interactions: Array.isArray(sessionData.interactions) ? sessionData.interactions.length : sessionData.interactions,
+          success: sessionData.success,
+          notes: sessionData.notes || ''
+        });
+      }
+    } catch (error) {
+      console.error(`Error processing file ${file}:`, error);
+    }
   });
-});
+  
+  // Sort by task ID, mode, and model
+  sessions.sort((a, b) => {
+    if (a.taskId === b.taskId) {
+      if (a.mode === b.mode) {
+        return a.model.localeCompare(b.model);
+      }
+      return a.mode.localeCompare(b.mode);
+    }
+    return a.taskId - b.taskId;
+  });
+  
+  // Write summary file
+  fs.writeFileSync(
+    path.join(METRICS_DIR, 'summary.json'),
+    JSON.stringify(sessions, null, 2)
+  );
+  
+  console.log(`Generated summary for ${sessions.length} completed sessions`);
+  
+  // Calculate overall metrics
+  if (sessions.length > 0) {
+    // Group sessions by model
+    const modelGroups = groupBy(sessions, 'model');
+    
+    // Display performance by model
+    console.log('\nPerformance by Model:');
+    console.log('-------------------');
+    
+    for (const [model, modelSessions] of Object.entries(modelGroups)) {
+      const modelControlSessions = modelSessions.filter(s => s.mode === 'control');
+      const modelMcpSessions = modelSessions.filter(s => s.mode === 'mcp');
+      
+      if (modelSessions.length > 0) {
+        console.log(`\nModel: ${model}`);
+        
+        if (modelControlSessions.length > 0 && modelMcpSessions.length > 0) {
+          const modelControlAvgDuration = average(modelControlSessions.map(s => s.duration));
+          const modelMcpAvgDuration = average(modelMcpSessions.map(s => s.duration));
+          
+          console.log(`  Average Duration: Control=${modelControlAvgDuration.toFixed(1)}s, MCP=${modelMcpAvgDuration.toFixed(1)}s (${percentageChange(modelMcpAvgDuration, modelControlAvgDuration)}% change)`);
+        } else {
+          console.log(`  Average Duration: ${average(modelSessions.map(s => s.duration)).toFixed(1)}s`);
+        }
+      }
+    }
+    
+    // Original summary (all models combined)
+    const controlSessions = sessions.filter(s => s.mode === 'control');
+    const mcpSessions = sessions.filter(s => s.mode === 'mcp');
+    
+    const controlAvgDuration = average(controlSessions.map(s => s.duration));
+    const mcpAvgDuration = average(mcpSessions.map(s => s.duration));
+    
+    const controlAvgApiCalls = average(controlSessions.map(s => s.apiCalls));
+    const mcpAvgApiCalls = average(mcpSessions.map(s => s.apiCalls));
+    
+    const controlAvgInteractions = average(controlSessions.map(s => s.interactions));
+    const mcpAvgInteractions = average(mcpSessions.map(s => s.interactions));
+    
+    const controlSuccessRate = percentage(controlSessions.filter(s => s.success).length, controlSessions.length);
+    const mcpSuccessRate = percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length);
+    
+    console.log('\nOverall Performance Summary (All Models):');
+    console.log('-------------------');
+    console.log(`Average Duration: Control=${controlAvgDuration.toFixed(1)}s, MCP=${mcpAvgDuration.toFixed(1)}s (${percentageChange(mcpAvgDuration, controlAvgDuration)}% change)`);
+    console.log(`Average API Calls: Control=${controlAvgApiCalls.toFixed(1)}, MCP=${mcpAvgApiCalls.toFixed(1)} (${percentageChange(mcpAvgApiCalls, controlAvgApiCalls)}% change)`);
+    console.log(`Average Interactions: Control=${controlAvgInteractions.toFixed(1)}, MCP=${mcpAvgInteractions.toFixed(1)} (${percentageChange(mcpAvgInteractions, controlAvgInteractions)}% change)`);
+    console.log(`Success Rate: Control=${controlSuccessRate.toFixed(1)}%, MCP=${mcpSuccessRate.toFixed(1)}% (${percentageChange(mcpSuccessRate, controlSuccessRate)}% change)`);
+  }
+}
+
+// Helper function to group sessions by a property
+function groupBy(array, key) {
+  return array.reduce((result, item) => {
+    (result[item[key]] = result[item[key]] || []).push(item);
+    return result;
+  }, {});
+}
 ```
 
-## 9. Dashboard Improvements
+## 4. Update `src/server/dashboard.html`
 
-Enhance the dashboard with:
+Finally, update the dashboard to display model information:
 
-1. Modern frontend framework (React/Vue) or at minimum, better separation of concerns
-2. Responsive design for mobile viewing
-3. Real-time data updates using WebSockets
-4. More detailed visualization options
-5. Export capabilities (CSV, PDF)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MCP Performance Dashboard</title>
+    <style>
+        /* Existing styles */
+        /* ... */
+        
+        /* Add new styles for model sections */
+        .model-section {
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .model-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MCP Performance Dashboard</h1>
+        <div class="metrics" id="summary"></div>
+        
+        <!-- New section for model-specific metrics -->
+        <div id="modelMetrics"></div>
+        
+        <table class="sessions" id="sessionsTable">
+            <thead>
+                <tr>
+                    <th>Task ID</th>
+                    <th>Mode</th>
+                    <th>Model</th>
+                    <th>Duration (s)</th>
+                    <th>API Calls</th>
+                    <th>Interactions</th>
+                    <th>Success</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="sessionsBody"></tbody>
+        </table>
+    </div>
 
-## 10. Logging Enhancements
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('/metrics/summary.json');
+                const data = await response.json();
+                
+                // Process and display the data
+                displayMetrics(data);
+                displayModelMetrics(data);  // New function to display model metrics
+                displaySessions(data);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
 
-Add a proper logging system:
+        // Existing displayMetrics function
+        // ...
 
-```javascript
-// In src/utils/logger.js
-const winston = require('winston');
+        // New function to display metrics by model
+        function displayModelMetrics(sessions) {
+            // Group sessions by model
+            const models = {};
+            sessions.forEach(session => {
+                const model = session.model || 'unknown';
+                if (!models[model]) {
+                    models[model] = {
+                        control: [],
+                        mcp: []
+                    };
+                }
+                
+                if (session.mode === 'control') {
+                    models[model].control.push(session);
+                } else if (session.mode === 'mcp') {
+                    models[model].mcp.push(session);
+                }
+            });
+            
+            // Create metrics per model
+            const modelMetricsEl = document.getElementById('modelMetrics');
+            modelMetricsEl.innerHTML = '';
+            
+            for (const [model, data] of Object.entries(models)) {
+                const controlAvgDuration = average(data.control.map(s => s.duration));
+                const mcpAvgDuration = average(data.mcp.map(s => s.duration));
+                
+                const section = document.createElement('div');
+                section.className = 'model-section';
+                
+                section.innerHTML = `
+                    <div class="model-title">Model: ${model}</div>
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <div class="metric-title">Average Duration</div>
+                            <div>Control: ${controlAvgDuration.toFixed(1)}s</div>
+                            <div>MCP: ${mcpAvgDuration.toFixed(1)}s</div>
+                            <div>Change: ${percentageChange(mcpAvgDuration, controlAvgDuration)}%</div>
+                        </div>
+                    </div>
+                `;
+                
+                modelMetricsEl.appendChild(section);
+            }
+        }
 
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
-  ]
-});
+        // Update displaySessions function to include model column
+        function displaySessions(sessions) {
+            const tbody = document.getElementById('sessionsBody');
+            tbody.innerHTML = sessions
+                .map(s => `
+                    <tr>
+                        <td>${s.taskId}</td>
+                        <td>${s.mode}</td>
+                        <td>${s.model || 'unknown'}</td>
+                        <td>${(s.duration/1000).toFixed(1)}</td>
+                        <td>${s.apiCalls}</td>
+                        <td>${s.interactions}</td>
+                        <td>${s.success ? '&#x2714;' : '&#x2718;'}</td>
+                        <td>${s.notes}</td>
+                    </tr>
+                `).join('');
+        }
 
-module.exports = logger;
+        // Existing helper functions
+        // ...
+    </script>
+</body>
+</html>
 ```
 
-## 11. CLI Tool Improvements
+## 5. Update the CLI tool (src/cli/run-test.js)
 
-Rewrite the CLI tool in pure JavaScript:
+Don't forget to update the command-line interface to accept the model parameter:
 
 ```javascript
-// In src/cli/run-test.js
-#!/usr/bin/env node
-const { program } = require('commander');
-const inquirer = require('inquirer');
-const axios = require('axios');
-const { spawn } = require('child_process');
-const config = require('../utils/config');
-
-program
-  .name('twilio-mcp-test')
-  .description('CLI for running Twilio MCP performance tests')
-  .version('1.0.0');
-
+// Command to run a single test
 program
   .command('run')
   .description('Run a single test')
   .option('-m, --mode <mode>', 'Test mode (control or mcp)', 'control')
   .option('-t, --task <task>', 'Task number (1, 2, or 3)', '1')
+  .option('-a, --model <model>', 'AI model name', 'unknown')
+  .option('-y, --yes', 'Skip confirmation', false)
   .action(async (options) => {
-    // Implementation here
+    // Validate inputs
+    if (!['control', 'mcp'].includes(options.mode)) {
+      console.error('Error: Mode must be "control" or "mcp"');
+      process.exit(1);
+    }
+    
+    if (!['1', '2', '3'].includes(options.task)) {
+      console.error('Error: Task must be 1, 2, or 3');
+      process.exit(1);
+    }
+    
+    // Check if metrics server is running
+    // ...
+    
+    // Confirm test if not using --yes
+    if (!options.yes) {
+      const answers = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirm',
+          message: `Run ${options.mode} test for Task ${options.task} using model ${options.model}?`,
+          default: true
+        }
+      ]);
+      
+      if (!answers.confirm) {
+        console.log('Test canceled');
+        process.exit(0);
+      }
+    }
+    
+    // Run the test
+    console.log(`Running ${options.mode} test for Task ${options.task} with model ${options.model}...`);
+    exec(`./run-test.sh ${options.mode} ${options.task} ${options.model}`, (error, stdout, stderr) => {
+      // ...
+    });
   });
-
-program.parse(process.argv);
 ```
 
-## Implementation Strategy
+## Testing Your Implementation
 
-I recommend a phased approach:
+After implementing these changes:
 
-1. **Phase 1:** Project structure reorganization and dependency management
-2. **Phase 2:** API standardization and error handling
-3. **Phase 3:** JavaScript modernization and configuration management
-4. **Phase 4:** Testing implementation and dashboard enhancements
-5. **Phase 5:** Documentation updates and CLI improvements
+1. Restart both the metrics server and dashboard server:
+   ```
+   npm run start:metrics
+   npm start
+   ```
 
-This approach ensures continual functionality while progressively improving the codebase.
+2. Run a test with the model parameter:
+   ```
+   ./scripts/run-test.sh mcp 1 3.7-sonnet
+   ```
 
-Would you like me to focus on any specific area of the refactoring in more detail?
+3. Verify that the model information is being captured in:
+   - The test start log output 
+   - The metrics JSON files in the metrics directory
+   - The summary output
+   - The dashboard display
+
+These changes will allow you to track which AI model was used for each test, compare performance between different models, and visualize the results in the dashboard.

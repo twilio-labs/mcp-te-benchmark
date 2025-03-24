@@ -25,6 +25,7 @@ function generateSummary() {
         sessions.push({
           taskId: sessionData.taskNumber || sessionData.taskId,
           mode: sessionData.mode,
+          model: sessionData.model || 'unknown', // Include model information
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
           duration: sessionData.duration,
@@ -39,9 +40,12 @@ function generateSummary() {
     }
   });
   
-  // Sort by task ID and mode
+  // Sort by task ID, mode, and model
   sessions.sort((a, b) => {
     if (a.taskId === b.taskId) {
+      if (a.mode === b.mode) {
+        return a.model.localeCompare(b.model);
+      }
       return a.mode.localeCompare(b.mode);
     }
     return a.taskId - b.taskId;
@@ -57,6 +61,32 @@ function generateSummary() {
   
   // Calculate overall metrics
   if (sessions.length > 0) {
+    // Group sessions by model
+    const modelGroups = groupBy(sessions, 'model');
+    
+    // Display performance by model
+    console.log('\nPerformance by Model:');
+    console.log('-------------------');
+    
+    for (const [model, modelSessions] of Object.entries(modelGroups)) {
+      const modelControlSessions = modelSessions.filter(s => s.mode === 'control');
+      const modelMcpSessions = modelSessions.filter(s => s.mode === 'mcp');
+      
+      if (modelSessions.length > 0) {
+        console.log(`\nModel: ${model}`);
+        
+        if (modelControlSessions.length > 0 && modelMcpSessions.length > 0) {
+          const modelControlAvgDuration = average(modelControlSessions.map(s => s.duration));
+          const modelMcpAvgDuration = average(modelMcpSessions.map(s => s.duration));
+          
+          console.log(`  Average Duration: Control=${modelControlAvgDuration.toFixed(1)}s, MCP=${modelMcpAvgDuration.toFixed(1)}s (${percentageChange(modelMcpAvgDuration, modelControlAvgDuration)}% change)`);
+        } else {
+          console.log(`  Average Duration: ${average(modelSessions.map(s => s.duration)).toFixed(1)}s`);
+        }
+      }
+    }
+    
+    // Original summary (all models combined)
     const controlSessions = sessions.filter(s => s.mode === 'control');
     const mcpSessions = sessions.filter(s => s.mode === 'mcp');
     
@@ -72,13 +102,21 @@ function generateSummary() {
     const controlSuccessRate = percentage(controlSessions.filter(s => s.success).length, controlSessions.length);
     const mcpSuccessRate = percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length);
     
-    console.log('\nPerformance Summary:');
+    console.log('\nOverall Performance Summary (All Models):');
     console.log('-------------------');
     console.log(`Average Duration: Control=${controlAvgDuration.toFixed(1)}s, MCP=${mcpAvgDuration.toFixed(1)}s (${percentageChange(mcpAvgDuration, controlAvgDuration)}% change)`);
     console.log(`Average API Calls: Control=${controlAvgApiCalls.toFixed(1)}, MCP=${mcpAvgApiCalls.toFixed(1)} (${percentageChange(mcpAvgApiCalls, controlAvgApiCalls)}% change)`);
     console.log(`Average Interactions: Control=${controlAvgInteractions.toFixed(1)}, MCP=${mcpAvgInteractions.toFixed(1)} (${percentageChange(mcpAvgInteractions, controlAvgInteractions)}% change)`);
     console.log(`Success Rate: Control=${controlSuccessRate.toFixed(1)}%, MCP=${mcpSuccessRate.toFixed(1)}% (${percentageChange(mcpSuccessRate, controlSuccessRate)}% change)`);
   }
+}
+
+// Helper function to group sessions by a property
+function groupBy(array, key) {
+  return array.reduce((result, item) => {
+    (result[item[key]] = result[item[key]] || []).push(item);
+    return result;
+  }, {});
 }
 
 function average(values) {

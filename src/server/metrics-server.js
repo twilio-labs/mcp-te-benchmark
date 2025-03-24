@@ -22,17 +22,21 @@ if (!fs.existsSync(metricsDir)) {
 
 // Start a new test session
 app.post('/metrics/start', (req, res) => {
-    const { mode, taskNumber } = req.body;
+    console.log('Start request body:', req.body); // Debug log
+    const { mode, taskNumber, model } = req.body;
     const testId = `${mode}_task${taskNumber}_${Date.now()}`;
     
     const test = {
         mode,
         taskNumber,
+        model: model || 'unknown', // Add model parameter with default fallback
         startTime: Date.now(),
         completed: false,
         apiCalls: [],
         interactions: []
     };
+    
+    console.log('Created test object:', test); // Debug log
     
     // Save test to memory and file
     activeTests.set(testId, test);
@@ -45,17 +49,25 @@ app.post('/metrics/start', (req, res) => {
 // Complete a test session
 app.post('/metrics/complete', (req, res) => {
     const { testId, success } = req.body;
+    console.log('Complete request - testId:', testId); // Debug log
     const test = activeTests.get(testId);
+    console.log('Retrieved test from memory:', test); // Debug log
     
     if (test) {
-        test.completed = true;
-        test.success = success;
-        test.endTime = Date.now();
-        test.duration = test.endTime - test.startTime;
+        // Update test data while preserving existing fields
+        const updatedTest = {
+            ...test, // Preserve all existing fields including model
+            completed: true,
+            success: success,
+            endTime: Date.now()
+        };
+        updatedTest.duration = updatedTest.endTime - updatedTest.startTime;
+        
+        console.log('Updated test object:', updatedTest); // Debug log
         
         // Save test results to file
         const filename = path.join(metricsDir, `${testId}.json`);
-        fs.writeFileSync(filename, JSON.stringify(test, null, 2));
+        fs.writeFileSync(filename, JSON.stringify(updatedTest, null, 2));
         
         // Remove from active tests
         activeTests.delete(testId);

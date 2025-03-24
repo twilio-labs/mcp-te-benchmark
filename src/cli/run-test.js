@@ -18,6 +18,7 @@ program
   .description('Run a single test')
   .option('-m, --mode <mode>', 'Test mode (control or mcp)', 'control')
   .option('-t, --task <task>', 'Task number (1, 2, or 3)', '1')
+  .option('-a, --model <model>', 'AI model name', 'unknown')
   .option('-y, --yes', 'Skip confirmation', false)
   .action(async (options) => {
     // Validate inputs
@@ -50,7 +51,7 @@ program
         {
           type: 'confirm',
           name: 'confirm',
-          message: `Run ${options.mode} test for Task ${options.task}?`,
+          message: `Run ${options.mode} test for Task ${options.task} using model ${options.model}?`,
           default: true
         }
       ]);
@@ -62,8 +63,8 @@ program
     }
     
     // Run the test
-    console.log(`Running ${options.mode} test for Task ${options.task}...`);
-    exec(`./run-test.sh ${options.mode} ${options.task}`, (error, stdout, stderr) => {
+    console.log(`Running ${options.mode} test for Task ${options.task} with model ${options.model}...`);
+    exec(`./run-test.sh ${options.mode} ${options.task} ${options.model}`, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
         return;
@@ -81,6 +82,7 @@ program
   .command('run-all')
   .description('Run all tests')
   .option('-y, --yes', 'Skip confirmation', false)
+  .option('-a, --model <model>', 'AI model name', 'unknown')
   .action(async (options) => {
     // Confirm test if not using --yes
     if (!options.yes) {
@@ -88,7 +90,7 @@ program
         {
           type: 'confirm',
           name: 'confirm',
-          message: 'Run all tests (6 total: 3 tasks x 2 modes)?',
+          message: `Run all tests (6 total: 3 tasks x 2 modes) using model ${options.model}?`,
           default: true
         }
       ]);
@@ -107,11 +109,11 @@ program
     
     for (const mode of modes) {
       for (const task of tasks) {
-        console.log(`\nRunning ${mode} test for Task ${task}...`);
+        console.log(`\nRunning ${mode} test for Task ${task} with model ${options.model}...`);
         
         try {
           await new Promise((resolve, reject) => {
-            exec(`./run-test.sh ${mode} ${task}`, (error, stdout, stderr) => {
+            exec(`./run-test.sh ${mode} ${task} ${options.model}`, (error, stdout, stderr) => {
               if (error) {
                 reject(error);
                 return;
