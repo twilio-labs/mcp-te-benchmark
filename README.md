@@ -20,20 +20,24 @@ This repository contains tools to measure and compare the efficiency of completi
 1. Clone this repository
 2. Run the setup script:
    ```
-   ./setup.sh
+   ./scripts/setup.sh
    ```
 3. Create your `.env` file from the example:
    ```
    cp .env.example .env
    ```
 4. Edit the `.env` file with your Twilio credentials
-5. Start the metrics server:
+5. Install dependencies:
    ```
-   node metrics-server.js
+   npm install
    ```
-6. Start the dashboard server (optional, for real-time visualization):
+6. Start the metrics server:
    ```
-   node server.js
+   npm run start:metrics
+   ```
+7. Start the dashboard server (optional, for real-time visualization):
+   ```
+   npm start
    ```
 
 ## Running Tests
@@ -41,7 +45,7 @@ This repository contains tools to measure and compare the efficiency of completi
 1. Open a terminal and navigate to the project directory
 2. Start a test using:
    ```
-   ./run-test.sh [control|mcp] [1|2|3]
+   ./scripts/run-test.sh [control|mcp] [1|2|3]
    ```
    Where:
    - First parameter is the test mode (control or mcp)
@@ -57,7 +61,7 @@ For a visual representation of results:
 
 1. Start the dashboard server (if not already running):
    ```
-   node server.js
+   npm start
    ```
 2. Open your browser and navigate to:
    ```
@@ -69,14 +73,14 @@ For a visual representation of results:
 
 Alternatively, open the static HTML dashboard:
 ```
-open dashboard.html
+open src/client/dashboard/index.html
 ```
 
 ### Command Line Summary
 
 Generate a text-based summary of results:
 ```
-node generate-summary.js
+npm run generate-summary
 ```
 
 ## Tasks
@@ -121,23 +125,38 @@ The dashboard visualization provides:
 
 ```
 └── twilio-mcp-performance/
+    ├── package.json
     ├── README.md
-    ├── metrics-server.js   # API for collecting metrics data (port 3000)
-    ├── server.js           # Dashboard server (port 3001)
-    ├── metrics-client.js
-    ├── dashboard.html
-    ├── generate-summary.js
-    ├── results.md
-    ├── run-test.sh
-    ├── setup.sh
-    ├── test-cli.js
     ├── .env.example
-    ├── .env
-    ├── metrics/
-    └── docs/
-        ├── control_instructions.md
-        ├── mcp_instructions.md
-        └── testing_protocol.md
+    ├── .gitignore
+    ├── src/
+    │   ├── server/
+    │   │   ├── metrics-server.js
+    │   │   └── dashboard-server.js
+    │   ├── client/
+    │   │   ├── metrics-client.js
+    │   │   └── dashboard/
+    │   │       ├── index.html
+    │   │       ├── css/
+    │   │       └── js/
+    │   ├── utils/
+    │   │   ├── config.js
+    │   │   └── logger.js
+    │   └── cli/
+    │       ├── run-test.js
+    │       └── generate-summary.js
+    ├── scripts/
+    │   ├── setup.sh
+    │   └── run-test.sh
+    ├── docs/
+    │   ├── control_instructions.md
+    │   ├── mcp_instructions.md
+    │   └── testing_protocol.md
+    ├── tests/
+    │   ├── metrics-server.test.js
+    │   └── metrics-client.test.js
+    └── data/
+        └── metrics/
 ```
 
 ## Requirements
@@ -146,6 +165,23 @@ The dashboard visualization provides:
 - NPM
 - Twilio account with API credentials
 - TaskRouter workspace set up in your Twilio account
+
+## Development
+
+### Running Tests
+```
+npm test
+```
+
+To run tests in watch mode:
+```
+npm run test:watch
+```
+
+### Linting
+```
+npm run lint
+```
 
 ## Credits
 

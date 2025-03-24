@@ -2,10 +2,27 @@
     "name": "mcp-performance-dashboard",
     "version": "1.0.0",
     "description": "Twilio MCP Performance Dashboard",
-    "main": "server.js",
+    "main": "src/server/dashboard-server.js",
     "scripts": {
-        "start": "node server.js"
+        "start": "node src/server/dashboard-server.js",
+        "start:metrics": "node src/server/metrics-server.js",
+        "test": "mocha tests/**/*.test.js",
+        "test:watch": "mocha tests/**/*.test.js --watch",
+        "lint": "eslint src/**/*.js tests/**/*.js",
+        "generate-summary": "node src/cli/generate-summary.js"
     },
     "author": "",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "winston": "^3.8.2"
+    },
+    "devDependencies": {
+        "chai": "^4.3.7",
+        "eslint": "^8.36.0",
+        "mocha": "^10.2.0",
+        "sinon": "^15.0.2",
+        "supertest": "^6.3.3"
+    }
 }

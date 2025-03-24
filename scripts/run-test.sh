@@ -3,8 +3,8 @@
 
 # Verify arguments
 if [ $# -lt 2 ]; then
-  echo "Usage: ./run-test.sh [control|mcp] [1|2|3]"
-  echo "Example: ./run-test.sh control 1"
+  echo "Usage: ./scripts/run-test.sh [control|mcp] [1|2|3]"
+  echo "Example: ./scripts/run-test.sh control 1"
   exit 1
 fi
 
@@ -24,7 +24,7 @@ fi
 
 # Check if metrics server is running
 if ! curl -s http://localhost:3000/metrics/status/test > /dev/null; then
-  echo "Error: Metrics server is not running. Start it with: node metrics-server.js"
+  echo "Error: Metrics server is not running. Start it with: npm run start:metrics"
   exit 1
 fi
 
@@ -34,7 +34,7 @@ echo "===================================="
 echo ""
 echo "Instructions:"
 echo "1. Open Cursor and start a new chat"
-echo "2. Load the ${MODE}_instructions.md file as context"
+echo "2. Load the docs/${MODE}_instructions.md file as context"
 echo "3. Start the test by sending: 'Complete Task $TASK_ID using the commands in the instructions'"
 echo ""
 echo "Press Enter when you're ready to start, or Ctrl+C to cancel..."
@@ -52,7 +52,7 @@ echo ""
 echo "Test completed in $DURATION seconds"
 echo ""
 echo "Generating summary..."
-node generate-summary.js
+npm run generate-summary
 
 echo ""
-echo "View dashboard with: open dashboard.html"
+echo "View dashboard with: open src/client/dashboard/index.html"

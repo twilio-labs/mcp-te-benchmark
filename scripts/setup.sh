@@ -2,14 +2,13 @@
 # setup.sh
 
 # Create directory structure
-mkdir -p metrics
+mkdir -p data/metrics src/client/dashboard/{css,js}
 
 # Install dependencies
-npm init -y
-npm install express axios commander inquirer dotenv
+npm install
 
-# Make test-cli.js executable
-chmod +x test-cli.js
+# Make run-test.js executable
+chmod +x src/cli/run-test.js
 
 # Create .env from example if it doesn't exist
 if [ ! -f .env ]; then
@@ -18,8 +17,9 @@ if [ ! -f .env ]; then
 fi
 
 # Create empty results.md if it doesn't exist
-if [ ! -f results.md ]; then
-  cat > results.md << EOL
+if [ ! -f data/metrics/results.md ]; then
+  mkdir -p data/metrics
+  cat > data/metrics/results.md << EOL
 ## Results Table
 
 | Task | Mode      | Start Time | End Time | Duration | API Calls | Interactions | Success | Notes |
@@ -31,7 +31,7 @@ if [ ! -f results.md ]; then
 | 3    | Control   |            |          |          |           |              |         |       |
 | 3    | MCP       |            |          |          |           |              |         |       |
 EOL
-  echo "Created empty results.md file."
+  echo "Created empty results.md file in data/metrics directory."
 fi
 
-echo "Setup complete! Start the metrics server with: node metrics-server.js"
+echo "Setup complete! Start the metrics server with: npm run start:metrics"
