@@ -1,0 +1,12 @@
+{
+  "mode": "control",
+  "taskNumber": 1,
+  "model": "claude-3.7-sonnet",
+  "startTime": 1742847418113,
+  "completed": true,
+  "apiCalls": 3,
+  "interactions": 1,
+  "success": true,
+  "endTime": 1742847445386,
+  "duration": 27273
+}

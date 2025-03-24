@@ -13,6 +13,18 @@
   },
   {
     "taskId": 1,
+    "mode": "control",
+    "model": "claude-3.7-sonnet",
+    "startTime": 1742847418113,
+    "endTime": 1742847445386,
+    "duration": 27273,
+    "apiCalls": 3,
+    "interactions": 1,
+    "success": true,
+    "notes": ""
+  },
+  {
+    "taskId": 1,
     "mode": "mcp",
     "model": "claude-3.7-sonnet",
     "startTime": 1742844334500,
@@ -30,6 +42,18 @@
     "startTime": 1742844680419,
     "endTime": 1742844780143,
     "duration": 99724,
+    "apiCalls": 14,
+    "interactions": 2,
+    "success": true,
+    "notes": ""
+  },
+  {
+    "taskId": 2,
+    "mode": "control",
+    "model": "claude-3.7-sonnet",
+    "startTime": 1742847488009,
+    "endTime": 1742847574894,
+    "duration": 31458,
     "apiCalls": 14,
     "interactions": 2,
     "success": true,
@@ -55,6 +79,18 @@
     "endTime": 1742844827795,
     "duration": 31102,
     "apiCalls": 4,
+    "interactions": 1,
+    "success": true,
+    "notes": ""
+  },
+  {
+    "taskId": 3,
+    "mode": "control",
+    "model": "claude-3.7-sonnet",
+    "startTime": 1742847669629,
+    "endTime": 1742847715521,
+    "duration": 45892,
+    "apiCalls": 6,
     "interactions": 1,
     "success": true,
     "notes": ""
