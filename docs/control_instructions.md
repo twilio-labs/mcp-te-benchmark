@@ -13,7 +13,7 @@ For accurate performance measurement, you must execute these commands:
 
 1. When starting each task:
 ```bash
-curl -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d '{"mode": "control", "taskNumber": TASK_NUMBER}'
+curl -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d '{"mode": "control", "taskNumber": TASK_NUMBER}', "model": "claude-3.7-sonnet"
 ```
 
 2. When completing each task:

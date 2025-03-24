@@ -39,32 +39,9 @@ echo "1. Open Cursor and start a new chat"
 echo "2. Load the docs/${MODE}_instructions.md file as context"
 echo "3. Start the test by sending: 'Complete Task $TASK_ID using the commands in the instructions'"
 echo ""
-echo "Press Enter when you're ready to start, or Ctrl+C to cancel..."
+echo "Press Enter when the task has been completed to generate the summary file, or Ctrl+C to cancel..."
 read
 
-# Start the test and capture test ID
-TEST_ID=$(curl -s -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d "{\"mode\": \"$MODE\", \"taskNumber\": $TASK_ID, \"model\": \"$MODEL\"}" | jq -r '.testId')
-
-if [ -z "$TEST_ID" ]; then
-  echo "Error: Failed to get test ID from server"
-  exit 1
-fi
-
-START_TIME=$(date +%s)
-echo "Test started at $(date)"
-echo "Test ID: $TEST_ID"
-echo ""
-echo "Press Enter when the test is complete..."
-read
-END_TIME=$(date +%s)
-
-# Complete the test
-curl -s -X POST http://localhost:3000/test/complete -H "Content-Type: application/json" -d "{\"testId\": \"$TEST_ID\", \"success\": true}"
-
-DURATION=$((END_TIME - START_TIME))
-
-echo ""
-echo "Test completed in $DURATION seconds"
 echo ""
 echo "Generating summary..."
 echo ""
