@@ -1,11 +1,12 @@
 // generate-summary.js
 const fs = require('fs');
 const path = require('path');
+const config = require('../utils/config');
 
-// Create metrics directory if it doesn't exist
-const METRICS_DIR = path.join(__dirname, '..', 'server', 'metrics');
+// Use the same metrics directory as the server
+const METRICS_DIR = config.metrics.dataPath;
 if (!fs.existsSync(METRICS_DIR)) {
-  fs.mkdirSync(METRICS_DIR);
+  fs.mkdirSync(METRICS_DIR, { recursive: true });
 }
 
 // Process all session files and generate summary

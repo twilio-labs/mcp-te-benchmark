@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const config = require('../utils/config');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -14,56 +15,35 @@ app.use(express.json());
 const activeTests = new Map();
 
 // Ensure metrics directory exists
-const metricsDir = path.join(__dirname, 'metrics');
+const metricsDir = config.metrics.dataPath;
 if (!fs.existsSync(metricsDir)) {
-    fs.mkdirSync(metricsDir);
+    fs.mkdirSync(metricsDir, { recursive: true });
 }
 
 // Start a new test session
-app.post('/test/start', (req, res) => {
+app.post('/metrics/start', (req, res) => {
     const { mode, taskNumber } = req.body;
     const testId = `${mode}_task${taskNumber}_${Date.now()}`;
     
-    activeTests.set(testId, {
+    const test = {
         mode,
         taskNumber,
         startTime: Date.now(),
-        apiCalls: 0,
-        interactions: 0,
-        completed: false
-    });
+        completed: false,
+        apiCalls: [],
+        interactions: []
+    };
+    
+    // Save test to memory and file
+    activeTests.set(testId, test);
+    const filename = path.join(metricsDir, `${testId}.json`);
+    fs.writeFileSync(filename, JSON.stringify(test, null, 2));
     
     res.json({ testId });
 });
 
-// Record an API call
-app.post('/test/api-call', (req, res) => {
-    const { testId } = req.body;
-    const test = activeTests.get(testId);
-    
-    if (test) {
-        test.apiCalls++;
-        res.json({ success: true });
-    } else {
-        res.status(404).json({ error: 'Test not found' });
-    }
-});
-
-// Record an interaction
-app.post('/test/interaction', (req, res) => {
-    const { testId } = req.body;
-    const test = activeTests.get(testId);
-    
-    if (test) {
-        test.interactions++;
-        res.json({ success: true });
-    } else {
-        res.status(404).json({ error: 'Test not found' });
-    }
-});
-
-// Complete a test
-app.post('/test/complete', (req, res) => {
+// Complete a test session
+app.post('/metrics/complete', (req, res) => {
     const { testId, success } = req.body;
     const test = activeTests.get(testId);
     
@@ -87,7 +67,7 @@ app.post('/test/complete', (req, res) => {
 });
 
 // Get test results
-app.get('/test/results', (req, res) => {
+app.get('/metrics/results', (req, res) => {
     const results = [];
     
     fs.readdirSync(metricsDir).forEach(file => {
@@ -98,6 +78,11 @@ app.get('/test/results', (req, res) => {
     });
     
     res.json(results);
+});
+
+// Health check endpoint
+app.get('/metrics/status', (req, res) => {
+    res.json({ status: 'ok' });
 });
 
 // Start the server

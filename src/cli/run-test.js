@@ -33,7 +33,7 @@ program
     
     // Check if metrics server is running
     try {
-      exec('curl -s http://localhost:3000/metrics/status/test', (error) => {
+      exec('curl -s http://localhost:3000/metrics/status', (error) => {
         if (error) {
           console.error('Error: Metrics server is not running. Start it with: node metrics-server.js');
           process.exit(1);

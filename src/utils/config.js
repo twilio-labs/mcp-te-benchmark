@@ -14,7 +14,7 @@ const config = {
     level: process.env.LOG_LEVEL || 'info',
   },
   metrics: {
-    dataPath: process.env.METRICS_DATA_PATH || './data/metrics',
+    dataPath: process.env.METRICS_DATA_PATH || './src/server/metrics',
   }
 };
 
