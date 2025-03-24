@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 
 const config = {
   server: {
@@ -14,7 +15,7 @@ const config = {
     level: process.env.LOG_LEVEL || 'info',
   },
   metrics: {
-    dataPath: process.env.METRICS_DATA_PATH || './src/server/metrics',
+    dataPath: process.env.METRICS_DATA_PATH || path.resolve(__dirname, '../../src/server/metrics'),
   }
 };
 

@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "taskId": 1,
+    "mode": "mcp",
+    "model": "sonnet-3",
+    "startTime": 1742840151751,
+    "endTime": 1742840158662,
+    "duration": 6911,
+    "apiCalls": 0,
+    "interactions": 0,
+    "success": true,
+    "notes": ""
+  }
+]

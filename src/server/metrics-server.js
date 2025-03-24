@@ -13,6 +13,8 @@ app.use(express.json());
 
 // Create metrics directory if it doesn't exist
 const metricsDir = config.metrics.dataPath;
+console.log('Using metrics directory:', metricsDir);
+
 if (!fs.existsSync(metricsDir)) {
     fs.mkdirSync(metricsDir, { recursive: true });
 }

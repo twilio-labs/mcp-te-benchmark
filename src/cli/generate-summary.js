@@ -5,6 +5,8 @@ const config = require('../utils/config');
 
 // Use the same metrics directory as the server
 const METRICS_DIR = config.metrics.dataPath;
+console.log('Reading metrics from:', METRICS_DIR);
+
 if (!fs.existsSync(METRICS_DIR)) {
   fs.mkdirSync(METRICS_DIR, { recursive: true });
 }
