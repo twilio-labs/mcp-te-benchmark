@@ -25,7 +25,7 @@ if [[ "$TASK_ID" != "1" && "$TASK_ID" != "2" && "$TASK_ID" != "3" ]]; then
 fi
 
 # Check if metrics server is running
-if ! curl -s http://localhost:3000/metrics/status > /dev/null; then
+if ! curl -s http://localhost:3000/test/status > /dev/null; then
   echo "Error: Metrics server is not running. Start it with: npm run start:metrics"
   exit 1
 fi
@@ -43,7 +43,7 @@ echo "Press Enter when you're ready to start, or Ctrl+C to cancel..."
 read
 
 # Start the test and capture test ID
-TEST_ID=$(curl -s -X POST http://localhost:3000/metrics/start -H "Content-Type: application/json" -d "{\"mode\": \"$MODE\", \"taskNumber\": $TASK_ID, \"model\": \"$MODEL\"}" | jq -r '.testId')
+TEST_ID=$(curl -s -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d "{\"mode\": \"$MODE\", \"taskNumber\": $TASK_ID, \"model\": \"$MODEL\"}" | jq -r '.testId')
 
 if [ -z "$TEST_ID" ]; then
   echo "Error: Failed to get test ID from server"
@@ -59,7 +59,7 @@ read
 END_TIME=$(date +%s)
 
 # Complete the test
-curl -s -X POST http://localhost:3000/metrics/complete -H "Content-Type: application/json" -d "{\"testId\": \"$TEST_ID\", \"success\": true}"
+curl -s -X POST http://localhost:3000/test/complete -H "Content-Type: application/json" -d "{\"testId\": \"$TEST_ID\", \"success\": true}"
 
 DURATION=$((END_TIME - START_TIME))
 

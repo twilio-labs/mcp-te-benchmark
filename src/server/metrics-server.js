@@ -1,42 +1,42 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
 const config = require('../utils/config');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.server.metricsPort;
 
-// Enable CORS and JSON parsing
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Store metrics in memory
-const activeTests = new Map();
-
-// Ensure metrics directory exists
+// Create metrics directory if it doesn't exist
 const metricsDir = config.metrics.dataPath;
 if (!fs.existsSync(metricsDir)) {
     fs.mkdirSync(metricsDir, { recursive: true });
 }
 
-// Start a new test session
-app.post('/metrics/start', (req, res) => {
-    console.log('Start request body:', req.body); // Debug log
+// In-memory storage for active tests
+const activeTests = new Map();
+
+// Change the route from '/metrics/start' to '/test/start'
+app.post('/test/start', (req, res) => {
+    console.log('Start request body:', req.body);
     const { mode, taskNumber, model } = req.body;
     const testId = `${mode}_task${taskNumber}_${Date.now()}`;
     
     const test = {
         mode,
         taskNumber,
-        model: model || 'unknown', // Add model parameter with default fallback
+        model: model || 'unknown',
         startTime: Date.now(),
         completed: false,
         apiCalls: [],
         interactions: []
     };
     
-    console.log('Created test object:', test); // Debug log
+    console.log('Created test object:', test);
     
     // Save test to memory and file
     activeTests.set(testId, test);
@@ -46,24 +46,24 @@ app.post('/metrics/start', (req, res) => {
     res.json({ testId });
 });
 
-// Complete a test session
-app.post('/metrics/complete', (req, res) => {
+// Change the route from '/metrics/complete' to '/test/complete'
+app.post('/test/complete', (req, res) => {
     const { testId, success } = req.body;
-    console.log('Complete request - testId:', testId); // Debug log
+    console.log('Complete request - testId:', testId);
     const test = activeTests.get(testId);
-    console.log('Retrieved test from memory:', test); // Debug log
+    console.log('Retrieved test from memory:', test);
     
     if (test) {
         // Update test data while preserving existing fields
         const updatedTest = {
-            ...test, // Preserve all existing fields including model
+            ...test,
             completed: true,
             success: success,
             endTime: Date.now()
         };
         updatedTest.duration = updatedTest.endTime - updatedTest.startTime;
         
-        console.log('Updated test object:', updatedTest); // Debug log
+        console.log('Updated test object:', updatedTest);
         
         // Save test results to file
         const filename = path.join(metricsDir, `${testId}.json`);
@@ -78,26 +78,12 @@ app.post('/metrics/complete', (req, res) => {
     }
 });
 
-// Get test results
-app.get('/metrics/results', (req, res) => {
-    const results = [];
-    
-    fs.readdirSync(metricsDir).forEach(file => {
-        if (file.endsWith('.json')) {
-            const data = fs.readFileSync(path.join(metricsDir, file));
-            results.push(JSON.parse(data));
-        }
-    });
-    
-    res.json(results);
-});
-
-// Health check endpoint
-app.get('/metrics/status', (req, res) => {
+// Add an alias for the status endpoint to maintain compatibility
+app.get('/test/status', (req, res) => {
     res.json({ status: 'ok' });
 });
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Metrics server running on port ${port}`);
-}); 
+    console.log(`Metrics server listening at http://localhost:${port}`);
+});
