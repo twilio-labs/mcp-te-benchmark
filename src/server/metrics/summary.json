@@ -5,7 +5,7 @@
     "startTime": 1742826372560,
     "endTime": 1742826423461,
     "duration": 50901,
-    "apiCalls": 0,
+    "apiCalls": 10,
     "interactions": 0,
     "success": true,
     "notes": ""

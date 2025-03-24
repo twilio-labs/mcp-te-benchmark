@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>MCP Performance Dashboard</title>
     <style>
         body {
@@ -135,7 +136,7 @@
                         <td>${(s.duration/1000).toFixed(1)}</td>
                         <td>${s.apiCalls}</td>
                         <td>${s.interactions}</td>
-                        <td>${s.success ? '✅' : '❌'}</td>
+                        <td>${s.success ? '&#x2714;' : '&#x2718;'}</td>
                         <td>${s.notes}</td>
                     </tr>
                 `).join('');

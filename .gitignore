@@ -3,6 +3,7 @@
 
 # Dependencies
 node_modules/
+package-lock.json
 
 # IDE files
 .vscode/
@@ -20,3 +21,5 @@ results/analysis/
 # OS files
 .DS_Store
 Thumbs.db
+
+.logs/
