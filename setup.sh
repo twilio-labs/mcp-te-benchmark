@@ -6,7 +6,10 @@ mkdir -p metrics
 
 # Install dependencies
 npm init -y
-npm install express
+npm install express axios commander inquirer dotenv
+
+# Make test-cli.js executable
+chmod +x test-cli.js
 
 # Create .env from example if it doesn't exist
 if [ ! -f .env ]; then

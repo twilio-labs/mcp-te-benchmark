@@ -53,6 +53,11 @@ The AI assistant should execute only these two commands per task:
    node metrics-server.js
    ```
 
+2. (Optional) Start the dashboard server for real-time visualization:
+   ```bash
+   node server.js
+   ```
+
 ### Running Tests
 For each test:
 
@@ -80,10 +85,32 @@ Confirm in the results.md file:
 
 ## Results Analysis
 
-After all tests are complete:
-- Run `node generate-summary.js` to see performance comparison
-- Compare the duration times between control and MCP implementations
-- The performance improvement will be shown as percentage reduction in task completion time
+After tests are complete, you have multiple ways to view and analyze results:
+
+### Interactive Dashboard
+The dashboard provides visual comparison of metrics:
+
+1. Access the dashboard:
+   ```
+   http://localhost:3001
+   ```
+
+2. The dashboard shows:
+   - Task completion time comparison
+   - API calls per task
+   - Interactions per task
+   - Success rate comparison
+   - Detailed results table
+
+3. Use the "Refresh Data" button to update with latest results
+
+### Command Line Summary
+For a text-based summary:
+```bash
+node generate-summary.js
+```
+
+The performance improvement will be shown as percentage reduction in task completion time.
 
 ## Troubleshooting
 
@@ -92,4 +119,9 @@ If timing data is not being recorded properly:
 - Check that the AI assistant is executing both the start and complete commands
 - Verify the sessionId is being passed correctly from start to complete
 
-This simplified approach focuses solely on the key performance metric of task completion time while minimizing instrumentation complexity.
+For dashboard issues:
+- Make sure both servers are running (metrics-server.js on port 3000 and server.js on port 3001)
+- Check browser console for any JavaScript errors
+- Verify metrics files exist in the metrics directory
+
+This approach focuses on task completion time while providing comprehensive visualization for analysis.

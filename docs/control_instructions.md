@@ -6,6 +6,22 @@ This document contains three Twilio implementation tasks to complete using web s
 
 - The Cursor coding agent has access to web search and terminal commands
 
+## Metrics Recording
+
+For accurate performance measurement, you must execute these commands:
+
+1. When starting each task:
+```bash
+curl -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d '{"mode": "control", "taskNumber": TASK_NUMBER}'
+```
+
+2. When completing each task:
+```bash
+curl -X POST http://localhost:3000/test/complete -H "Content-Type: application/json" -d '{"testId": "TEST_ID", "success": true|false}'
+```
+
+Replace TASK_NUMBER with the current task number (1, 2, or 3) and TEST_ID with the ID received from the start command.
+
 ## Testing Protocol
 
 For each task:
@@ -44,13 +60,12 @@ Success Criteria:
 
 ### Task 3: Create a Queue and Task Filter
 
-Goal: Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity using MCP functions.
+Goal: Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.
 
 Requirements:
 - Create a new queue with an appropriate name
 - Configure a task filter that prevents routing to workers with "Bathroom" activity in the new queue
 - Use the Activity Name or SID from Task 2
-- Use appropriate MCP functions for workflow and filter creation
 
 Success Criteria:
 - Workflow is created successfully

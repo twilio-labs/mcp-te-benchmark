@@ -47,6 +47,11 @@
 </head>
 <body>
     <h1>Twilio MCP Performance Dashboard</h1>
+    <div style="text-align: right; margin-bottom: 10px;">
+        <button id="refreshButton" style="padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Refresh Data
+        </button>
+    </div>
     <div class="dashboard">
         <div class="chart-container">
             <h2>Task Completion Time (seconds)</h2>
@@ -88,41 +93,110 @@
         // Load and process the metrics data
         async function loadDashboard() {
             try {
-                const response = await fetch('metrics/summary.json');
-                const data = await response.json();
+                // Load summary data first
+                const summaryResponse = await fetch('metrics/summary.json');
+                let data = await summaryResponse.json();
+                
+                // Try to load individual task files
+                const taskFiles = await fetchTaskFiles();
+                if (taskFiles.length > 0) {
+                    // If we have individual task files, use them as they contain more detailed data
+                    data = taskFiles;
+                } else {
+                    // Otherwise, enhance summary data with default values
+                    data = data.map((session, index) => {
+                        return {
+                            ...session,
+                            taskId: session.taskId || `Task ${index + 1}`,
+                            apiCalls: session.apiCalls || 0,
+                            interactions: session.interactions || 0
+                        };
+                    });
+                }
                 
                 // Populate the results table
-                const tableBody = document.querySelector('#resultsTable tbody');
-                data.forEach(session => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${session.taskId}</td>
-                        <td>${session.mode}</td>
-                        <td>${session.duration.toFixed(1)}</td>
-                        <td>${session.apiCalls}</td>
-                        <td>${session.interactions}</td>
-                        <td>${session.success ? '✅' : '❌'}</td>
-                        <td>${session.notes}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
+                populateTable(data);
                 
-                // Create charts
+                // Create charts based on available data
                 createCompletionTimeChart(data);
                 createApiCallsChart(data);
                 createInteractionsChart(data);
                 createSuccessRateChart(data);
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+                document.body.innerHTML += `<div style="color: red; padding: 20px;">Error loading dashboard data: ${error.message}</div>`;
             }
+        }
+        
+        // Try to fetch individual task files
+        async function fetchTaskFiles() {
+            const taskFiles = [];
+            try {
+                // First, try to get a list of task files (this would require a server-side component)
+                // Since we don't have that, let's try to load the individual task file we know about
+                const response = await fetch('metrics/control_task1_1742824350673.json');
+                if (response.ok) {
+                    const taskData = await response.json();
+                    // Format the task data
+                    taskFiles.push({
+                        ...taskData,
+                        taskId: `Task ${taskData.taskNumber || 1}`
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load individual task files:', e);
+            }
+            return taskFiles;
+        }
+        
+        // Populate the results table
+        function populateTable(data) {
+            const tableBody = document.querySelector('#resultsTable tbody');
+            tableBody.innerHTML = ''; // Clear any existing content
+            
+            if (data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="7">No data available</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            data.forEach(session => {
+                const row = document.createElement('tr');
+                
+                // Convert milliseconds to seconds
+                const durationSeconds = session.duration / 1000;
+                
+                // Set default values for missing properties
+                const taskId = session.taskId || 'Unknown Task';
+                const apiCalls = session.apiCalls !== undefined ? session.apiCalls : 'N/A';
+                const interactions = session.interactions !== undefined ? session.interactions : 'N/A';
+                
+                row.innerHTML = `
+                    <td>${taskId}</td>
+                    <td>${session.mode}</td>
+                    <td>${durationSeconds.toFixed(1)}</td>
+                    <td>${apiCalls}</td>
+                    <td>${interactions}</td>
+                    <td>${session.success ? '✅' : '❌'}</td>
+                    <td>${session.notes || ''}</td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
         
         function createCompletionTimeChart(data) {
             const ctx = document.getElementById('completionTimeChart').getContext('2d');
             
-            // Group by task and mode
-            const controlData = data.filter(d => d.mode === 'control').map(d => ({ x: `Task ${d.taskId}`, y: d.duration }));
-            const mcpData = data.filter(d => d.mode === 'mcp').map(d => ({ x: `Task ${d.taskId}`, y: d.duration }));
+            // Group by task and mode, convert milliseconds to seconds
+            const controlData = data.filter(d => d.mode === 'control').map((d, i) => ({ 
+                x: d.taskId || `Task ${i + 1}`, 
+                y: d.duration / 1000 
+            }));
+            const mcpData = data.filter(d => d.mode === 'mcp').map((d, i) => ({ 
+                x: d.taskId || `Task ${i + 1}`, 
+                y: d.duration / 1000 
+            }));
             
             new Chart(ctx, {
                 type: 'bar',
@@ -161,9 +235,22 @@
         function createApiCallsChart(data) {
             const ctx = document.getElementById('apiCallsChart').getContext('2d');
             
+            // Check if we have apiCalls data
+            if (!data.some(d => d.apiCalls !== undefined)) {
+                ctx.canvas.style.display = 'none';
+                ctx.canvas.parentNode.innerHTML += '<p>No API calls data available</p>';
+                return;
+            }
+            
             // Group by task and mode
-            const controlData = data.filter(d => d.mode === 'control').map(d => ({ x: `Task ${d.taskId}`, y: d.apiCalls }));
-            const mcpData = data.filter(d => d.mode === 'mcp').map(d => ({ x: `Task ${d.taskId}`, y: d.apiCalls }));
+            const controlData = data.filter(d => d.mode === 'control').map((d, i) => ({ 
+                x: d.taskId || `Task ${i + 1}`, 
+                y: d.apiCalls || 0 
+            }));
+            const mcpData = data.filter(d => d.mode === 'mcp').map((d, i) => ({ 
+                x: d.taskId || `Task ${i + 1}`, 
+                y: d.apiCalls || 0 
+            }));
             
             new Chart(ctx, {
                 type: 'bar',
@@ -202,9 +289,22 @@
         function createInteractionsChart(data) {
             const ctx = document.getElementById('interactionsChart').getContext('2d');
             
+            // Check if we have interactions data
+            if (!data.some(d => d.interactions !== undefined)) {
+                ctx.canvas.style.display = 'none';
+                ctx.canvas.parentNode.innerHTML += '<p>No interactions data available</p>';
+                return;
+            }
+            
             // Group by task and mode
-            const controlData = data.filter(d => d.mode === 'control').map(d => ({ x: `Task ${d.taskId}`, y: d.interactions }));
-            const mcpData = data.filter(d => d.mode === 'mcp').map(d => ({ x: `Task ${d.taskId}`, y: d.interactions }));
+            const controlData = data.filter(d => d.mode === 'control').map((d, i) => ({ 
+                x: d.taskId || `Task ${i + 1}`, 
+                y: d.interactions || 0 
+            }));
+            const mcpData = data.filter(d => d.mode === 'mcp').map((d, i) => ({ 
+                x: d.taskId || `Task ${i + 1}`, 
+                y: d.interactions || 0 
+            }));
             
             new Chart(ctx, {
                 type: 'bar',
@@ -283,13 +383,26 @@
                                 text: 'Success Rate (%)'
                             }
                         }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                        }
                     }
                 }
             });
         }
         
         // Load the dashboard on page load
-        document.addEventListener('DOMContentLoaded', loadDashboard);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            // Add event listener to refresh button
+            document.getElementById('refreshButton').addEventListener('click', loadDashboard);
+        });
     </script>
 </body>
 </html>

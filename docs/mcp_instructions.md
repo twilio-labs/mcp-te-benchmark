@@ -6,6 +6,22 @@ This document contains three Twilio implementation tasks to complete using the T
 
 - The Cursor coding agent has access to Twilio MCP functions
 
+## Metrics Recording
+
+For accurate performance measurement, you must execute these commands:
+
+1. When starting each task:
+```bash
+curl -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d '{"mode": "mcp", "taskNumber": TASK_NUMBER}'
+```
+
+2. When completing each task:
+```bash
+curl -X POST http://localhost:3000/test/complete -H "Content-Type: application/json" -d '{"testId": "TEST_ID", "success": true|false}'
+```
+
+Replace TASK_NUMBER with the current task number (1, 2, or 3) and TEST_ID with the ID received from the start command.
+
 ## Testing Protocol
 
 For each task:

@@ -1,0 +1,11 @@
+{
+    "name": "mcp-performance-dashboard",
+    "version": "1.0.0",
+    "description": "Twilio MCP Performance Dashboard",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "author": "",
+    "license": "MIT"
+}
