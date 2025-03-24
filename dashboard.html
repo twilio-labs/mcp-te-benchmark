@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twilio MCP Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .chart-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Twilio MCP Performance Dashboard</h1>
+    <div class="dashboard">
+        <div class="chart-container">
+            <h2>Task Completion Time (seconds)</h2>
+            <canvas id="completionTimeChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>API Calls Per Task</h2>
+            <canvas id="apiCallsChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Interactions Per Task</h2>
+            <canvas id="interactionsChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Success Rate</h2>
+            <canvas id="successRateChart"></canvas>
+        </div>
+    </div>
+    
+    <h2>Detailed Results</h2>
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Mode</th>
+                <th>Duration (s)</th>
+                <th>API Calls</th>
+                <th>Interactions</th>
+                <th>Success</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Results will be populated via JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // Load and process the metrics data
+        async function loadDashboard() {
+            try {
+                const response = await fetch('metrics/summary.json');
+                const data = await response.json();
+                
+                // Populate the results table
+                const tableBody = document.querySelector('#resultsTable tbody');
+                data.forEach(session => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${session.taskId}</td>
+                        <td>${session.mode}</td>
+                        <td>${session.duration.toFixed(1)}</td>
+                        <td>${session.apiCalls}</td>
+                        <td>${session.interactions}</td>
+                        <td>${session.success ? '✅' : '❌'}</td>
+                        <td>${session.notes}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                // Create charts
+                createCompletionTimeChart(data);
+                createApiCallsChart(data);
+                createInteractionsChart(data);
+                createSuccessRateChart(data);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        function createCompletionTimeChart(data) {
+            const ctx = document.getElementById('completionTimeChart').getContext('2d');
+            
+            // Group by task and mode
+            const controlData = data.filter(d => d.mode === 'control').map(d => ({ x: `Task ${d.taskId}`, y: d.duration }));
+            const mcpData = data.filter(d => d.mode === 'mcp').map(d => ({ x: `Task ${d.taskId}`, y: d.duration }));
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: controlData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'MCP',
+                            data: mcpData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time (seconds)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createApiCallsChart(data) {
+            const ctx = document.getElementById('apiCallsChart').getContext('2d');
+            
+            // Group by task and mode
+            const controlData = data.filter(d => d.mode === 'control').map(d => ({ x: `Task ${d.taskId}`, y: d.apiCalls }));
+            const mcpData = data.filter(d => d.mode === 'mcp').map(d => ({ x: `Task ${d.taskId}`, y: d.apiCalls }));
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: controlData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'MCP',
+                            data: mcpData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of API Calls'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createInteractionsChart(data) {
+            const ctx = document.getElementById('interactionsChart').getContext('2d');
+            
+            // Group by task and mode
+            const controlData = data.filter(d => d.mode === 'control').map(d => ({ x: `Task ${d.taskId}`, y: d.interactions }));
+            const mcpData = data.filter(d => d.mode === 'mcp').map(d => ({ x: `Task ${d.taskId}`, y: d.interactions }));
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: controlData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'MCP',
+                            data: mcpData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Interactions'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createSuccessRateChart(data) {
+            const ctx = document.getElementById('successRateChart').getContext('2d');
+            
+            // Calculate success rates
+            const controlSuccess = data.filter(d => d.mode === 'control' && d.success).length;
+            const controlTotal = data.filter(d => d.mode === 'control').length;
+            const controlRate = controlTotal > 0 ? (controlSuccess / controlTotal) * 100 : 0;
+            
+            const mcpSuccess = data.filter(d => d.mode === 'mcp' && d.success).length;
+            const mcpTotal = data.filter(d => d.mode === 'mcp').length;
+            const mcpRate = mcpTotal > 0 ? (mcpSuccess / mcpTotal) * 100 : 0;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Success Rate'],
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: [controlRate],
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'MCP',
+                            data: [mcpRate],
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Success Rate (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load the dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>
