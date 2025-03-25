@@ -1,0 +1,4 @@
+Queue Name: Non-Bathroom Queue
+Queue SID: WQ64ba547d2fdfa53c80972cce7583d41c
+Workspace SID: WS6ca378c8a7bb8623d4322d188910a9c5
+Target Workers Filter: activity != 'Bathroom' 

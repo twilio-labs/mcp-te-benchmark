@@ -1,0 +1,3 @@
+Activity Name: Bathroom
+Activity SID: WA9b161eac39d8edcbc5e4c1f91c3f11b9
+Workspace SID: WS6ca378c8a7bb8623d4322d188910a9c5 
