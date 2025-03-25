@@ -626,8 +626,10 @@
                 </div>
             </div>
             <div class="task-content" id="task-3" style="display: none;">
-                <div class="metric-title">Task 3: Create a Queue with Task Filter</div>
-                <p>Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.</p>
+                <div class="metric-card">
+                    <div class="metric-title">Task 3: Create a Queue with Task Filter</div>
+                    <p>Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.</p>
+                </div>
             </div>
         </div>
         
@@ -1267,6 +1269,45 @@
 
         // Load data when page loads
         loadData();
+
+        // Add event listeners for task tabs
+        document.getElementById('taskTabs').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab')) {
+                // Remove active class from all tabs
+                document.querySelectorAll('#taskTabs .tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                e.target.classList.add('active');
+                
+                // Hide all task content
+                document.querySelectorAll('.task-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // Show selected task content
+                const taskId = e.target.getAttribute('data-task');
+                document.getElementById(`task-${taskId}`).style.display = 'block';
+            }
+        });
+
+        // Add event listeners for chart tabs
+        document.querySelector('.tabs:not(#taskTabs)').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab')) {
+                // Remove active class from all tabs
+                e.target.parentElement.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                e.target.classList.add('active');
+                
+                // Update chart with selected metric
+                const metric = e.target.getAttribute('data-chart');
+                updateComparisonChart(metric);
+            }
+        });
     </script>
 </body>
 </html>
