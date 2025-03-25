@@ -20,9 +20,16 @@ const server = http.createServer((req, res) => {
   console.log(`${req.method} ${req.url}`);
   
   // Handle the root path
-  let filePath = req.url === '/' 
-    ? path.join(__dirname, 'dashboard.html') 
-    : path.join(__dirname, req.url);
+  let filePath;
+  if (req.url === '/') {
+    filePath = path.join(__dirname, 'dashboard.html');
+  } else if (req.url.startsWith('/metrics/')) {
+    // Serve metrics files from the metrics directory
+    filePath = path.join(__dirname, req.url);
+  } else {
+    // Serve other static files from the project root
+    filePath = path.join(__dirname, '../..', req.url);
+  }
   
   // Get the file extension
   const extname = path.extname(filePath);

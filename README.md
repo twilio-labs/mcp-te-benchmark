@@ -1,3 +1,6 @@
+<p align="center"><img src="docs/twilioAlphaLogo.png" height="150" alt="Twilio Alpha"/></p>
+<h1 align="center">Twilio Alpha</h1>
+
 # Twilio MCP Performance Testing Framework
 
 A framework for evaluating performance gains when using Twilio's Model Context Protocol (MCP) with AI coding agents compared to traditional API approaches.

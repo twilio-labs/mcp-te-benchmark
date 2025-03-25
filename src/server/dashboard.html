@@ -7,31 +7,31 @@
     <style>
         :root {
             /* Twilio primary palette */
-            --primary: #F22F46;          /* Twilio red (#F22F46) */
+            --primary: #F22F46;          /* Twilio red */
             --primary-dark: #D42B3F;     /* Darker shade of Twilio red */
             --primary-light: #F45C6D;    /* Lighter shade of Twilio red */
-            --secondary: #001B2D;        /* Ink blue (#001B2D) */
-            --secondary-dark: #000D16;   /* Darker shade of Ink blue */
-            --secondary-light: #0F2D42;  /* Lighter shade of Ink blue */
+            --secondary: #121C2D;        /* Ink */
+            --secondary-dark: #0A1018;   /* Darker shade of Ink */
+            --secondary-light: #1E2D47;  /* Lighter shade of Ink */
             
-            /* Twilio accent colors */
-            --accent-red-400: #F33D3D;   /* Red-400 */
-            --accent-red-500: #E31B2A;   /* Red-500 */
-            --accent-blue-500: #166EE8;  /* Blue-500 */
-            --accent-blue-900: #001B2D;  /* Blue-900 (Ink) */
+            /* Twilio secondary colors */
+            --sun: #FF7A00;             /* Sun */
+            --bright-saffron: #FFCB44;  /* Bright Saffron */
+            --sky: #51A9E3;             /* Sky */
+            --mint: #6ADDB2;            /* Mint */
             
             /* Twilio grays */
-            --gray-50: #F2F4F7;          /* Grey-50 */
-            --gray-100: #D8DDE6;         /* Grey-100 */
-            --gray-500: #7D8777;         /* Grey-500 */
-            --gray-850: #1F2F36;         /* Grey-850 */
+            --gray-50: #F2F4F7;
+            --gray-100: #D8DDE6;
+            --gray-500: #7D8777;
+            --gray-850: #1F2F36;
             
             /* Semantic colors */
-            --success: #48bb78;
-            --warning: #ecc94b;
+            --success: #6ADDB2;          /* Using Mint as success */
+            --warning: #FFCB44;          /* Using Bright Saffron as warning */
             --danger: #F22F46;           /* Using Twilio red as danger */
             --light: #FFFFFF;            /* White */
-            --dark: #001B2D;             /* Using Ink blue as dark */
+            --dark: #121C2D;             /* Using Ink as dark */
             
             /* Other UI colors */
             --gray: #D8DDE6;             /* Grey-100 */
@@ -52,8 +52,8 @@
 
         body {
             font-family: var(--font-sans);
-            background-color: var(--gray-light);
-            color: var(--dark);
+            background-color: var(--light);
+            color: var(--secondary);
             line-height: 1.5;
             transition: background-color 0.3s, color 0.3s;
         }
@@ -67,10 +67,35 @@
         header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--gray);
+            padding: 1.5rem;
+            background-color: var(--secondary);
+            color: var(--light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            flex: 1;
+            margin-left: 2rem;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+
+        header h1 {
+            color: var(--light);
+            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+        }
+
+        header p {
+            color: var(--gray-100);
+            opacity: 0.9;
+            font-size: 1rem;
         }
 
         h1, h2, h3 {
@@ -92,12 +117,13 @@
         }
 
         .card {
-            background-color: white;
+            background-color: var(--light);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+            border-top: 4px solid var(--primary);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .card:hover {
@@ -113,11 +139,12 @@
         }
 
         .metric-card {
-            background-color: white;
+            background-color: var(--light);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 1.25rem;
-            transition: transform 0.2s, background-color 0.3s;
+            padding: 1.5rem;
+            border-left: 4px solid var(--sky);
+            transition: transform 0.2s;
         }
 
         .metric-card:hover {
@@ -218,7 +245,7 @@
 
         .badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 999px;
             font-size: 0.75rem;
             font-weight: 600;
@@ -228,28 +255,32 @@
 
         .badge-control {
             background-color: var(--secondary);
-            color: white;
+            color: var(--light);
         }
 
         .badge-mcp {
             background-color: var(--primary);
-            color: white;
+            color: var(--light);
         }
 
         .success {
-            color: var(--success);
+            color: var(--mint);
+            font-weight: 600;
         }
 
         .failure {
             color: var(--danger);
+            font-weight: 600;
         }
 
         .change-positive {
-            color: var(--success);
+            color: var(--mint);
+            font-weight: 600;
         }
 
         .change-negative {
             color: var(--danger);
+            font-weight: 600;
         }
 
         .actions {
@@ -266,10 +297,10 @@
             justify-content: center;
             gap: 0.5rem;
             background-color: var(--primary);
-            color: white;
+            color: var(--light);
             border: none;
             border-radius: var(--radius);
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
@@ -333,26 +364,6 @@
             font-size: 0.9rem;
         }
 
-        /* Toggle for dark mode */
-        .theme-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--dark);
-            font-size: 1.5rem;
-            border-radius: 50%;
-            transition: background-color 0.2s, color 0.3s;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--gray-light);
-        }
-
         /* Filters */
         .filters {
             display: flex;
@@ -405,116 +416,65 @@
         /* Task tabs */
         .tabs {
             display: flex;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid var(--gray);
-            overflow-x: auto;
-            scrollbar-width: thin;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--gray-100);
+            gap: 0.5rem;
         }
 
         .tab {
-            padding: 0.75rem 1.25rem;
+            padding: 0.75rem 1.5rem;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             font-weight: 600;
-            white-space: nowrap;
-            transition: border-color 0.2s, color 0.2s;
+            color: var(--secondary);
+            transition: all 0.2s;
         }
 
         .tab:hover {
             color: var(--primary);
+            background-color: var(--gray-50);
+            border-radius: var(--radius) var(--radius) 0 0;
         }
 
         .tab.active {
-            border-bottom-color: var(--primary);
             color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            background-color: var(--gray-50);
         }
 
-        /* Dark mode */
-        .dark-mode {
-            background-color: var(--secondary);
-            color: var(--light);
-        }
-
-        .dark-mode .card,
-        .dark-mode .metric-card,
-        .dark-mode .model-section,
-        .dark-mode .table-container,
-        .dark-mode table,
-        .dark-mode select {
-            background-color: var(--secondary-light);
-            color: var(--light);
-        }
-
-        .dark-mode h1,
-        .dark-mode h2,
-        .dark-mode h3,
-        .dark-mode .metric-title,
-        .dark-mode .filter-label {
-            color: var(--primary-light);
-        }
-
-        .dark-mode tr:nth-child(even) {
-            background-color: var(--secondary);
-        }
-
-        .dark-mode tr:hover {
-            background-color: var(--gray-850);
-        }
-
-        .dark-mode td {
-            border-bottom: 1px solid var(--gray-850);
-        }
-
-        .dark-mode .theme-toggle {
-            color: var(--light);
-        }
-
-        .dark-mode .theme-toggle:hover {
-            background-color: var(--secondary-light);
-        }
-
-        .dark-mode .btn-outline {
-            color: var(--light);
-            border-color: var(--light);
-        }
-
-        .dark-mode .btn-outline:hover {
-            background-color: var(--gray-850);
-        }
-
-        .dark-mode select {
-            border-color: var(--secondary-light);
-        }
-
-        .dark-mode .tabs {
-            border-bottom-color: var(--gray-850);
+        /* Warning Message */
+        .card[style*="warning"] {
+            border-left: 4px solid var(--warning);
+            background-color: rgba(255, 203, 68, 0.1);
         }
 
         /* Statistics card */
         .stat-card {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .stat-item {
             text-align: center;
-            padding: 1rem;
-            background-color: var(--gray-light);
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--light), var(--gray-50));
             border-radius: var(--radius);
-            transition: background-color 0.3s;
+            border: 1px solid var(--gray-100);
+            transition: transform 0.2s;
         }
 
-        .dark-mode .stat-item {
-            background-color: var(--secondary);
+        .stat-item:hover {
+            transform: translateY(-2px);
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 700;
             color: var(--primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
         }
 
         .stat-label {
@@ -553,13 +513,11 @@
 <body>
     <div class="container">
         <header>
-            <div>
+            <img src="/docs/twilioAlphaLogo.png" alt="Twilio Alpha" class="logo">
+            <div class="header-content">
                 <h1>Model Context Protocol (MCP) Performance Dashboard</h1>
                 <p>Compare performance metrics between Traditional (Control) and MCP implementations</p>
             </div>
-            <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
-                🌙
-            </button>
         </header>
         
         <div class="actions">
@@ -620,7 +578,7 @@
         
         <!-- Test Approaches -->
         <div class="card">
-            <h2>Test Approaches</h2>
+            <h2>Test Approach</h2>
             <div class="metrics" style="display: flex; flex-direction: column; gap: 1rem;">
                 <!-- Full-width box -->
                 <div class="metric-card" style="width: 100%;">
@@ -754,90 +712,6 @@
     </div>
 
     <script>
-        // Theme toggle
-        const themeToggle = document.getElementById('themeToggle');
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            updateCharts(); // Update chart colors when theme changes
-        });
-        
-        // Task tabs
-        document.querySelectorAll('#taskTabs .tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Deactivate all tabs
-                document.querySelectorAll('#taskTabs .tab').forEach(t => {
-                    t.classList.remove('active');
-                });
-                
-                // Activate clicked tab
-                tab.classList.add('active');
-                
-                // Hide all task content
-                document.querySelectorAll('.task-content').forEach(content => {
-                    content.style.display = 'none';
-                });
-                
-                // Show selected task content
-                const taskId = tab.getAttribute('data-task');
-                document.getElementById(`task-${taskId}`).style.display = 'block';
-            });
-        });
-        
-        // Chart tabs
-        document.querySelectorAll('.tabs .tab[data-chart]').forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Deactivate all tabs
-                document.querySelectorAll('.tabs .tab[data-chart]').forEach(t => {
-                    t.classList.remove('active');
-                });
-                
-                // Activate clicked tab
-                tab.classList.add('active');
-                
-                // Update comparison chart based on selected metric
-                const metric = tab.getAttribute('data-chart');
-                updateComparisonChart(metric);
-            });
-        });
-        
-        // Refresh button
-        const refreshBtn = document.getElementById('refreshBtn');
-        const loadingIndicator = document.getElementById('loading');
-        
-        refreshBtn.addEventListener('click', async () => {
-            refreshBtn.disabled = true;
-            loadingIndicator.style.display = 'flex';
-            await loadData();
-            refreshBtn.disabled = false;
-            loadingIndicator.style.display = 'none';
-        });
-        
-        // Download CSV button
-        const downloadBtn = document.getElementById('downloadBtn');
-        downloadBtn.addEventListener('click', () => {
-            downloadCsv();
-        });
-        
-        // Filter change handlers
-        const filters = {
-            mcpServer: document.getElementById('mcpServerFilter'),
-            mcpClient: document.getElementById('mcpClientFilter'),
-            model: document.getElementById('modelFilter'),
-            task: document.getElementById('taskFilter'),
-            mode: document.getElementById('modeFilter')
-        };
-        
-        Object.values(filters).forEach(filter => {
-            filter.addEventListener('change', () => {
-                filterData();
-                displayMetrics();
-                displayModelMetrics();
-                displaySessions();
-                updateCharts();
-            });
-        });
-        
         // Global data store
         let allSessions = [];
         let filteredSessions = [];
@@ -928,11 +802,11 @@
         }
         
         function filterData() {
-            const mcpServerFilter = filters.mcpServer.value;
-            const mcpClientFilter = filters.mcpClient.value;
-            const modelFilter = filters.model.value;
-            const taskFilter = filters.task.value;
-            const modeFilter = filters.mode.value;
+            const mcpServerFilter = document.getElementById('mcpServerFilter').value;
+            const mcpClientFilter = document.getElementById('mcpClientFilter').value;
+            const modelFilter = document.getElementById('modelFilter').value;
+            const taskFilter = document.getElementById('taskFilter').value;
+            const modeFilter = document.getElementById('modeFilter').value;
             
             filteredSessions = allSessions.filter(session => {
                 const matchesMcpServer = mcpServerFilter === 'all' || (session.mcpServer || 'Twilio') === mcpServerFilter;
@@ -1162,9 +1036,8 @@
         }
 
         function initCharts() {
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            const textColor = isDarkMode ? '#FFFFFF' : '#001B2D';
-            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const textColor = '#001B2D';
+            const gridColor = 'rgba(0, 0, 0, 0.1)';
             
             // Create comparison chart (bar chart)
             const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
@@ -1178,16 +1051,18 @@
                         {
                             label: 'Control',
                             data: [0, 0, 0],
-                            backgroundColor: 'rgba(0, 27, 45, 0.7)',
-                            borderColor: 'rgba(0, 27, 45, 1)',
-                            borderWidth: 1
+                            backgroundColor: `rgba(18, 28, 45, 0.9)`,
+                            borderColor: `rgba(18, 28, 45, 1)`,
+                            borderWidth: 2,
+                            borderRadius: 4
                         },
                         {
                             label: 'MCP',
                             data: [0, 0, 0],
-                            backgroundColor: 'rgba(242, 47, 70, 0.7)',
-                            borderColor: 'rgba(242, 47, 70, 1)',
-                            borderWidth: 1
+                            backgroundColor: `rgba(242, 47, 70, 0.9)`,
+                            borderColor: `rgba(242, 47, 70, 1)`,
+                            borderWidth: 2,
+                            borderRadius: 4
                         }
                     ]
                 },
@@ -1197,18 +1072,28 @@
                     scales: {
                         x: {
                             grid: {
-                                color: gridColor
+                                color: gridColor,
+                                borderColor: gridColor,
+                                tickColor: gridColor
                             },
                             ticks: {
-                                color: textColor
+                                color: textColor,
+                                font: {
+                                    weight: '600'
+                                }
                             }
                         },
                         y: {
                             grid: {
-                                color: gridColor
+                                color: gridColor,
+                                borderColor: gridColor,
+                                tickColor: gridColor
                             },
                             ticks: {
-                                color: textColor
+                                color: textColor,
+                                font: {
+                                    weight: '600'
+                                }
                             },
                             beginAtZero: true
                         }
@@ -1216,13 +1101,26 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: textColor
+                                color: textColor,
+                                font: {
+                                    weight: '600'
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
                             }
                         },
                         title: {
                             display: true,
                             text: 'Duration Comparison (seconds)',
-                            color: textColor
+                            color: textColor,
+                            font: {
+                                size: 16,
+                                weight: '600'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
                         }
                     }
                 }
@@ -1245,9 +1143,6 @@
             const activeTab = document.querySelector('.tabs .tab[data-chart].active');
             const activeMetric = activeTab ? activeTab.getAttribute('data-chart') : 'duration';
             updateComparisonChart(activeMetric);
-            
-            // Update chart colors based on theme
-            updateChartColors();
         }
         
         function updateComparisonChart(metric) {
@@ -1322,24 +1217,6 @@
             charts.comparison.data.datasets[0].data = data.control;
             charts.comparison.data.datasets[1].data = data.mcp;
             charts.comparison.options.plugins.title.text = titleText;
-            charts.comparison.update();
-        }
-        
-        function updateChartColors() {
-            if (!charts.comparison) return;
-            
-            const isDarkMode = document.body.classList.contains('dark-mode');
-            const textColor = isDarkMode ? '#FFFFFF' : '#001B2D';
-            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            
-            // Update comparison chart colors
-            charts.comparison.options.scales.x.grid.color = gridColor;
-            charts.comparison.options.scales.x.ticks.color = textColor;
-            charts.comparison.options.scales.y.grid.color = gridColor;
-            charts.comparison.options.scales.y.ticks.color = textColor;
-            charts.comparison.options.plugins.legend.labels.color = textColor;
-            charts.comparison.options.plugins.title.color = textColor;
-            
             charts.comparison.update();
         }
 
