@@ -621,18 +621,28 @@
         <!-- Test Approaches -->
         <div class="card">
             <h2>Test Approaches</h2>
-            <div class="metrics">
-                <div class="metric-card">
-                    <div class="metric-title">
-                        <span class="badge badge-control">Control</span>
-                    </div>
-                    <p>Traditional method using web search and terminal capabilities to complete API tasks. The Control approach requires manually looking up documentation and writing code from scratch.</p>
+            <div class="metrics" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Full-width box -->
+                <div class="metric-card" style="width: 100%;">
+                    <div class="metric-title">Testing Environment & Methodology</div>
+                    <p>Tests are conducted using Cursor IDE in "Yolo" mode, allowing AI agents to execute actions autonomously. Cursor was chosen as the MCP client for its built-in web search and terminal execution capabilities, making it ideal for both control and MCP testing scenarios.</p>
+                    <p style="margin-top: 10px">A custom metrics tracking system was implemented since Cursor doesn't expose execution logs. While task duration is automatically tracked, other metrics (API calls, user interactions, and success status) are manually calculated due to limitations in Cursor's logging capabilities.</p>
+                    <p style="margin-top: 10px">Each task is performed twice - once using traditional methods and once using MCP. For detailed information about the testing protocol and setup, visit our <a href="https://github.com/nmogil-tw/twilio-mcp-performance" target="_blank" style="color: var(--primary);">GitHub repository</a>.</p>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-title">
-                        <span class="badge badge-mcp">MCP</span>
+                <!-- Two side-by-side boxes container -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="metric-card">
+                        <div class="metric-title">
+                            <span class="badge badge-control">Control</span>
+                        </div>
+                        <p>Traditional method using web search and terminal capabilities to complete API tasks. The Control approach requires manually looking up documentation and writing code from scratch.</p>
                     </div>
-                    <p>Model Context Protocol approach that provides AI coding agents with direct access to API functions. MCP enables AI to understand API structure without external documentation.</p>
+                    <div class="metric-card">
+                        <div class="metric-title">
+                            <span class="badge badge-mcp">MCP</span>
+                        </div>
+                        <p>Model Context Protocol approach that provides AI coding agents with direct access to API functions. MCP enables AI to understand API structure without external documentation.</p>
+                    </div>
                 </div>
             </div>
         </div>
