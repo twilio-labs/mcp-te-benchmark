@@ -1,7 +1,7 @@
 {
   "mode": "control",
   "taskNumber": 1,
-  "model": "claude-3.7-sonnet",
+  "model": "auto",
   "startTime": 1742844651945,
   "completed": true,
   "apiCalls": 4,

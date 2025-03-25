@@ -1,7 +1,7 @@
 {
   "mode": "mcp",
   "taskNumber": 3,
-  "model": "claude-3.7-sonnet",
+  "model": "auto",
   "startTime": 1742844474773,
   "completed": true,
   "apiCalls": 2,
