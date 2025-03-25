@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/twilioAlphaLogo.png" height="150" alt="Twilio Alpha"/></p>
+<p align="center"><img src="docs/twilioAlphaLogo.png" height="100" alt="Twilio Alpha"/></p>
 <h1 align="center">Twilio MCP Performance Testing Framework</h1>
 
 # MCP Performance Testing Framework
