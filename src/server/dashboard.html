@@ -150,6 +150,13 @@
             font-weight: 500;
         }
 
+        .metric-unit {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
         .model-section {
             margin-bottom: 2rem;
             background-color: white;
@@ -614,7 +621,7 @@
         <!-- Test Approaches -->
         <div class="card">
             <h2>Test Approaches</h2>
-            <div class="metrics" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="metrics">
                 <div class="metric-card">
                     <div class="metric-title">
                         <span class="badge badge-control">Control</span>
@@ -725,8 +732,8 @@
                             <th>Mode</th>
                             <th>Model</th>
                             <th>Duration (s)</th>
-                            <th>API Calls</th>
-                            <th>Interactions</th>
+                            <th>API Calls (count)</th>
+                            <th>User Interactions (count)</th>
                             <th>Success</th>
                             <th>Notes</th>
                         </tr>
@@ -944,27 +951,31 @@
             }
             
             const metrics = {
-                'Average Duration (s)': {
+                'Average Duration': {
                     control: average(controlSessions.map(s => s.duration)) / 1000, // Convert to seconds
-                    mcp: average(mcpSessions.map(s => s.duration)) / 1000
+                    mcp: average(mcpSessions.map(s => s.duration)) / 1000,
+                    unit: 'seconds'
                 },
                 'Average API Calls': {
                     control: average(controlSessions.map(s => s.apiCalls)),
-                    mcp: average(mcpSessions.map(s => s.apiCalls))
+                    mcp: average(mcpSessions.map(s => s.apiCalls)),
+                    unit: 'calls'
                 },
                 'Average Interactions': {
                     control: average(controlSessions.map(s => s.interactions)),
-                    mcp: average(mcpSessions.map(s => s.interactions))
+                    mcp: average(mcpSessions.map(s => s.interactions)),
+                    unit: 'messages'
                 },
                 'Success Rate': {
                     control: percentage(controlSessions.filter(s => s.success).length, controlSessions.length),
-                    mcp: percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length)
+                    mcp: percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length),
+                    unit: '%'
                 }
             };
             
             // Update improvement stats
             const improvements = {
-                time: percentageChange(metrics['Average Duration (s)'].mcp, metrics['Average Duration (s)'].control),
+                time: percentageChange(metrics['Average Duration'].mcp, metrics['Average Duration'].control),
                 calls: percentageChange(metrics['Average API Calls'].mcp, metrics['Average API Calls'].control),
                 interactions: percentageChange(metrics['Average Interactions'].mcp, metrics['Average Interactions'].control),
                 success: percentageChange(metrics['Success Rate'].mcp, metrics['Success Rate'].control)
@@ -986,6 +997,7 @@
                     return `
                         <div class="metric-card">
                             <div class="metric-title">${title}</div>
+                            <div class="metric-unit">Measured in ${values.unit}</div>
                             <div class="metric-value">
                                 <span class="mode">Control:</span>
                                 <span>${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</span>
@@ -1031,21 +1043,25 @@
                 if (data.control.length === 0 || data.mcp.length === 0) continue;
                 
                 const metrics = {
-                    'Duration (s)': {
+                    'Duration': {
                         control: average(data.control.map(s => s.duration)) / 1000,
-                        mcp: average(data.mcp.map(s => s.duration)) / 1000
+                        mcp: average(data.mcp.map(s => s.duration)) / 1000,
+                        unit: 'seconds'
                     },
                     'API Calls': {
                         control: average(data.control.map(s => s.apiCalls)),
-                        mcp: average(data.mcp.map(s => s.apiCalls))
+                        mcp: average(data.mcp.map(s => s.apiCalls)),
+                        unit: 'calls'
                     },
                     'Interactions': {
                         control: average(data.control.map(s => s.interactions)),
-                        mcp: average(data.mcp.map(s => s.interactions))
+                        mcp: average(data.mcp.map(s => s.interactions)),
+                        unit: 'messages'
                     },
                     'Success Rate': {
                         control: percentage(data.control.filter(s => s.success).length, data.control.length),
-                        mcp: percentage(data.mcp.filter(s => s.success).length, data.mcp.length)
+                        mcp: percentage(data.mcp.filter(s => s.success).length, data.mcp.length),
+                        unit: '%'
                     }
                 };
                 
@@ -1064,6 +1080,7 @@
                             return `
                                 <div class="metric-card">
                                     <div class="metric-title">${title}</div>
+                                    <div class="metric-unit">Measured in ${values.unit}</div>
                                     <div class="metric-value">
                                         <span class="mode">Control:</span>
                                         <span>${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</span>
@@ -1369,7 +1386,7 @@
                     }
                     break;
                 case 'apiCalls':
-                    titleText = 'API Calls Comparison';
+                    titleText = 'API Calls Comparison (count)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
                         data.control[i-1] = average(taskData[taskId].control.map(s => s.apiCalls));
@@ -1377,7 +1394,7 @@
                     }
                     break;
                 case 'interactions':
-                    titleText = 'Interactions Comparison';
+                    titleText = 'User Interactions Comparison (messages)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
                         data.control[i-1] = average(taskData[taskId].control.map(s => s.interactions));
@@ -1442,7 +1459,7 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             
             // Add headers
-            csvContent += "MCP Server,MCP Client,Task ID,Mode,Model,Duration (s),API Calls,Interactions,Success,Notes\n";
+            csvContent += "MCP Server,MCP Client,Task ID,Mode,Model,Duration (s),API Calls (count),User Interactions (count),Success,Notes\n";
             
             // Add data rows
             filteredSessions.forEach(s => {
