@@ -658,10 +658,8 @@
                 </div>
             </div>
             <div class="task-content" id="task-3" style="display: none;">
-                <div class="metric-card">
-                    <div class="metric-title">Task 3: Create a Queue with Task Filter</div>
-                    <p>Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.</p>
-                </div>
+                <div class="metric-title">Task 3: Create a Queue with Task Filter</div>
+                <p>Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.</p>
             </div>
         </div>
         
@@ -702,16 +700,12 @@
         <div class="card">
             <h2>Performance Charts</h2>
             <div class="tabs">
-                <div class="tab active" data-chart="overview">Overview</div>
-                <div class="tab" data-chart="duration">Duration</div>
+                <div class="tab active" data-chart="duration">Duration</div>
                 <div class="tab" data-chart="apiCalls">API Calls</div>
                 <div class="tab" data-chart="interactions">Interactions</div>
                 <div class="tab" data-chart="success">Success Rate</div>
             </div>
             <div class="chart-row">
-                <div class="chart-container">
-                    <canvas id="overviewChart"></canvas>
-                </div>
                 <div class="chart-container">
                     <canvas id="comparisonChart"></canvas>
                 </div>
@@ -1162,72 +1156,6 @@
             const textColor = isDarkMode ? '#FFFFFF' : '#001B2D';
             const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
             
-            // Create overview chart (radar chart)
-            const overviewCtx = document.getElementById('overviewChart').getContext('2d');
-            if (charts.overview) charts.overview.destroy();
-            
-            charts.overview = new Chart(overviewCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['Duration', 'API Calls', 'Interactions', 'Success Rate'],
-                    datasets: [
-                        {
-                            label: 'Control',
-                            data: [0, 0, 0, 0],
-                            backgroundColor: 'rgba(0, 27, 45, 0.2)',
-                            borderColor: 'rgba(0, 27, 45, 0.8)',
-                            pointBackgroundColor: 'rgba(0, 27, 45, 1)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(0, 27, 45, 1)'
-                        },
-                        {
-                            label: 'MCP',
-                            data: [0, 0, 0, 0],
-                            backgroundColor: 'rgba(242, 47, 70, 0.2)',
-                            borderColor: 'rgba(242, 47, 70, 0.8)',
-                            pointBackgroundColor: 'rgba(242, 47, 70, 1)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgba(242, 47, 70, 1)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: {
-                                color: gridColor
-                            },
-                            grid: {
-                                color: gridColor
-                            },
-                            ticks: {
-                                color: textColor,
-                                backdropColor: isDarkMode ? 'rgba(0, 27, 45, 0.5)' : 'rgba(255, 255, 255, 0.5)'
-                            },
-                            pointLabels: {
-                                color: textColor
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: textColor
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Performance Overview',
-                            color: textColor
-                        }
-                    }
-                }
-            });
-            
             // Create comparison chart (bar chart)
             const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
             if (charts.comparison) charts.comparison.destroy();
@@ -1292,55 +1220,16 @@
         }
         
         function updateCharts() {
-            if (!charts.overview || !charts.comparison) return;
+            if (!charts.comparison) return;
             
             const controlSessions = filteredSessions.filter(s => s.mode === 'control');
             const mcpSessions = filteredSessions.filter(s => s.mode === 'mcp');
             
             if (controlSessions.length === 0 || mcpSessions.length === 0) {
                 // Reset chart data if no data available
-                charts.overview.data.datasets[0].data = [0, 0, 0, 0];
-                charts.overview.data.datasets[1].data = [0, 0, 0, 0];
-                charts.overview.update();
-                
                 updateComparisonChart('duration');
                 return;
             }
-            
-            // Calculate average metrics for radar chart
-            const controlDuration = average(controlSessions.map(s => s.duration)) / 1000;
-            const mcpDuration = average(mcpSessions.map(s => s.duration)) / 1000;
-            
-            const controlCalls = average(controlSessions.map(s => s.apiCalls));
-            const mcpCalls = average(mcpSessions.map(s => s.apiCalls));
-            
-            const controlInteractions = average(controlSessions.map(s => s.interactions));
-            const mcpInteractions = average(mcpSessions.map(s => s.interactions));
-            
-            const controlSuccess = percentage(controlSessions.filter(s => s.success).length, controlSessions.length);
-            const mcpSuccess = percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length);
-            
-            // Normalize data for radar chart (higher values represent better performance)
-            const maxDuration = Math.max(controlDuration, mcpDuration);
-            const maxCalls = Math.max(controlCalls, mcpCalls);
-            const maxInteractions = Math.max(controlInteractions, mcpInteractions);
-            
-            // For duration, API calls, and interactions, lower is better so we invert the scale
-            charts.overview.data.datasets[0].data = [
-                maxDuration > 0 ? 100 - ((controlDuration / maxDuration) * 100) : 0,
-                maxCalls > 0 ? 100 - ((controlCalls / maxCalls) * 100) : 0,
-                maxInteractions > 0 ? 100 - ((controlInteractions / maxInteractions) * 100) : 0,
-                controlSuccess
-            ];
-            
-            charts.overview.data.datasets[1].data = [
-                maxDuration > 0 ? 100 - ((mcpDuration / maxDuration) * 100) : 0,
-                maxCalls > 0 ? 100 - ((mcpCalls / maxCalls) * 100) : 0,
-                maxInteractions > 0 ? 100 - ((mcpInteractions / maxInteractions) * 100) : 0,
-                mcpSuccess
-            ];
-            
-            charts.overview.update();
             
             // Update comparison chart with the currently selected metric
             const activeTab = document.querySelector('.tabs .tab[data-chart].active');
@@ -1409,12 +1298,10 @@
                         data.mcp[i-1] = percentage(taskData[taskId].mcp.filter(s => s.success).length, taskData[taskId].mcp.length);
                     }
                     break;
-                case 'overview':
                 default:
-                    titleText = 'Overall Performance Comparison';
+                    titleText = 'Duration Comparison (seconds)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
-                        // Use duration as the default metric for overview
                         data.control[i-1] = average(taskData[taskId].control.map(s => s.duration)) / 1000;
                         data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.duration)) / 1000;
                     }
@@ -1429,19 +1316,11 @@
         }
         
         function updateChartColors() {
-            if (!charts.overview || !charts.comparison) return;
+            if (!charts.comparison) return;
             
             const isDarkMode = document.body.classList.contains('dark-mode');
             const textColor = isDarkMode ? '#FFFFFF' : '#001B2D';
             const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            
-            // Update overview chart colors
-            charts.overview.options.scales.r.angleLines.color = gridColor;
-            charts.overview.options.scales.r.grid.color = gridColor;
-            charts.overview.options.scales.r.ticks.color = textColor;
-            charts.overview.options.scales.r.pointLabels.color = textColor;
-            charts.overview.options.plugins.legend.labels.color = textColor;
-            charts.overview.options.plugins.title.color = textColor;
             
             // Update comparison chart colors
             charts.comparison.options.scales.x.grid.color = gridColor;
@@ -1451,7 +1330,6 @@
             charts.comparison.options.plugins.legend.labels.color = textColor;
             charts.comparison.options.plugins.title.color = textColor;
             
-            charts.overview.update();
             charts.comparison.update();
         }
 
