@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const config = require('../utils/config');
+const readline = require('readline');
 
 // Use the same metrics directory as the server
 const METRICS_DIR = config.metrics.dataPath;
@@ -11,12 +12,32 @@ if (!fs.existsSync(METRICS_DIR)) {
   fs.mkdirSync(METRICS_DIR, { recursive: true });
 }
 
+// Create readline interface for user input
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+// Promisify readline question
+function askQuestion(query) {
+  return new Promise(resolve => rl.question(query, resolve));
+}
+
 // Process all session files and generate summary
-function generateSummary() {
+async function generateSummary() {
   const files = fs.readdirSync(METRICS_DIR)
     .filter(file => file.endsWith('.json') && !file.startsWith('summary'));
   
   const sessions = [];
+  
+  // Ask for MCP server and client information
+  const defaultServer = 'Twilio';
+  const defaultClient = 'Cursor';
+  
+  const mcpServer = await askQuestion(`MCP Server name (default: ${defaultServer}): `) || defaultServer;
+  const mcpClient = await askQuestion(`MCP Client name (default: ${defaultClient}): `) || defaultClient;
+  
+  rl.close();
   
   files.forEach(file => {
     try {
@@ -28,6 +49,8 @@ function generateSummary() {
           taskId: sessionData.taskNumber || sessionData.taskId,
           mode: sessionData.mode,
           model: sessionData.model || 'unknown', // Include model information
+          mcpServer: mcpServer,
+          mcpClient: mcpClient,
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
           duration: sessionData.duration,
@@ -60,6 +83,8 @@ function generateSummary() {
   );
   
   console.log(`Generated summary for ${sessions.length} completed sessions`);
+  console.log(`MCP Server: ${mcpServer}`);
+  console.log(`MCP Client: ${mcpClient}`);
   
   // Calculate overall metrics
   if (sessions.length > 0) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twilio MCP Performance Dashboard</title>
+    <title>Model Context Protocol (MCP) Performance Dashboard</title>
     <style>
         :root {
             /* Twilio primary palette */
@@ -55,12 +55,13 @@
             background-color: var(--gray-light);
             color: var(--dark);
             line-height: 1.5;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
             max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            margin: 0 auto;
+            padding: 2rem 1rem;
         }
 
         header {
@@ -75,6 +76,7 @@
         h1, h2, h3 {
             color: var(--secondary);
             font-weight: 700;
+            transition: color 0.3s;
         }
 
         h1 {
@@ -95,7 +97,7 @@
             box-shadow: var(--shadow);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
         }
 
         .card:hover {
@@ -115,7 +117,7 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             padding: 1.25rem;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background-color 0.3s;
         }
 
         .metric-card:hover {
@@ -131,6 +133,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            transition: color 0.3s;
         }
 
         .metric-value {
@@ -153,6 +156,7 @@
             border-radius: var(--radius);
             padding: 1.5rem;
             box-shadow: var(--shadow);
+            transition: background-color 0.3s;
         }
 
         .model-title {
@@ -162,6 +166,7 @@
             color: var(--secondary);
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--primary);
+            transition: color 0.3s;
         }
 
         .table-container {
@@ -169,6 +174,7 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             background-color: white;
+            transition: background-color 0.3s;
         }
 
         table {
@@ -180,6 +186,7 @@
         th, td {
             padding: 0.75rem 1rem;
             text-align: left;
+            transition: background-color 0.3s;
         }
 
         th {
@@ -240,8 +247,10 @@
 
         .actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
             margin-bottom: 1.5rem;
+            align-items: center;
         }
 
         .btn {
@@ -256,11 +265,16 @@
             padding: 0.5rem 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
         }
 
         .btn:hover {
             background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
         }
 
         .btn-secondary {
@@ -269,6 +283,17 @@
 
         .btn-secondary:hover {
             background-color: var(--secondary-light);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--secondary);
+            color: white;
         }
 
         .loading {
@@ -314,11 +339,87 @@
             color: var(--dark);
             font-size: 1.5rem;
             border-radius: 50%;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, color 0.3s;
         }
 
         .theme-toggle:hover {
             background-color: var(--gray-light);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        select {
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray);
+            background-color: white;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(242, 47, 70, 0.2);
+        }
+
+        /* Chart styles */
+        .chart-container {
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Task tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--gray);
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .tab {
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
         }
 
         /* Dark mode */
@@ -331,7 +432,8 @@
         .dark-mode .metric-card,
         .dark-mode .model-section,
         .dark-mode .table-container,
-        .dark-mode table {
+        .dark-mode table,
+        .dark-mode select {
             background-color: var(--secondary-light);
             color: var(--light);
         }
@@ -339,7 +441,8 @@
         .dark-mode h1,
         .dark-mode h2,
         .dark-mode h3,
-        .dark-mode .metric-title {
+        .dark-mode .metric-title,
+        .dark-mode .filter-label {
             color: var(--primary-light);
         }
 
@@ -363,24 +466,89 @@
             background-color: var(--secondary-light);
         }
 
+        .dark-mode .btn-outline {
+            color: var(--light);
+            border-color: var(--light);
+        }
+
+        .dark-mode .btn-outline:hover {
+            background-color: var(--gray-850);
+        }
+
+        .dark-mode select {
+            border-color: var(--secondary-light);
+        }
+
+        .dark-mode .tabs {
+            border-bottom-color: var(--gray-850);
+        }
+
+        /* Statistics card */
+        .stat-card {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--gray-light);
+            border-radius: var(--radius);
+            transition: background-color 0.3s;
+        }
+
+        .dark-mode .stat-item {
+            background-color: var(--secondary);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
-            .metrics {
+            .metrics,
+            .chart-row {
                 grid-template-columns: 1fr;
             }
             
-            .actions {
+            .filters {
                 flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stat-card {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            h2 {
+                font-size: 1.25rem;
             }
         }
     </style>
+    <!-- Include Chart.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <div>
-                <h1>MCP Performance Dashboard</h1>
-                <p>Compare performance metrics between Control and MCP implementations</p>
+                <h1>Model Context Protocol (MCP) Performance Dashboard</h1>
+                <p>Compare performance metrics between Traditional (Control) and MCP implementations</p>
             </div>
             <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
                 🌙
@@ -400,58 +568,138 @@
             </div>
         </div>
         
+        <div class="filters">
+            <div class="filter-group">
+                <label class="filter-label" for="mcpServerFilter">MCP Server:</label>
+                <select id="mcpServerFilter">
+                    <option value="all">All Servers</option>
+                    <option value="Twilio" selected>Twilio</option>
+                    <!-- Other servers will be dynamically populated -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="mcpClientFilter">MCP Client:</label>
+                <select id="mcpClientFilter">
+                    <option value="all">All Clients</option>
+                    <option value="Cursor" selected>Cursor</option>
+                    <!-- Other clients will be dynamically populated -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="modelFilter">Model:</label>
+                <select id="modelFilter">
+                    <option value="all">All Models</option>
+                    <!-- Options will be dynamically populated -->
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="taskFilter">Task:</label>
+                <select id="taskFilter">
+                    <option value="all">All Tasks</option>
+                    <option value="1">Task 1</option>
+                    <option value="2">Task 2</option>
+                    <option value="3">Task 3</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="modeFilter">Mode:</label>
+                <select id="modeFilter">
+                    <option value="all">All Modes</option>
+                    <option value="control">Control</option>
+                    <option value="mcp">MCP</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Test Approaches -->
         <div class="card">
-            <h2>About This Dashboard</h2>
-            <p>This dashboard presents performance metrics comparing traditional Twilio API approaches (Control) with Twilio's Model Context Protocol (MCP) implementation.</p>
-            
-            <div style="margin-top: 1rem;">
-                <h3 style="margin-bottom: 0.75rem;">Test Tasks</h3>
+            <h2>Test Approaches</h2>
+            <div class="metrics" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="metric-card">
+                    <div class="metric-title">
+                        <span class="badge badge-control">Control</span>
+                    </div>
+                    <p>Traditional method using web search and terminal capabilities to complete API tasks. The Control approach requires manually looking up documentation and writing code from scratch.</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">
+                        <span class="badge badge-mcp">MCP</span>
+                    </div>
+                    <p>Model Context Protocol approach that provides AI coding agents with direct access to API functions. MCP enables AI to understand API structure without external documentation.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Task Description -->
+        <div class="card">
+            <h2>Task Description</h2>
+            <div class="tabs" id="taskTabs">
+                <div class="tab active" data-task="1">Task 1</div>
+                <div class="tab" data-task="2">Task 2</div>
+                <div class="tab" data-task="3">Task 3</div>
+            </div>
+            <div class="task-content" id="task-1">
                 <div class="metric-card">
                     <div class="metric-title">Task 1: Purchase a Canadian Phone Number</div>
                     <p>Search for and purchase an available Canadian phone number (preferably with area code 416).</p>
                 </div>
+            </div>
+            <div class="task-content" id="task-2" style="display: none;">
                 <div class="metric-card">
                     <div class="metric-title">Task 2: Create a Task Router Activity</div>
                     <p>Create a new Task Router activity named "Bathroom", this already exists so the Agent won't be able to create it.</p>
                 </div>
+            </div>
+            <div class="task-content" id="task-3" style="display: none;">
                 <div class="metric-card">
                     <div class="metric-title">Task 3: Create a Queue with Task Filter</div>
                     <p>Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.</p>
                 </div>
             </div>
-            
-            <div style="margin-top: 1.5rem;">
-                <h3 style="margin-bottom: 0.75rem;">Testing Approaches</h3>
-                <div class="metrics" style="grid-template-columns: repeat(2, 1fr);">
-                    <div class="metric-card">
-                        <div class="metric-title">
-                            <span class="badge badge-control">Control</span>
-                        </div>
-                        <p>Traditional method using web search and terminal capabilities to complete Twilio API tasks. The Control approach requires manually looking up documentation and writing code from scratch.</p>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-title">
-                            <span class="badge badge-mcp">MCP</span>
-                        </div>
-                        <p>Twilio's Model Context Protocol approach that provides AI coding agents with direct access to Twilio API functions. MCP enables AI to understand Twilio's API structure without external documentation.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 1.5rem;">
-                <h3 style="margin-bottom: 0.75rem;">Key Metrics</h3>
-                <ul style="list-style-type: disc; padding-left: 1.5rem;">
-                    <li><strong>Duration:</strong> Total time to complete the task (lower is better)</li>
-                    <li><strong>API Calls:</strong> Number of API calls made (fewer is more efficient)</li>
-                    <li><strong>Interactions:</strong> Number of exchanges with the AI assistant (fewer is more efficient)</li>
-                    <li><strong>Success Rate:</strong> Percentage of tasks completed successfully</li>
-                </ul>
-            </div>
         </div>
         
+        <!-- Overall Stats -->
         <div class="card">
-            <h2>Overall Performance (All Models)</h2>
+            <h2>Overall Performance</h2>
+            <div class="stat-card">
+                <div class="stat-item">
+                    <div id="improvementTime" class="stat-value">--%</div>
+                    <div class="stat-label">Time Improvement</div>
+                </div>
+                <div class="stat-item">
+                    <div id="improvementCalls" class="stat-value">--%</div>
+                    <div class="stat-label">API Calls Reduction</div>
+                </div>
+                <div class="stat-item">
+                    <div id="improvementInteractions" class="stat-value">--%</div>
+                    <div class="stat-label">Interaction Reduction</div>
+                </div>
+                <div class="stat-item">
+                    <div id="improvementSuccess" class="stat-value">--%</div>
+                    <div class="stat-label">Success Rate Improvement</div>
+                </div>
+            </div>
             <div id="summary" class="metrics"></div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="card">
+            <h2>Performance Charts</h2>
+            <div class="tabs">
+                <div class="tab active" data-chart="overview">Overview</div>
+                <div class="tab" data-chart="duration">Duration</div>
+                <div class="tab" data-chart="apiCalls">API Calls</div>
+                <div class="tab" data-chart="interactions">Interactions</div>
+                <div class="tab" data-chart="success">Success Rate</div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-container">
+                    <canvas id="overviewChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
         </div>
         
         <div id="modelMetrics"></div>
@@ -462,6 +710,8 @@
                 <table id="sessionsTable">
                     <thead>
                         <tr>
+                            <th>MCP Server</th>
+                            <th>MCP Client</th>
                             <th>Task</th>
                             <th>Mode</th>
                             <th>Model</th>
@@ -478,7 +728,8 @@
         </div>
         
         <div class="footer">
-            <p>Twilio MCP Performance Dashboard | Created by Twilio Emerging Technology & Innovation Team</p>
+            <p>Model Context Protocol Performance Dashboard</p>
+            <p>Last updated: <span id="lastUpdated">-</span></p>
         </div>
     </div>
 
@@ -488,6 +739,46 @@
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            updateCharts(); // Update chart colors when theme changes
+        });
+        
+        // Task tabs
+        document.querySelectorAll('#taskTabs .tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Deactivate all tabs
+                document.querySelectorAll('#taskTabs .tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Activate clicked tab
+                tab.classList.add('active');
+                
+                // Hide all task content
+                document.querySelectorAll('.task-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // Show selected task content
+                const taskId = tab.getAttribute('data-task');
+                document.getElementById(`task-${taskId}`).style.display = 'block';
+            });
+        });
+        
+        // Chart tabs
+        document.querySelectorAll('.tabs .tab[data-chart]').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Deactivate all tabs
+                document.querySelectorAll('.tabs .tab[data-chart]').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Activate clicked tab
+                tab.classList.add('active');
+                
+                // Update comparison chart based on selected metric
+                const metric = tab.getAttribute('data-chart');
+                updateComparisonChart(metric);
+            });
         });
         
         // Refresh button
@@ -508,24 +799,140 @@
             downloadCsv();
         });
         
+        // Filter change handlers
+        const filters = {
+            mcpServer: document.getElementById('mcpServerFilter'),
+            mcpClient: document.getElementById('mcpClientFilter'),
+            model: document.getElementById('modelFilter'),
+            task: document.getElementById('taskFilter'),
+            mode: document.getElementById('modeFilter')
+        };
+        
+        Object.values(filters).forEach(filter => {
+            filter.addEventListener('change', () => {
+                filterData();
+                displayMetrics();
+                displayModelMetrics();
+                displaySessions();
+                updateCharts();
+            });
+        });
+        
+        // Global data store
+        let allSessions = [];
+        let filteredSessions = [];
+        let charts = {};
+        
         async function loadData() {
             try {
                 const response = await fetch('/metrics/summary.json');
                 const data = await response.json();
                 
-                // Process and display the data
-                displayMetrics(data);
-                displayModelMetrics(data);
-                displaySessions(data);
+                // Store the data globally
+                allSessions = data;
+                
+                // Update last updated time
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+                
+                // Populate MCP server filter
+                const mcpServers = [...new Set(data.map(s => s.mcpServer || 'Twilio'))];
+                const mcpServerFilter = document.getElementById('mcpServerFilter');
+                
+                // Clear existing options except the first one
+                while (mcpServerFilter.options.length > 1) {
+                    mcpServerFilter.remove(1);
+                }
+                
+                // Add server options
+                mcpServers.forEach(server => {
+                    const option = document.createElement('option');
+                    option.value = server;
+                    option.textContent = server;
+                    // Select Twilio by default
+                    if (server === 'Twilio') {
+                        option.selected = true;
+                    }
+                    mcpServerFilter.appendChild(option);
+                });
+                
+                // Populate MCP client filter
+                const mcpClients = [...new Set(data.map(s => s.mcpClient || 'Cursor'))];
+                const mcpClientFilter = document.getElementById('mcpClientFilter');
+                
+                // Clear existing options except the first one
+                while (mcpClientFilter.options.length > 1) {
+                    mcpClientFilter.remove(1);
+                }
+                
+                // Add client options
+                mcpClients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client;
+                    option.textContent = client;
+                    // Select Cursor by default
+                    if (client === 'Cursor') {
+                        option.selected = true;
+                    }
+                    mcpClientFilter.appendChild(option);
+                });
+                
+                // Populate model filter
+                const models = [...new Set(data.map(s => s.model || 'unknown'))];
+                const modelFilter = document.getElementById('modelFilter');
+                
+                // Clear existing options except the first one
+                while (modelFilter.options.length > 1) {
+                    modelFilter.remove(1);
+                }
+                
+                // Add model options
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelFilter.appendChild(option);
+                });
+                
+                // Apply filters and update UI
+                filterData();
+                displayMetrics();
+                displayModelMetrics();
+                displaySessions();
+                initCharts();
+                updateCharts();
+                
             } catch (error) {
                 console.error('Error loading data:', error);
                 alert('Failed to load data. Please check if the metrics server is running.');
             }
         }
+        
+        function filterData() {
+            const mcpServerFilter = filters.mcpServer.value;
+            const mcpClientFilter = filters.mcpClient.value;
+            const modelFilter = filters.model.value;
+            const taskFilter = filters.task.value;
+            const modeFilter = filters.mode.value;
+            
+            filteredSessions = allSessions.filter(session => {
+                const matchesMcpServer = mcpServerFilter === 'all' || (session.mcpServer || 'Twilio') === mcpServerFilter;
+                const matchesMcpClient = mcpClientFilter === 'all' || (session.mcpClient || 'Cursor') === mcpClientFilter;
+                const matchesModel = modelFilter === 'all' || session.model === modelFilter || (!session.model && modelFilter === 'unknown');
+                const matchesTask = taskFilter === 'all' || session.taskId.toString() === taskFilter;
+                const matchesMode = modeFilter === 'all' || session.mode === modeFilter;
+                
+                return matchesMcpServer && matchesMcpClient && matchesModel && matchesTask && matchesMode;
+            });
+        }
 
-        function displayMetrics(sessions) {
-            const controlSessions = sessions.filter(s => s.mode === 'control');
-            const mcpSessions = sessions.filter(s => s.mode === 'mcp');
+        function displayMetrics() {
+            const controlSessions = filteredSessions.filter(s => s.mode === 'control');
+            const mcpSessions = filteredSessions.filter(s => s.mode === 'mcp');
+            
+            if (controlSessions.length === 0 || mcpSessions.length === 0) {
+                document.getElementById('summary').innerHTML = '<p>No data available for the selected filters.</p>';
+                return;
+            }
             
             const metrics = {
                 'Average Duration (s)': {
@@ -545,12 +952,27 @@
                     mcp: percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length)
                 }
             };
+            
+            // Update improvement stats
+            const improvements = {
+                time: percentageChange(metrics['Average Duration (s)'].mcp, metrics['Average Duration (s)'].control),
+                calls: percentageChange(metrics['Average API Calls'].mcp, metrics['Average API Calls'].control),
+                interactions: percentageChange(metrics['Average Interactions'].mcp, metrics['Average Interactions'].control),
+                success: percentageChange(metrics['Success Rate'].mcp, metrics['Success Rate'].control)
+            };
+            
+            document.getElementById('improvementTime').textContent = `${-parseFloat(improvements.time)}%`;
+            document.getElementById('improvementCalls').textContent = `${-parseFloat(improvements.calls)}%`;
+            document.getElementById('improvementInteractions').textContent = `${-parseFloat(improvements.interactions)}%`;
+            document.getElementById('improvementSuccess').textContent = `${improvements.success}%`;
 
             const summaryEl = document.getElementById('summary');
             summaryEl.innerHTML = Object.entries(metrics)
                 .map(([title, values]) => {
                     const change = percentageChange(values.mcp, values.control);
-                    const changeClass = parseFloat(change) < 0 ? 'change-positive' : 'change-negative';
+                    const changeClass = (title === 'Success Rate' ? 
+                        parseFloat(change) > 0 : parseFloat(change) < 0) 
+                        ? 'change-positive' : 'change-negative';
                     
                     return `
                         <div class="metric-card">
@@ -572,10 +994,10 @@
                 }).join('');
         }
 
-        function displayModelMetrics(sessions) {
+        function displayModelMetrics() {
             // Group sessions by model
             const models = {};
-            sessions.forEach(session => {
+            filteredSessions.forEach(session => {
                 const model = session.model || 'unknown';
                 if (!models[model]) {
                     models[model] = {
@@ -593,9 +1015,12 @@
             
             // Create metrics per model
             const modelMetricsEl = document.getElementById('modelMetrics');
-            modelMetricsEl.innerHTML = '<h2>Performance by Model</h2>';
+            modelMetricsEl.innerHTML = '';
             
             for (const [model, data] of Object.entries(models)) {
+                // Skip if there's no data for either control or MCP
+                if (data.control.length === 0 || data.mcp.length === 0) continue;
+                
                 const metrics = {
                     'Duration (s)': {
                         control: average(data.control.map(s => s.duration)) / 1000,
@@ -623,7 +1048,9 @@
                     <div class="metrics">
                         ${Object.entries(metrics).map(([title, values]) => {
                             const change = percentageChange(values.mcp, values.control);
-                            const changeClass = parseFloat(change) < 0 ? 'change-positive' : 'change-negative';
+                            const changeClass = (title === 'Success Rate' ? 
+                                parseFloat(change) > 0 : parseFloat(change) < 0) 
+                                ? 'change-positive' : 'change-negative';
                             
                             return `
                                 <div class="metric-card">
@@ -648,13 +1075,41 @@
                 
                 modelMetricsEl.appendChild(section);
             }
+            
+            // Show message if no model metrics to display
+            if (modelMetricsEl.children.length === 0) {
+                const messageEl = document.createElement('div');
+                messageEl.className = 'card';
+                messageEl.innerHTML = '<p>No model-specific data available for the selected filters.</p>';
+                modelMetricsEl.appendChild(messageEl);
+            }
         }
 
-        function displaySessions(sessions) {
+        function displaySessions() {
             const tbody = document.getElementById('sessionsBody');
-            tbody.innerHTML = sessions
+            
+            if (filteredSessions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center;">No data available for the selected filters.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = filteredSessions
                 .sort((a, b) => {
-                    // Sort by task first, then by mode
+                    // Sort by server first, then by client, then by task, then by mode
+                    const serverA = a.mcpServer || 'Twilio';
+                    const serverB = b.mcpServer || 'Twilio';
+                    
+                    if (serverA !== serverB) {
+                        return serverA.localeCompare(serverB);
+                    }
+                    
+                    const clientA = a.mcpClient || 'Cursor';
+                    const clientB = b.mcpClient || 'Cursor';
+                    
+                    if (clientA !== clientB) {
+                        return clientA.localeCompare(clientB);
+                    }
+                    
                     if (a.taskId === b.taskId) {
                         return a.mode.localeCompare(b.mode);
                     }
@@ -662,6 +1117,8 @@
                 })
                 .map(s => `
                     <tr>
+                        <td>${s.mcpServer || 'Twilio'}</td>
+                        <td>${s.mcpClient || 'Cursor'}</td>
                         <td>Task ${s.taskId}</td>
                         <td><span class="badge badge-${s.mode}">${s.mode}</span></td>
                         <td>${s.model || 'unknown'}</td>
@@ -669,48 +1126,340 @@
                         <td>${s.apiCalls}</td>
                         <td>${s.interactions}</td>
                         <td class="${s.success ? 'success' : 'failure'}">${s.success ? '✓' : '✗'}</td>
-                        <td>${s.notes}</td>
+                        <td>${s.notes || '-'}</td>
                     </tr>
                 `).join('');
         }
 
+        function initCharts() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const textColor = isDarkMode ? '#FFFFFF' : '#001B2D';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            
+            // Create overview chart (radar chart)
+            const overviewCtx = document.getElementById('overviewChart').getContext('2d');
+            if (charts.overview) charts.overview.destroy();
+            
+            charts.overview = new Chart(overviewCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Duration', 'API Calls', 'Interactions', 'Success Rate'],
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: [0, 0, 0, 0],
+                            backgroundColor: 'rgba(0, 27, 45, 0.2)',
+                            borderColor: 'rgba(0, 27, 45, 0.8)',
+                            pointBackgroundColor: 'rgba(0, 27, 45, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(0, 27, 45, 1)'
+                        },
+                        {
+                            label: 'MCP',
+                            data: [0, 0, 0, 0],
+                            backgroundColor: 'rgba(242, 47, 70, 0.2)',
+                            borderColor: 'rgba(242, 47, 70, 0.8)',
+                            pointBackgroundColor: 'rgba(242, 47, 70, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(242, 47, 70, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: gridColor
+                            },
+                            grid: {
+                                color: gridColor
+                            },
+                            ticks: {
+                                color: textColor,
+                                backdropColor: isDarkMode ? 'rgba(0, 27, 45, 0.5)' : 'rgba(255, 255, 255, 0.5)'
+                            },
+                            pointLabels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Performance Overview',
+                            color: textColor
+                        }
+                    }
+                }
+            });
+            
+            // Create comparison chart (bar chart)
+            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+            if (charts.comparison) charts.comparison.destroy();
+            
+            charts.comparison = new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Task 1', 'Task 2', 'Task 3'],
+                    datasets: [
+                        {
+                            label: 'Control',
+                            data: [0, 0, 0],
+                            backgroundColor: 'rgba(0, 27, 45, 0.7)',
+                            borderColor: 'rgba(0, 27, 45, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'MCP',
+                            data: [0, 0, 0],
+                            backgroundColor: 'rgba(242, 47, 70, 0.7)',
+                            borderColor: 'rgba(242, 47, 70, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                color: gridColor
+                            },
+                            ticks: {
+                                color: textColor
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: gridColor
+                            },
+                            ticks: {
+                                color: textColor
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Duration Comparison (seconds)',
+                            color: textColor
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCharts() {
+            if (!charts.overview || !charts.comparison) return;
+            
+            const controlSessions = filteredSessions.filter(s => s.mode === 'control');
+            const mcpSessions = filteredSessions.filter(s => s.mode === 'mcp');
+            
+            if (controlSessions.length === 0 || mcpSessions.length === 0) {
+                // Reset chart data if no data available
+                charts.overview.data.datasets[0].data = [0, 0, 0, 0];
+                charts.overview.data.datasets[1].data = [0, 0, 0, 0];
+                charts.overview.update();
+                
+                updateComparisonChart('duration');
+                return;
+            }
+            
+            // Calculate average metrics for radar chart
+            const controlDuration = average(controlSessions.map(s => s.duration)) / 1000;
+            const mcpDuration = average(mcpSessions.map(s => s.duration)) / 1000;
+            
+            const controlCalls = average(controlSessions.map(s => s.apiCalls));
+            const mcpCalls = average(mcpSessions.map(s => s.apiCalls));
+            
+            const controlInteractions = average(controlSessions.map(s => s.interactions));
+            const mcpInteractions = average(mcpSessions.map(s => s.interactions));
+            
+            const controlSuccess = percentage(controlSessions.filter(s => s.success).length, controlSessions.length);
+            const mcpSuccess = percentage(mcpSessions.filter(s => s.success).length, mcpSessions.length);
+            
+            // Normalize data for radar chart (higher values represent better performance)
+            const maxDuration = Math.max(controlDuration, mcpDuration);
+            const maxCalls = Math.max(controlCalls, mcpCalls);
+            const maxInteractions = Math.max(controlInteractions, mcpInteractions);
+            
+            // For duration, API calls, and interactions, lower is better so we invert the scale
+            charts.overview.data.datasets[0].data = [
+                maxDuration > 0 ? 100 - ((controlDuration / maxDuration) * 100) : 0,
+                maxCalls > 0 ? 100 - ((controlCalls / maxCalls) * 100) : 0,
+                maxInteractions > 0 ? 100 - ((controlInteractions / maxInteractions) * 100) : 0,
+                controlSuccess
+            ];
+            
+            charts.overview.data.datasets[1].data = [
+                maxDuration > 0 ? 100 - ((mcpDuration / maxDuration) * 100) : 0,
+                maxCalls > 0 ? 100 - ((mcpCalls / maxCalls) * 100) : 0,
+                maxInteractions > 0 ? 100 - ((mcpInteractions / maxInteractions) * 100) : 0,
+                mcpSuccess
+            ];
+            
+            charts.overview.update();
+            
+            // Update comparison chart with the currently selected metric
+            const activeTab = document.querySelector('.tabs .tab[data-chart].active');
+            const activeMetric = activeTab ? activeTab.getAttribute('data-chart') : 'duration';
+            updateComparisonChart(activeMetric);
+            
+            // Update chart colors based on theme
+            updateChartColors();
+        }
+        
+        function updateComparisonChart(metric) {
+            if (!charts.comparison) return;
+            
+            // Group sessions by task
+            const taskData = {
+                '1': { control: [], mcp: [] },
+                '2': { control: [], mcp: [] },
+                '3': { control: [], mcp: [] }
+            };
+            
+            filteredSessions.forEach(session => {
+                const taskId = session.taskId.toString();
+                if (taskData[taskId] && session.mode) {
+                    taskData[taskId][session.mode].push(session);
+                }
+            });
+            
+            // Calculate metrics for each task
+            const data = {
+                control: [0, 0, 0],
+                mcp: [0, 0, 0]
+            };
+            
+            let titleText = '';
+            
+            switch (metric) {
+                case 'duration':
+                    titleText = 'Duration Comparison (seconds)';
+                    for (let i = 1; i <= 3; i++) {
+                        const taskId = i.toString();
+                        data.control[i-1] = average(taskData[taskId].control.map(s => s.duration)) / 1000;
+                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.duration)) / 1000;
+                    }
+                    break;
+                case 'apiCalls':
+                    titleText = 'API Calls Comparison';
+                    for (let i = 1; i <= 3; i++) {
+                        const taskId = i.toString();
+                        data.control[i-1] = average(taskData[taskId].control.map(s => s.apiCalls));
+                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.apiCalls));
+                    }
+                    break;
+                case 'interactions':
+                    titleText = 'Interactions Comparison';
+                    for (let i = 1; i <= 3; i++) {
+                        const taskId = i.toString();
+                        data.control[i-1] = average(taskData[taskId].control.map(s => s.interactions));
+                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.interactions));
+                    }
+                    break;
+                case 'success':
+                    titleText = 'Success Rate Comparison (%)';
+                    for (let i = 1; i <= 3; i++) {
+                        const taskId = i.toString();
+                        data.control[i-1] = percentage(taskData[taskId].control.filter(s => s.success).length, taskData[taskId].control.length);
+                        data.mcp[i-1] = percentage(taskData[taskId].mcp.filter(s => s.success).length, taskData[taskId].mcp.length);
+                    }
+                    break;
+                case 'overview':
+                default:
+                    titleText = 'Overall Performance Comparison';
+                    for (let i = 1; i <= 3; i++) {
+                        const taskId = i.toString();
+                        // Use duration as the default metric for overview
+                        data.control[i-1] = average(taskData[taskId].control.map(s => s.duration)) / 1000;
+                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.duration)) / 1000;
+                    }
+                    break;
+            }
+            
+            // Update chart data
+            charts.comparison.data.datasets[0].data = data.control;
+            charts.comparison.data.datasets[1].data = data.mcp;
+            charts.comparison.options.plugins.title.text = titleText;
+            charts.comparison.update();
+        }
+        
+        function updateChartColors() {
+            if (!charts.overview || !charts.comparison) return;
+            
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const textColor = isDarkMode ? '#FFFFFF' : '#001B2D';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            
+            // Update overview chart colors
+            charts.overview.options.scales.r.angleLines.color = gridColor;
+            charts.overview.options.scales.r.grid.color = gridColor;
+            charts.overview.options.scales.r.ticks.color = textColor;
+            charts.overview.options.scales.r.pointLabels.color = textColor;
+            charts.overview.options.plugins.legend.labels.color = textColor;
+            charts.overview.options.plugins.title.color = textColor;
+            
+            // Update comparison chart colors
+            charts.comparison.options.scales.x.grid.color = gridColor;
+            charts.comparison.options.scales.x.ticks.color = textColor;
+            charts.comparison.options.scales.y.grid.color = gridColor;
+            charts.comparison.options.scales.y.ticks.color = textColor;
+            charts.comparison.options.plugins.legend.labels.color = textColor;
+            charts.comparison.options.plugins.title.color = textColor;
+            
+            charts.overview.update();
+            charts.comparison.update();
+        }
+
         function downloadCsv() {
-            fetch('/metrics/summary.json')
-                .then(response => response.json())
-                .then(data => {
-                    let csvContent = "data:text/csv;charset=utf-8,";
-                    
-                    // Add headers
-                    csvContent += "Task ID,Mode,Model,Duration (s),API Calls,Interactions,Success,Notes\n";
-                    
-                    // Add data rows
-                    data.forEach(s => {
-                        const row = [
-                            s.taskId,
-                            s.mode,
-                            s.model || 'unknown',
-                            (s.duration/1000).toFixed(1),
-                            s.apiCalls,
-                            s.interactions,
-                            s.success ? 'Yes' : 'No',
-                            s.notes
-                        ].join(',');
-                        csvContent += row + "\n";
-                    });
-                    
-                    // Create download link
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", "mcp_performance_data.csv");
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                })
-                .catch(error => {
-                    console.error('Error downloading data:', error);
-                    alert('Failed to download data');
-                });
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Add headers
+            csvContent += "MCP Server,MCP Client,Task ID,Mode,Model,Duration (s),API Calls,Interactions,Success,Notes\n";
+            
+            // Add data rows
+            filteredSessions.forEach(s => {
+                const row = [
+                    s.mcpServer || 'Twilio',
+                    s.mcpClient || 'Cursor',
+                    s.taskId,
+                    s.mode,
+                    s.model || 'unknown',
+                    (s.duration/1000).toFixed(1),
+                    s.apiCalls,
+                    s.interactions,
+                    s.success ? 'Yes' : 'No',
+                    (s.notes || '').replace(/,/g, ';') // Replace commas to avoid CSV issues
+                ].join(',');
+                csvContent += row + "\n";
+            });
+            
+            // Create download link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "mcp_performance_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function average(values) {
