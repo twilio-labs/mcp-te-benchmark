@@ -43,21 +43,24 @@ async function generateSummary() {
     try {
       const sessionData = JSON.parse(fs.readFileSync(path.join(METRICS_DIR, file)));
       
-      // Only include completed sessions
-      if (sessionData.endTime) {
+      // Include both completed and incomplete sessions
+      if (sessionData.startTime) {
+        const isCompleted = sessionData.endTime != null;
         sessions.push({
           taskId: sessionData.taskNumber || sessionData.taskId,
           mode: sessionData.mode,
-          model: sessionData.model || 'unknown', // Include model information
+          model: sessionData.model || 'unknown',
           mcpServer: mcpServer,
           mcpClient: mcpClient,
           startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-          duration: sessionData.duration,
-          apiCalls: Array.isArray(sessionData.apiCalls) ? sessionData.apiCalls.length : sessionData.apiCalls,
-          interactions: Array.isArray(sessionData.interactions) ? sessionData.interactions.length : sessionData.interactions,
-          success: sessionData.success,
-          notes: sessionData.notes || ''
+          endTime: sessionData.endTime || null,
+          // Only include metrics for completed tasks
+          duration: isCompleted ? (sessionData.duration || (sessionData.endTime - sessionData.startTime)) : null,
+          apiCalls: isCompleted ? (Array.isArray(sessionData.apiCalls) ? sessionData.apiCalls.length : (sessionData.apiCalls || 0)) : null,
+          interactions: isCompleted ? (Array.isArray(sessionData.interactions) ? sessionData.interactions.length : (sessionData.interactions || 0)) : null,
+          success: sessionData.success || false,
+          notes: sessionData.completed === false ? "Task incomplete/failed due to error" : (sessionData.notes || ''),
+          filename: file
         });
       }
     } catch (error) {

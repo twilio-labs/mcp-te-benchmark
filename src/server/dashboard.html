@@ -1275,40 +1275,42 @@
                     titleText = 'Duration Comparison (seconds)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
-                        data.control[i-1] = average(taskData[taskId].control.map(s => s.duration)) / 1000;
-                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.duration)) / 1000;
+                        // Only include sessions with non-null duration
+                        const controlDurations = taskData[taskId].control.map(s => s.duration).filter(d => d !== null);
+                        const mcpDurations = taskData[taskId].mcp.map(s => s.duration).filter(d => d !== null);
+                        data.control[i-1] = average(controlDurations) / 1000;
+                        data.mcp[i-1] = average(mcpDurations) / 1000;
                     }
                     break;
                 case 'apiCalls':
                     titleText = 'API Calls Comparison (count)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
-                        data.control[i-1] = average(taskData[taskId].control.map(s => s.apiCalls));
-                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.apiCalls));
+                        // Only include sessions with non-null apiCalls
+                        const controlCalls = taskData[taskId].control.map(s => s.apiCalls).filter(c => c !== null);
+                        const mcpCalls = taskData[taskId].mcp.map(s => s.apiCalls).filter(c => c !== null);
+                        data.control[i-1] = average(controlCalls);
+                        data.mcp[i-1] = average(mcpCalls);
                     }
                     break;
                 case 'interactions':
                     titleText = 'User Interactions Comparison (messages)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
-                        data.control[i-1] = average(taskData[taskId].control.map(s => s.interactions));
-                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.interactions));
+                        // Only include sessions with non-null interactions
+                        const controlInteractions = taskData[taskId].control.map(s => s.interactions).filter(i => i !== null);
+                        const mcpInteractions = taskData[taskId].mcp.map(s => s.interactions).filter(i => i !== null);
+                        data.control[i-1] = average(controlInteractions);
+                        data.mcp[i-1] = average(mcpInteractions);
                     }
                     break;
                 case 'success':
                     titleText = 'Success Rate Comparison (%)';
                     for (let i = 1; i <= 3; i++) {
                         const taskId = i.toString();
+                        // Include all sessions for success rate calculation
                         data.control[i-1] = percentage(taskData[taskId].control.filter(s => s.success).length, taskData[taskId].control.length);
                         data.mcp[i-1] = percentage(taskData[taskId].mcp.filter(s => s.success).length, taskData[taskId].mcp.length);
-                    }
-                    break;
-                default:
-                    titleText = 'Duration Comparison (seconds)';
-                    for (let i = 1; i <= 3; i++) {
-                        const taskId = i.toString();
-                        data.control[i-1] = average(taskData[taskId].control.map(s => s.duration)) / 1000;
-                        data.mcp[i-1] = average(taskData[taskId].mcp.map(s => s.duration)) / 1000;
                     }
                     break;
             }
@@ -1354,7 +1356,9 @@
         }
 
         function average(values) {
-            return values.length ? values.reduce((sum, val) => sum + val, 0) / values.length : 0;
+            // Filter out null values before calculating average
+            const validValues = values.filter(val => val !== null);
+            return validValues.length ? validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
         }
 
         function percentage(part, total) {

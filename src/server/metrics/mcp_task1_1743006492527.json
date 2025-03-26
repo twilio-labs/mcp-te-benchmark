@@ -1,0 +1,12 @@
+{
+  "mode": "mcp",
+  "taskNumber": 1,
+  "model": "auto",
+  "startTime": 1743006492527,
+  "completed": true,
+  "apiCalls": 5,
+  "interactions": 1,
+  "success": true,
+  "endTime": 1743006550562,
+  "duration": 58035
+}

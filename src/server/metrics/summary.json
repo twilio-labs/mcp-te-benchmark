@@ -11,7 +11,8 @@
     "apiCalls": 4,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task1_1742844651945.json"
   },
   {
     "taskId": 1,
@@ -25,7 +26,8 @@
     "apiCalls": 3,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task1_1742847418113.json"
   },
   {
     "taskId": 1,
@@ -39,7 +41,8 @@
     "apiCalls": 9,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task1_1742918599977.json"
   },
   {
     "taskId": 1,
@@ -53,7 +56,8 @@
     "apiCalls": 2,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task1_1742844334500.json"
   },
   {
     "taskId": 1,
@@ -67,7 +71,8 @@
     "apiCalls": 2,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task1_1742851639571.json"
   },
   {
     "taskId": 1,
@@ -81,7 +86,23 @@
     "apiCalls": 3,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task1_1742917434804.json"
+  },
+  {
+    "taskId": 1,
+    "mode": "mcp",
+    "model": "auto",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cursor",
+    "startTime": 1743006492527,
+    "endTime": 1743006550562,
+    "duration": 58035,
+    "apiCalls": 5,
+    "interactions": 1,
+    "success": true,
+    "notes": "",
+    "filename": "mcp_task1_1743006492527.json"
   },
   {
     "taskId": 1,
@@ -95,7 +116,8 @@
     "apiCalls": 3,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task1_1742918424512.json"
   },
   {
     "taskId": 2,
@@ -109,7 +131,8 @@
     "apiCalls": 14,
     "interactions": 2,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task2_1742844750252.json"
   },
   {
     "taskId": 2,
@@ -123,7 +146,8 @@
     "apiCalls": 14,
     "interactions": 2,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task2_1742847543436.json"
   },
   {
     "taskId": 2,
@@ -137,7 +161,8 @@
     "apiCalls": 4,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task2_1742918712360.json"
   },
   {
     "taskId": 2,
@@ -151,7 +176,8 @@
     "apiCalls": 3,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task2_1742844405512.json"
   },
   {
     "taskId": 2,
@@ -165,7 +191,68 @@
     "apiCalls": 3,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task2_1742917525609.json"
+  },
+  {
+    "taskId": 2,
+    "mode": "mcp",
+    "model": "auto",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cursor",
+    "startTime": 1743006615453,
+    "endTime": null,
+    "duration": null,
+    "apiCalls": null,
+    "interactions": null,
+    "success": false,
+    "notes": "Task incomplete/failed due to error",
+    "filename": "mcp_task2_1743006615453.json"
+  },
+  {
+    "taskId": 2,
+    "mode": "mcp",
+    "model": "auto",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cursor",
+    "startTime": 1743006663268,
+    "endTime": null,
+    "duration": null,
+    "apiCalls": null,
+    "interactions": null,
+    "success": false,
+    "notes": "Task incomplete/failed due to error",
+    "filename": "mcp_task2_1743006663268.json"
+  },
+  {
+    "taskId": 2,
+    "mode": "mcp",
+    "model": "claude-3.7-sonnet",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cursor",
+    "startTime": 1742852061988,
+    "endTime": null,
+    "duration": null,
+    "apiCalls": null,
+    "interactions": null,
+    "success": false,
+    "notes": "Task incomplete/failed due to error",
+    "filename": "mcp_task2_1742852061988.json"
+  },
+  {
+    "taskId": 2,
+    "mode": "mcp",
+    "model": "claude-3.7-sonnet",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cursor",
+    "startTime": 1742918499249,
+    "endTime": null,
+    "duration": null,
+    "apiCalls": null,
+    "interactions": null,
+    "success": false,
+    "notes": "Task incomplete/failed due to error",
+    "filename": "mcp_task2_1742918499249.json"
   },
   {
     "taskId": 3,
@@ -179,7 +266,8 @@
     "apiCalls": 4,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task3_1742844796693.json"
   },
   {
     "taskId": 3,
@@ -193,7 +281,8 @@
     "apiCalls": 6,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task3_1742847669629.json"
   },
   {
     "taskId": 3,
@@ -207,7 +296,8 @@
     "apiCalls": 4,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "control_task3_1742918788141.json"
   },
   {
     "taskId": 3,
@@ -221,7 +311,8 @@
     "apiCalls": 2,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task3_1742844474773.json"
   },
   {
     "taskId": 3,
@@ -235,6 +326,7 @@
     "apiCalls": 2,
     "interactions": 1,
     "success": true,
-    "notes": ""
+    "notes": "",
+    "filename": "mcp_task3_1742917616051.json"
   }
 ]
