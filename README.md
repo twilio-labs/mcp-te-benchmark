@@ -24,7 +24,7 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 
 ### Task-Specific Performance
 
-#### Task 1: Purchase a Canadian Phone Number
+#### Twilio - Task 1: Purchase a Canadian Phone Number
 
 | Model | Mode | Duration (s) | API Calls | Interactions | Success |
 |-------|------|--------------|-----------|--------------|---------|
@@ -33,7 +33,7 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 | claude-3.7-sonnet | Control | 64.3 | 9.0 | 1.0 | 100% |
 | claude-3.7-sonnet | MCP | 42.2 | 3.0 | 1.0 | 100% |
 
-#### Task 2: Create a Task Router Activity
+#### Twilio - Task 2: Create a Task Router Activity
 
 | Model | Mode | Duration (s) | API Calls | Interactions | Success |
 |-------|------|--------------|-----------|--------------|---------|
@@ -42,7 +42,7 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 | claude-3.7-sonnet | Control | 35.3 | 4.0 | 1.0 | 100% |
 | claude-3.7-sonnet | MCP | N/A | N/A | N/A | N/A |
 
-#### Task 3: Create a Queue with Task Filter
+#### Twilio - Task 3: Create a Queue with Task Filter
 
 | Model | Mode | Duration (s) | API Calls | Interactions | Success |
 |-------|------|--------------|-----------|--------------|---------|
@@ -76,13 +76,13 @@ Some metrics are collected with different methods due to client limitations:
 
 ## Tasks
 
-The current benchmark includes the following Twilio API tasks:
+The current benchmark includes the following tasks specific to the Twilio MCP Server:
 
 1. **Purchase a Canadian Phone Number:** Search for and purchase an available Canadian phone number (preferably with area code 416)
 2. **Create a Task Router Activity:** Create a new Task Router activity named "Bathroom"
 3. **Create a Queue with Task Filter:** Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity
 
-While the initial task suite focuses on Twilio MCP, the MCP-TE framework is designed to be adaptable to other APIs and context protocols.
+While the initial task suite focuses on Twilio MCP Server functionality, the MCP-TE framework is designed to be adaptable to other APIs and context protocols.
 
 ## Setup
 
