@@ -261,6 +261,25 @@
             margin-bottom: 1rem;
         }
 
+        .run-counts-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .run-counts-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .run-counts-title::before {
+            content: "📊";
+            font-size: 1.1rem;
+        }
+
         .run-count-card {
             background: linear-gradient(135deg, var(--light), var(--gray-50));
             border-radius: var(--radius);
@@ -1019,16 +1038,19 @@
                 
                 section.innerHTML = `
                     <div class="model-title">Model: ${model}</div>
-                    <div class="run-counts-grid">
-                        ${[1, 2, 3].map(taskId => `
-                            <div class="run-count-card">
-                                <div class="run-count-title">Task ${taskId}</div>
-                                <div class="run-count-values">
-                                    <div>Control: ${taskCounts.control[taskId] || 0}</div>
-                                    <div>MCP: ${taskCounts.mcp[taskId] || 0}</div>
+                    <div class="run-counts-section">
+                        <div class="run-counts-title">Task Run Distribution</div>
+                        <div class="run-counts-grid">
+                            ${[1, 2, 3].map(taskId => `
+                                <div class="run-count-card">
+                                    <div class="run-count-title">Task ${taskId}</div>
+                                    <div class="run-count-values">
+                                        <div>Control: ${taskCounts.control[taskId] || 0}</div>
+                                        <div>MCP: ${taskCounts.mcp[taskId] || 0}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `).join('')}
+                        </div>
                     </div>
                     <div class="model-metrics-grid">
                         ${Object.entries(metrics).map(([title, values]) => {
