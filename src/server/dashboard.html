@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Context Protocol (MCP) Performance Dashboard</title>
+    <title>Model Context Protocol Tool Efficiency (MCP-TE) Benchmark</title>
     <style>
         :root {
             /* Twilio primary palette */
@@ -66,24 +66,32 @@
 
         header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            justify-content: flex-start;
+            align-items: center;
             margin-bottom: 2rem;
-            padding: 1.5rem;
+            padding: 1.5rem 2rem;
             background-color: var(--secondary);
             color: var(--light);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
         }
 
-        .header-content {
-            flex: 1;
-            margin-left: 2rem;
+        .logo {
+            height: 48px;
+            width: auto;
+            margin-right: 2rem;
+            filter: brightness(1.1);
+            transition: transform 0.2s ease;
         }
 
-        .logo {
-            height: 40px;
-            width: auto;
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-content {
+            flex: 1;
+            padding-left: 2rem;
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         header h1 {
@@ -515,7 +523,7 @@
         <header>
             <img src="/docs/twilioAlphaLogo.png" alt="Twilio Alpha" class="logo">
             <div class="header-content">
-                <h1>Model Context Protocol (MCP) Performance Dashboard</h1>
+                <h1>Model Context Protocol Tool Efficiency (MCP-TE) Benchmark</h1>
                 <p>Compare performance metrics between Traditional (Control) and MCP implementations</p>
             </div>
         </header>
@@ -585,7 +593,7 @@
                     <div class="metric-title">Testing Environment & Methodology</div>
                     <p>Tests are conducted using Cursor IDE in "Yolo" mode, allowing AI agents to execute actions autonomously. Cursor was chosen as the MCP client for its built-in web search and terminal execution capabilities, making it ideal for both control and MCP testing scenarios.</p>
                     <p style="margin-top: 10px">A custom metrics tracking system was implemented since Cursor doesn't expose execution logs. While task duration is automatically tracked, other metrics (API calls, user interactions, and success status) are manually calculated due to limitations in Cursor's logging capabilities.</p>
-                    <p style="margin-top: 10px">Each task is performed twice - once using traditional methods and once using MCP. For detailed information about the testing protocol and setup, visit our <a href="https://github.com/nmogil-tw/twilio-mcp-performance" target="_blank" style="color: var(--primary);">GitHub repository</a>.</p>
+                    <p style="margin-top: 10px">Each task is performed twice - once using traditional methods and once using MCP. For detailed information about the testing protocol and setup, visit our <a href="https://github.com/nmogil-tw/mcp-te-benchmark" target="_blank" style="color: var(--primary);">GitHub repository</a>.</p>
                 </div>
                 <!-- Two side-by-side boxes container -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">

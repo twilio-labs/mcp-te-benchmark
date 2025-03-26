@@ -8,7 +8,7 @@ const path = require('path');
 
 // Set up CLI
 program
-  .name('twilio-mcp-test')
+  .name('mcp-te-benchmark')
   .description('CLI for running Twilio MCP performance tests')
   .version('1.0.0');
 
