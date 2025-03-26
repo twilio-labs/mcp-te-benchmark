@@ -206,7 +206,7 @@
     "apiCalls": null,
     "interactions": null,
     "success": false,
-    "notes": "Task incomplete/failed due to error",
+    "notes": "Task incomplete/failed due to MCP Client bug",
     "filename": "mcp_task2_1743006615453.json"
   },
   {
@@ -221,7 +221,7 @@
     "apiCalls": null,
     "interactions": null,
     "success": false,
-    "notes": "Task incomplete/failed due to error",
+    "notes": "Task incomplete/failed due to MCP Client bug",
     "filename": "mcp_task2_1743006663268.json"
   },
   {
@@ -236,7 +236,7 @@
     "apiCalls": null,
     "interactions": null,
     "success": false,
-    "notes": "Task incomplete/failed due to error",
+    "notes": "Task incomplete/failed due to MCP Client bug",
     "filename": "mcp_task2_1742852061988.json"
   },
   {
@@ -251,7 +251,7 @@
     "apiCalls": null,
     "interactions": null,
     "success": false,
-    "notes": "Task incomplete/failed due to error",
+    "notes": "Task incomplete/failed due to MCP Client bug",
     "filename": "mcp_task2_1742918499249.json"
   },
   {
