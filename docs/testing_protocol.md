@@ -23,12 +23,12 @@ The AI assistant should execute only these two commands per task:
 
 1. **Task Start**:
    ```bash
-   curl -X POST http://localhost:3000/metrics/start -H "Content-Type: application/json" -d '{"taskId": TASK_NUMBER, "mode": "MODE"}'
+   curl -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d '{"taskId": TASK_NUMBER, "mode": "MODE"}'
    ```
 
 2. **Task Completion**:
    ```bash
-   curl -X POST http://localhost:3000/metrics/complete -H "Content-Type: application/json" -d '{"sessionId": "SESSION_ID", "success": true|false, "notes": "Any notes about completion"}'
+   curl -X POST http://localhost:3000/test/complete -H "Content-Type: application/json" -d '{"sessionId": "SESSION_ID", "success": true|false, "notes": "Any notes about completion"}'
    ```
 
 ## Test Tasks

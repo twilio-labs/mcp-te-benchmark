@@ -114,17 +114,39 @@ While the initial task suite focuses on Twilio MCP Server functionality, the MCP
 
 ## Running Tests
 
-1. Open a terminal and navigate to the project directory
-2. Start a test using:
+### Testing Protocol
+
+1. Start the metrics server if not already running:
    ```
-   ./scripts/run-test.sh [control|mcp] [1|2|3] [model]
+   npm run start:metrics
+   ```
+
+2. Use the run-test.sh script to prepare a specific test:
+   ```
+   ./scripts/run-test.sh [control|mcp] [1|2|3] [model-name]
    ```
    Where:
    - First parameter is the test mode (control or mcp)
    - Second parameter is the task number (1, 2, or 3)
    - Third parameter is the model name (e.g., "claude-3.7-sonnet")
-3. Follow the on-screen instructions
-4. When the test is complete, view results using one of the methods below
+
+3. Follow the on-screen instructions:
+   - Open Cursor with the AI Agent
+   - Load the appropriate instructions file (control_instructions.md or mcp_instructions.md) as context
+   - Start the conversation with: "Complete Task [TASK_NUMBER] using the commands in the instructions"
+
+4. The AI agent will then:
+   - Read the instructions
+   - Execute the start curl command to begin timing
+   - Complete the required task
+   - Execute the complete curl command to end timing
+
+5. After the AI agent completes the task, press Enter in the terminal window to continue with the next test or generate the summary
+
+6. Important: Before running tests, ensure the instruction documents contain the correct endpoint paths:
+   - The start command should use `/metrics/start`
+   - The complete command should use `/metrics/complete`
+   - The model parameter should be included in the start command
 
 ### Batch Testing
 
@@ -166,17 +188,6 @@ The benchmark focuses on these key insights:
 4. **Success Rate:** Determining if MCP improves the reliability of task completion
 
 Negative percentage changes in duration, API calls, and interactions indicate improvements, while positive changes in success rate indicate improvements.
-
-## Contributing
-
-Contributions to MCP-TE Benchmark are welcome! Here are some ways to contribute:
-
-1. Adding new API tasks
-2. Improving metrics collection
-3. Enhancing the dashboard visualization
-4. Testing with different AI models
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 

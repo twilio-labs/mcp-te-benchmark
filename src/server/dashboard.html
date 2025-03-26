@@ -211,6 +211,81 @@
             transition: color 0.3s;
         }
 
+        .model-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .compact-metric-card {
+            background: linear-gradient(135deg, var(--light), var(--gray-50));
+            border-radius: var(--radius);
+            padding: 1rem;
+            border: 1px solid var(--gray-100);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .compact-metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .compact-metric-title {
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .compact-metric-content {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .compact-metric-label {
+            color: var(--gray-500);
+        }
+
+        .compact-metric-value {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .run-counts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .run-count-card {
+            background: linear-gradient(135deg, var(--light), var(--gray-50));
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            border: 1px solid var(--gray-100);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .run-count-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .run-count-title {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
+        }
+
+        .run-count-values {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
         .table-container {
             overflow-x: auto;
             border-radius: var(--radius);
@@ -899,6 +974,22 @@
             for (const [model, data] of Object.entries(models)) {
                 // Skip if there's no data for either control or MCP
                 if (data.control.length === 0 || data.mcp.length === 0) continue;
+
+                // Calculate task run counts
+                const taskCounts = {
+                    control: {},
+                    mcp: {}
+                };
+                
+                // Count control runs per task
+                data.control.forEach(session => {
+                    taskCounts.control[session.taskId] = (taskCounts.control[session.taskId] || 0) + 1;
+                });
+                
+                // Count MCP runs per task
+                data.mcp.forEach(session => {
+                    taskCounts.mcp[session.taskId] = (taskCounts.mcp[session.taskId] || 0) + 1;
+                });
                 
                 const metrics = {
                     'Duration': {
@@ -928,7 +1019,18 @@
                 
                 section.innerHTML = `
                     <div class="model-title">Model: ${model}</div>
-                    <div class="metrics">
+                    <div class="run-counts-grid">
+                        ${[1, 2, 3].map(taskId => `
+                            <div class="run-count-card">
+                                <div class="run-count-title">Task ${taskId}</div>
+                                <div class="run-count-values">
+                                    <div>Control: ${taskCounts.control[taskId] || 0}</div>
+                                    <div>MCP: ${taskCounts.mcp[taskId] || 0}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="model-metrics-grid">
                         ${Object.entries(metrics).map(([title, values]) => {
                             const change = percentageChange(values.mcp, values.control);
                             const changeClass = (title === 'Success Rate' ? 
@@ -936,20 +1038,15 @@
                                 ? 'change-positive' : 'change-negative';
                             
                             return `
-                                <div class="metric-card">
-                                    <div class="metric-title">${title}</div>
-                                    <div class="metric-unit">Measured in ${values.unit}</div>
-                                    <div class="metric-value">
-                                        <span class="mode">Control:</span>
-                                        <span>${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</span>
-                                    </div>
-                                    <div class="metric-value">
-                                        <span class="mode">MCP:</span>
-                                        <span>${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</span>
-                                    </div>
-                                    <div class="metric-value">
-                                        <span class="mode">Change:</span>
-                                        <span class="${changeClass}">${change}%</span>
+                                <div class="compact-metric-card">
+                                    <div class="compact-metric-title">${title}</div>
+                                    <div class="compact-metric-content">
+                                        <div class="compact-metric-label">Control:</div>
+                                        <div class="compact-metric-value">${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                                        <div class="compact-metric-label">MCP:</div>
+                                        <div class="compact-metric-value">${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                                        <div class="compact-metric-label">Change:</div>
+                                        <div class="compact-metric-value ${changeClass}">${change}%</div>
                                     </div>
                                 </div>
                             `;
