@@ -625,60 +625,6 @@
             </div>
         </header>
         
-        <div class="actions">
-            <button id="refreshBtn" class="btn">
-                <span>↻</span> Refresh Data
-            </button>
-            <button id="downloadBtn" class="btn btn-secondary">
-                <span>↓</span> Download CSV
-            </button>
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <span>Loading data...</span>
-            </div>
-        </div>
-        
-        <div class="filters">
-            <div class="filter-group">
-                <label class="filter-label" for="mcpServerFilter">MCP Server:</label>
-                <select id="mcpServerFilter">
-                    <option value="all">All Servers</option>
-                    <!-- Will be dynamically populated -->
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label" for="mcpClientFilter">MCP Client:</label>
-                <select id="mcpClientFilter">
-                    <option value="all">All Clients</option>
-                    <!-- Will be dynamically populated -->
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label" for="modelFilter">Model:</label>
-                <select id="modelFilter">
-                    <option value="all">All Models</option>
-                    <!-- Will be dynamically populated -->
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label" for="taskFilter">Task:</label>
-                <select id="taskFilter">
-                    <option value="all">All Tasks</option>
-                    <option value="1">Task 1</option>
-                    <option value="2">Task 2</option>
-                    <option value="3">Task 3</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label" for="modeFilter">Mode:</label>
-                <select id="modeFilter">
-                    <option value="all">All Modes</option>
-                    <option value="control">Control</option>
-                    <option value="mcp">MCP</option>
-                </select>
-            </div>
-        </div>
-        
         <!-- Test Approaches -->
         <div class="card">
             <h2>Test Approach</h2>
@@ -788,6 +734,60 @@
         
         <div class="card">
             <h2>Detailed Results</h2>
+            <div class="actions">
+                <button id="refreshBtn" class="btn">
+                    <span>↻</span> Refresh Data
+                </button>
+                <button id="downloadBtn" class="btn btn-secondary">
+                    <span>↓</span> Download CSV
+                </button>
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <span>Loading data...</span>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label" for="mcpServerFilter">MCP Server:</label>
+                    <select id="mcpServerFilter">
+                        <option value="all">All Servers</option>
+                        <!-- Will be dynamically populated -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="mcpClientFilter">MCP Client:</label>
+                    <select id="mcpClientFilter">
+                        <option value="all">All Clients</option>
+                        <!-- Will be dynamically populated -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="modelFilter">Model:</label>
+                    <select id="modelFilter">
+                        <option value="all">All Models</option>
+                        <!-- Will be dynamically populated -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="taskFilter">Task:</label>
+                    <select id="taskFilter">
+                        <option value="all">All Tasks</option>
+                        <option value="1">Task 1</option>
+                        <option value="2">Task 2</option>
+                        <option value="3">Task 3</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="modeFilter">Mode:</label>
+                    <select id="modeFilter">
+                        <option value="all">All Modes</option>
+                        <option value="control">Control</option>
+                        <option value="mcp">MCP</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="table-container">
                 <table id="sessionsTable">
                     <thead>
