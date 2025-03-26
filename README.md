@@ -15,8 +15,8 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 
 | Metric | Control | MCP | Improvement |
 |--------|---------|-----|-------------|
-| Average Duration (s) | 43.2 | 42.4 | -1.9% |
-| Average API Calls | 6.4 | 2.5 | -60.9% |
+| Average Duration (s) | 43.3 | 42.7 | -1.4% |
+| Average API Calls | 6.9 | 2.5 | -63.8% |
 | Average Interactions | 1.2 | 1.0 | -16.7% |
 | Success Rate | 100.0% | 100.0% | 0.0% |
 
