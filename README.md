@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/twilioAlphaLogo.png" height="100" alt="Twilio Alpha"/></p>
+<p align="center"><img src="docs/twilioAlphaLogoLight.png#gh-dark-mode-only" height="100" alt="Twilio Alpha"/><img src="docs/twilioAlphaLogoDark.png#gh-light-mode-only" height="100" alt="Twilio Alpha"/></p>
 <h1 align="center">MCP-TE Benchmark</h1> 
 
 A standardized framework for evaluating the efficiency gains of AI agents using Model Context Protocol (MCP) compared to custom tools, such as terminal execution and web search.
