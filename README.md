@@ -67,12 +67,22 @@ The MCP-TE Benchmark evaluates AI coding agents' performance using a Control vs.
 | Interactions | Number of exchanges between the user and the AI assistant |
 | Success Rate | Percentage of tasks completed successfully |
 
-### Metric Collection Limitations
+### Metrics Collection
 
-Some metrics are collected with different methods due to client limitations:
+All metrics are now collected automatically from the Cline chat logs:
 
-- **Duration and Success/Failure:** Logged automatically by the metrics server
-- **API Calls and Interactions:** Currently manually counted post-run by observing the agent's behavior in Cursor, as Cursor does not provide detailed execution logs that would allow for automatic extraction of these metrics
+- **Duration:** Time from task start to completion, measured automatically
+- **API Calls:** Number of API calls made during task completion, extracted from chat logs
+- **Interactions:** Number of exchanges between the user and the AI assistant, extracted from chat logs
+- **Cost:** Estimated cost of the task based on token usage, calculated from chat logs
+- **Success Rate:** Percentage of tasks completed successfully
+
+To extract metrics from chat logs, run:
+```
+./scripts/extract-metrics.sh
+```
+
+This script will analyze the Claude chat logs and generate metrics files in the `src/server/metrics/` directory, including an updated `summary.json` file that powers the dashboard.
 
 ## Tasks
 
@@ -156,6 +166,23 @@ To run all tests in sequence:
 ```
 
 ## Viewing Results
+
+### Extracting Metrics from Chat Logs
+
+Before viewing results, extract metrics from Claude chat logs:
+
+```
+npm run extract-metrics
+```
+
+This script analyzes the Claude chat logs in `/Users/nmogil/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/tasks` and automatically extracts:
+- Duration of each task
+- Number of API calls
+- Number of user interactions
+- Token usage and estimated cost
+- Success/failure status
+
+The extracted metrics are saved to the `src/server/metrics/` directory and the `summary.json` file is updated.
 
 ### Interactive Dashboard
 

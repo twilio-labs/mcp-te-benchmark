@@ -24,12 +24,6 @@ if [[ "$TASK_ID" != "1" && "$TASK_ID" != "2" && "$TASK_ID" != "3" ]]; then
   exit 1
 fi
 
-# Check if metrics server is running
-if ! curl -s http://localhost:3000/test/status > /dev/null; then
-  echo "Error: Metrics server is not running. Start it with: npm run start:metrics"
-  exit 1
-fi
-
 echo "===================================="
 echo "Starting $MODE test for Task $TASK_ID using model $MODEL"
 echo "===================================="

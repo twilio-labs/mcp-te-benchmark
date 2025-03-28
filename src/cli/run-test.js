@@ -32,19 +32,6 @@ program
       process.exit(1);
     }
     
-    // Check if metrics server is running
-    try {
-      exec('curl -s http://localhost:3000/metrics/status', (error) => {
-        if (error) {
-          console.error('Error: Metrics server is not running. Start it with: node metrics-server.js');
-          process.exit(1);
-        }
-      });
-    } catch (error) {
-      console.error('Error: Metrics server is not running. Start it with: node metrics-server.js');
-      process.exit(1);
-    }
-    
     // Confirm test if not using --yes
     if (!options.yes) {
       const answers = await inquirer.prompt([
@@ -128,9 +115,9 @@ program
       }
     }
     
-    // Generate summary
-    console.log('\nGenerating summary...');
-    exec('node generate-summary.js', (error, stdout, stderr) => {
+    // Extract metrics from chat logs
+    console.log('\nExtracting metrics from chat logs...');
+    exec('node src/cli/extract-chat-metrics.js', (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
         return;
@@ -154,12 +141,12 @@ program
     });
   });
 
-// Command to generate summary
+// Command to extract metrics from chat logs
 program
-  .command('summary')
-  .description('Generate test summary')
+  .command('extract-metrics')
+  .description('Extract metrics from chat logs')
   .action(() => {
-    exec('node generate-summary.js', (error, stdout, stderr) => {
+    exec('node src/cli/extract-chat-metrics.js', (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
         return;

@@ -5,11 +5,11 @@
     "main": "src/server/dashboard-server.js",
     "scripts": {
         "start": "node src/server/dashboard-server.js",
-        "start:metrics": "node src/server/metrics-server.js",
         "test": "mocha tests/**/*.test.js",
         "test:watch": "mocha tests/**/*.test.js --watch",
         "lint": "eslint src/**/*.js tests/**/*.js",
-        "generate-summary": "node src/cli/generate-summary.js"
+        "generate-summary": "node src/cli/generate-summary.js",
+        "extract-metrics": "./scripts/extract-metrics.sh"
     },
     "author": "",
     "license": "MIT",

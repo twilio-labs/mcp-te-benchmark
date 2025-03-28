@@ -26,6 +26,12 @@ const server = http.createServer((req, res) => {
   } else if (req.url.startsWith('/metrics/')) {
     // Serve metrics files from the metrics directory
     filePath = path.join(__dirname, req.url);
+  } else if (req.url.startsWith('/css/')) {
+    // Serve CSS files from the css directory
+    filePath = path.join(__dirname, '..', req.url);
+  } else if (req.url.startsWith('/js/')) {
+    // Serve JavaScript files from the js directory
+    filePath = path.join(__dirname, '..', req.url);
   } else {
     // Serve other static files from the project root
     filePath = path.join(__dirname, '../..', req.url);
@@ -60,4 +66,4 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
   console.log('Press Ctrl+C to stop the server');
-}); 
+});
