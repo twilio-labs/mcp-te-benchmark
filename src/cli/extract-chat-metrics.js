@@ -65,13 +65,19 @@ async function extractChatMetrics() {
       .flat()
       .filter(metric => metric !== null);
 
+    // Create a summary generator
+    const summaryGenerator = new SummaryGenerator(METRICS_DIR);
+    
+    // If we have new metrics, write individual metric files
     if (validMetrics.length > 0) {
-      // Generate summary
-      const summaryGenerator = new SummaryGenerator(METRICS_DIR);
-      await summaryGenerator.generateSummary(validMetrics);
+      await summaryGenerator.writeIndividualMetricFiles(validMetrics);
     } else {
-      logger.warn('No task metrics found in chat logs');
+      logger.warn('No new task metrics found in chat logs');
     }
+    
+    // Always generate summary from all available metric files
+    // This ensures the summary is updated even if individual files were manually edited
+    await summaryGenerator.generateSummaryFromFiles();
   } catch (error) {
     logger.error('Error extracting metrics:', error);
   }
@@ -157,7 +163,20 @@ async function processDirectory(dir) {
     // Only process the first task segment found for this directory
     // This ensures we don't create multiple metrics for the same directory
     if (taskSegments.length > 0) {
-      const calculator = new MetricsCalculator(taskSegments[0], testType);
+      const taskSegment = taskSegments[0];
+      
+      // Check if metrics for this task already exist (unless force regenerate is enabled)
+      if (!FORCE_REGENERATE) {
+        const summaryGenerator = new SummaryGenerator(METRICS_DIR);
+        if (await summaryGenerator.metricFileExists(testType, taskSegment.taskNumber)) {
+          logger.info(`Skipping task ${taskSegment.taskNumber} (${testType}) - metrics file already exists`);
+          return [];
+        }
+      }
+      
+      // Pass the directory ID to the calculator
+      const directoryId = path.basename(dir);
+      const calculator = new MetricsCalculator(taskSegment, testType, directoryId);
       const metrics = await calculator.calculate();
       return metrics ? [metrics] : [];
     }

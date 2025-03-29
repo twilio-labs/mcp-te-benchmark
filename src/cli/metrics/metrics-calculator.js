@@ -1,9 +1,10 @@
 const logger = require('../../utils/logger');
 
 class MetricsCalculator {
-  constructor(segment, testType) {
+  constructor(segment, testType, directoryId) {
     this.segment = segment;
     this.testType = testType;
+    this.directoryId = directoryId || '';
   }
 
   async calculate() {
@@ -39,7 +40,7 @@ class MetricsCalculator {
 
       return {
         taskId: this.segment.taskNumber,
-        directoryId: this.segment.directoryId,
+        directoryId: this.directoryId, // Use the directoryId passed in the constructor
         mode: finalMode,
         model: model,
         mcpServer: 'Twilio', // Default value

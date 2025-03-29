@@ -14,7 +14,9 @@ node "$PROJECT_ROOT/src/cli/extract-chat-metrics.js"
 # Check if the script ran successfully
 if [ $? -eq 0 ]; then
     echo "Metrics extraction completed successfully."
-    echo "Metrics are available in $PROJECT_ROOT/src/server/metrics/"
+    echo "Individual task metrics are available in $PROJECT_ROOT/src/server/metrics/"
+    echo "Summary file was generated at $PROJECT_ROOT/src/server/metrics/summary.json"
+    echo "Note: The summary file is always regenerated, even if no new metrics were extracted"
     echo "You can view the metrics dashboard by running: npm start"
 else
     echo "Error: Metrics extraction failed."

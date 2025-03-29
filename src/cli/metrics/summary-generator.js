@@ -63,7 +63,10 @@ class SummaryGenerator {
 
   async writeIndividualMetricFiles(taskMetrics) {
     for (const metric of taskMetrics) {
-      const filename = `${metric.mode}_task${metric.taskId}_${metric.startTime}.json`;
+      // Include directoryId in the filename for better identification
+      // If directoryId is empty, use the startTime as a fallback
+      const directoryId = metric.directoryId || metric.startTime.toString();
+      const filename = `${metric.mode}_task${metric.taskId}_${directoryId}.json`;
       const filePath = path.join(this.metricsDir, filename);
       
       // Log the metric before writing to help debug
@@ -74,6 +77,7 @@ class SummaryGenerator {
         JSON.stringify({
           mode: metric.mode,
           taskNumber: metric.taskId,
+          directoryId: metric.directoryId || '', // Include directoryId in the JSON
           model: metric.model,
           startTime: metric.startTime,
           completed: true,
@@ -88,6 +92,73 @@ class SummaryGenerator {
           duration: metric.duration
         }, null, 2)
       );
+    }
+  }
+
+  /**
+   * Generate summary from individual metric files
+   * This method reads all individual JSON files and generates a summary
+   */
+  async generateSummaryFromFiles() {
+    try {
+      logger.info('Generating summary from individual metric files...');
+      
+      // Read all JSON files in the metrics directory
+      const files = await fs.readdir(this.metricsDir);
+      const metricFiles = files.filter(file => 
+        file.match(/^(control|mcp)_task\d+_.*\.json$/)
+      );
+      
+      logger.info(`Found ${metricFiles.length} individual metric files`);
+      
+      // Read and parse each file
+      const allMetrics = [];
+      for (const file of metricFiles) {
+        const filePath = path.join(this.metricsDir, file);
+        try {
+          const fileContent = await fs.readFile(filePath, 'utf8');
+          const metric = JSON.parse(fileContent);
+          
+          // Convert to the format expected by the summary
+          allMetrics.push({
+            taskId: metric.taskNumber,
+            directoryId: metric.directoryId || '',
+            mode: metric.mode,
+            model: metric.model,
+            mcpServer: metric.mcpServer || 'Twilio',
+            mcpClient: metric.mcpClient || 'Cline',
+            startTime: metric.startTime,
+            endTime: metric.endTime,
+            duration: metric.duration,
+            apiCalls: metric.apiCalls || 0,
+            interactions: metric.interactions || 0,
+            tokensIn: metric.tokensIn || 0,
+            tokensOut: metric.tokensOut || 0,
+            totalTokens: metric.totalTokens || 0,
+            cost: metric.cost || 0,
+            success: metric.success !== false,
+            notes: metric.notes || ''
+          });
+        } catch (error) {
+          logger.error(`Error parsing metric file ${file}: ${error.message}`);
+        }
+      }
+      
+      // Sort metrics
+      this.sortMetrics(allMetrics);
+      
+      // Write the summary file
+      await fs.writeFile(
+        path.join(this.metricsDir, 'summary.json'),
+        JSON.stringify(allMetrics, null, 2)
+      );
+      
+      this.printSummaryStatistics(allMetrics);
+      
+      return allMetrics;
+    } catch (error) {
+      logger.error('Error generating summary from files:', error);
+      return [];
     }
   }
 
@@ -152,7 +223,7 @@ class SummaryGenerator {
   async metricFileExists(mode, taskId) {
     try {
       const files = await fs.readdir(this.metricsDir);
-      const pattern = new RegExp(`^${mode}_task${taskId}_\\d+\\.json$`);
+      const pattern = new RegExp(`^${mode}_task${taskId}_.*\\.json$`);
       return files.some(file => pattern.test(file));
     } catch (error) {
       logger.error(`Error checking for existing metric file: ${error.message}`);

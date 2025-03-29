@@ -9,7 +9,8 @@
         "test:watch": "mocha tests/**/*.test.js --watch",
         "lint": "eslint src/**/*.js tests/**/*.js",
         "generate-summary": "node src/cli/generate-summary.js",
-        "extract-metrics": "./scripts/extract-metrics.sh"
+        "extract-metrics": "./scripts/extract-metrics.sh",
+        "regenerate-summary": "./scripts/regenerate-summary.sh"
     },
     "author": "",
     "license": "MIT",
