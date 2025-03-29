@@ -23,3 +23,5 @@ results/analysis/
 Thumbs.db
 
 .logs/
+
+example_task_logs/

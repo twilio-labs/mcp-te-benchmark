@@ -103,6 +103,14 @@ class SummaryGenerator {
       
       // Add new metrics, replacing existing ones with same key
       for (const newMetric of newMetrics) {
+        // Validate duration before merging
+        const MAX_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        if (newMetric.duration < 0 || newMetric.duration > MAX_DURATION) {
+          logger.warn(`Invalid duration detected in metric for task ${newMetric.taskId}: ${newMetric.duration}ms. Adjusting...`);
+          newMetric.duration = Math.min(Math.max(0, newMetric.duration), MAX_DURATION);
+          newMetric.endTime = newMetric.startTime + newMetric.duration;
+        }
+
         const key = `${newMetric.mode}_${newMetric.taskId}_${newMetric.startTime}`;
         const existingIndex = allMetrics.findIndex(metric => 
           metric.mode === newMetric.mode && 

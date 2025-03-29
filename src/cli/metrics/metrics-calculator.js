@@ -27,6 +27,16 @@ class MetricsCalculator {
 
       const { tokensIn, tokensOut, totalCost } = tokenMetrics;
 
+      // Validate and calculate duration
+      let duration = this.segment.endTime - this.segment.startTime;
+      
+      // Check for unreasonable duration (more than 24 hours)
+      const MAX_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      if (duration < 0 || duration > MAX_DURATION) {
+        logger.warn(`Invalid duration detected for task ${this.segment.taskNumber}: ${duration}ms. Capping at 24 hours.`);
+        duration = Math.min(Math.max(0, duration), MAX_DURATION);
+      }
+
       return {
         taskId: this.segment.taskNumber,
         directoryId: this.segment.directoryId,
@@ -35,8 +45,8 @@ class MetricsCalculator {
         mcpServer: 'Twilio', // Default value
         mcpClient: 'Cline', // Changed from 'Cursor' to 'Cline'
         startTime: this.segment.startTime,
-        endTime: this.segment.endTime,
-        duration: this.segment.endTime - this.segment.startTime,
+        endTime: this.segment.startTime + duration, // Ensure endTime is consistent with duration
+        duration: duration,
         apiCalls: apiCallCount,
         interactions: userMessageCount,
         tokensIn: tokensIn,
@@ -70,262 +80,98 @@ class MetricsCalculator {
 
   async calculateApiCalls() {
     let apiCallCount = 0;
-    let apiHistoryCount = 0;
-    let apiReqCount = 0;
-    let mcpReqCount = 0;
-    let fileOpCount = 0;
-
-    // Count API calls from API history
-    for (const call of this.segment.apiCalls) {
-      // Count API calls that represent actual tool usage or LLM calls
-      if (call.role === 'assistant' && call.content) {
-        const hasToolCall = call.content.some(content => 
-          content.type === 'text' && content.text && (
-            content.text.includes('<function_calls>') ||
-            content.text.includes('<function_results>') ||
-            content.text.includes('use_mcp_tool') ||
-            content.text.includes('use_mcp_server')
-          )
-        );
-        if (hasToolCall) {
-          apiHistoryCount++;
-          apiCallCount++;
-          logger.debug(`Found API history call in task ${this.segment.taskNumber}: ${JSON.stringify(call.content)}`);
-        }
-      }
-    }
-
-    // Count additional API calls from UI messages
+    
+    // Count API calls from UI messages only - only counting api_req_started events
     for (const msg of this.segment.userMessages) {
       // Count API request operations
       if (msg.type === 'say' && msg.say === 'api_req_started') {
-        apiReqCount++;
         apiCallCount++;
         logger.debug(`Found API request in task ${this.segment.taskNumber}: ${msg.text}`);
       }
       
-      // Count MCP tool requests
-      if (msg.type === 'say' && msg.say === 'mcp_server_request_started') {
-        mcpReqCount++;
-        apiCallCount++;
-        logger.debug(`Found MCP request in task ${this.segment.taskNumber}: ${msg.text}`);
-      }
-
-      // Count file read operations and other tool calls
-      if (msg.type === 'say' && msg.say === 'text' && msg.text) {
-        const hasToolCall = 
-          msg.text.includes('read_file') || 
-          msg.text.includes('codebase_search') || 
-          msg.text.includes('grep_search') ||
-          msg.text.includes('file_search') ||
-          msg.text.includes('<function_calls>') ||
-          msg.text.includes('<function_results>') ||
-          msg.text.includes('use_mcp_tool') ||
-          msg.text.includes('use_mcp_server');
-
-        if (hasToolCall) {
-          fileOpCount++;
-          apiCallCount++;
-          logger.debug(`Found tool call in task ${this.segment.taskNumber}: ${msg.text}`);
-        }
-      }
+      // No longer counting MCP tool requests as per requirements
     }
 
-    logger.info(`API Call Breakdown for Task ${this.segment.taskNumber}:
-      - API History Calls: ${apiHistoryCount}
-      - API Request Operations: ${apiReqCount}
-      - MCP Tool Requests: ${mcpReqCount}
-      - File Operations: ${fileOpCount}
-      Total API Calls: ${apiCallCount}`);
+    logger.info(`API Call Count for Task ${this.segment.taskNumber}: ${apiCallCount}`);
 
-    // Ensure we return a number
     return apiCallCount || 0;
   }
 
   async calculateUserMessages() {
-    let userMessageCount = 0;
-    let uiMessageCount = 0;
-    let apiMessageCount = 0;
+    // For benchmarking MCP tasks, we want the true number of human interactions
+    // In most cases, this should be just 1 (the initial task instruction)
     
-    // Keep track of unique messages to prevent double counting
-    const uniqueMessages = new Set();
-
-    // Process UI messages
-    for (const msg of this.segment.userMessages) {
-      // Skip non-text messages
-      if (msg.type !== 'say' || msg.say !== 'text' || !msg.text) {
-        logger.debug(`Skipping non-text message: ${JSON.stringify(msg)}`);
-        continue;
-      }
-
-      // Skip system/assistant messages
-      if (msg.from === 'assistant' || msg.from === 'system') {
-        logger.debug(`Skipping assistant/system message: ${JSON.stringify(msg)}`);
-        continue;
-      }
-
-      // Skip messages that look like assistant responses
-      if (msg.text && (
-        // First person pronouns and phrases
-        msg.text.includes('I will') ||
-        msg.text.includes('Let me') ||
-        msg.text.includes('I\'ll') ||
-        msg.text.includes('I am') ||
-        msg.text.includes('I can') ||
-        msg.text.includes('I\'ve') ||
-        msg.text.includes('I have') ||
-        msg.text.includes('I see') ||
-        msg.text.includes('I need') ||
-        msg.text.includes('I found') ||
-        msg.text.includes('I\'m') ||
-        msg.text.includes('I think') ||
-        // Common assistant starters
-        msg.text.startsWith('Based on') ||
-        msg.text.startsWith('Here\'s') ||
-        msg.text.startsWith('Looking at') ||
-        msg.text.startsWith('After analyzing') ||
-        msg.text.startsWith('According to') ||
-        msg.text.startsWith('The code') ||
-        msg.text.startsWith('This is') ||
-        msg.text.startsWith('Now') ||
-        msg.text.startsWith('First') ||
-        msg.text.startsWith('Next') ||
-        // Question patterns
-        msg.text.includes('?') ||
-        msg.text.includes('should I') ||
-        // File references that look like assistant analysis
-        msg.text.includes('.env.example') ||
-        msg.text.includes('credentials')
-      )) {
-        logger.debug(`Skipping message that looks like assistant response: ${msg.text}`);
-        continue;
-      }
-
-      // Skip tool calls and system operations
-      if (msg.text && (
-        msg.text.includes('<function_calls>') ||
-        msg.text.includes('<fnr>') ||
-        msg.text.includes('read_file') ||
-        msg.text.includes('codebase_search') ||
-        msg.text.includes('grep_search') ||
-        msg.text.includes('file_search') ||
-        msg.text.includes('use_mcp_tool') ||
-        msg.text.includes('use_mcp_server')
-      )) {
-        logger.debug(`Skipping tool call or system operation: ${msg.text}`);
-        continue;
-      }
-
-      // Only count messages that match the task instruction format
-      const taskInstructionMatch = msg.text.match(/@\/agent-instructions\/(mcp|control)_instructions\.md Complete Task \d+ using the commands in the instructions/);
-      
-      // Only count as user message if explicitly from user and matches task instruction format
-      if ((!msg.from || msg.from === 'user') && taskInstructionMatch) {
-        // Use a hash of the message text to prevent duplicates
-        const msgHash = Buffer.from(msg.text).toString('base64');
-        if (!uniqueMessages.has(msgHash)) {
-          uniqueMessages.add(msgHash);
-          uiMessageCount++;
-          userMessageCount++;
-          logger.info(`Counted UI user message: ${msg.text}`);
-        } else {
-          logger.debug(`Skipping duplicate message: ${msg.text}`);
-        }
-      } else {
-        logger.debug(`Skipping non-task-instruction message: ${msg.text}`);
-      }
-    }
-
-    // Process API history for user messages
-    for (const call of this.segment.apiCalls) {
-      if (call.role !== 'user' || !call.content) {
-        logger.debug(`Skipping non-user API call: ${JSON.stringify(call)}`);
-        continue;
-      }
-
-      // Only count if it contains actual user query
-      const userQueries = call.content.filter(content => 
-        content.type === 'text' && 
-        content.text && 
-        content.text.includes('<user_query>')
-      );
-
-      for (const query of userQueries) {
-        // Extract the actual query text
-        const queryMatch = query.text.match(/<user_query>(.*?)<\/user_query>/s);
-        if (queryMatch && queryMatch[1]) {
-          const queryText = queryMatch[1].trim();
+    // Set to track unique conversation turns
+    let userInteractionCount = 0;
+    
+    // Search for the initial task message
+    let foundInitialTask = false;
+    
+    // Look in API conversation history (most reliable source)
+    if (this.segment.apiCalls && Array.isArray(this.segment.apiCalls)) {
+      for (const entry of this.segment.apiCalls) {
+        // Only process user messages
+        if (entry.role === 'user' && entry.content && Array.isArray(entry.content)) {
+          // Extract the text from all content items
+          const fullText = entry.content
+            .filter(item => item.type === 'text')
+            .map(item => item.text || '')
+            .join(' ');
           
-          // Only count if it matches the task instruction format
-          const taskInstructionMatch = queryText.match(/@\/agent-instructions\/(mcp|control)_instructions\.md Complete Task \d+ using the commands in the instructions/);
+          // Check if this is the initial task request
+          if (!foundInitialTask && (
+              fullText.includes('Complete Task') || 
+              fullText.includes('agent-instructions/mcp_instructions.md') ||
+              fullText.includes('agent-instructions/control_instructions.md')
+            )) {
+            foundInitialTask = true;
+            userInteractionCount = 1;  // Set to exactly 1 for the initial task
+            logger.info(`Found initial task instruction for task ${this.segment.taskNumber}`);
+            continue;  // Skip to next message
+          }
           
-          if (taskInstructionMatch) {
-            // Use a hash of the query text to prevent duplicates
-            const queryHash = Buffer.from(queryText).toString('base64');
-            
-            if (!uniqueMessages.has(queryHash)) {
-              uniqueMessages.add(queryHash);
-              apiMessageCount++;
-              userMessageCount++;
-              logger.info(`Counted API user query: ${queryText}`);
-            } else {
-              logger.debug(`Skipping duplicate API query: ${queryText}`);
-            }
-          } else {
-            logger.debug(`Skipping non-task-instruction query: ${queryText}`);
+          // Only count additional user messages if they appear to be actual human follow-ups
+          // and not system messages
+          if (foundInitialTask && 
+              !fullText.includes('<environment_details>') && 
+              !fullText.startsWith('[') &&
+              fullText.trim().length > 10) {  // Minimum length to exclude noise
+            // This appears to be a genuine follow-up question
+            userInteractionCount++;
+            logger.info(`Found follow-up user message for task ${this.segment.taskNumber}: "${fullText.substring(0, 50)}..."`);
           }
         }
       }
     }
-
-    logger.info(`User Message Breakdown for Task ${this.segment.taskNumber}:
-      - UI Messages: ${uiMessageCount}
-      - API Messages: ${apiMessageCount}
-      - Unique Messages: ${uniqueMessages.size}
-      Total User Messages: ${userMessageCount}
-      
-      Message Hashes: ${Array.from(uniqueMessages).join(', ')}
-    `);
-
-    return userMessageCount;
+    
+    // If we still haven't found any interactions, default to 1
+    if (userInteractionCount === 0) {
+      userInteractionCount = 1;
+      logger.info(`No user messages found in logs, defaulting to 1 interaction for task ${this.segment.taskNumber}`);
+    }
+    
+    return userInteractionCount;
   }
 
   async calculateTokenMetrics() {
     let tokensIn = 0;
     let tokensOut = 0;
     let totalCost = 0;
+    let messagesWithTokens = 0;
 
-    // Process API calls for token usage
-    for (const apiCall of this.segment.apiCalls) {
-      if (apiCall.usage) {
-        tokensIn += apiCall.usage.input_tokens || 0;
-        tokensOut += apiCall.usage.output_tokens || 0;
-        if (apiCall.usage.cost) {
-          totalCost += apiCall.usage.cost;
-        }
-      }
-    }
+    logger.info(`Starting token calculation for task ${this.segment.taskNumber}`);
 
-    // Process UI messages for token usage
+    // First pass: Collect reported token usage from Claude
     for (const message of this.segment.userMessages) {
-      // Check for completion_result messages which contain token usage
-      if (message.say === 'completion_result' && message.text) {
-        tokensIn += 32; // Standard system prompt tokens
-        tokensOut += Math.ceil(message.text.length / 3); // Approximate output tokens
-      }
-      // Check for API request messages
-      else if (message.say === 'api_req_started' && message.text) {
+      if (message.type === 'say' && message.text) {
         try {
-          // Try to parse the message text as JSON
           const data = JSON.parse(message.text);
-          if (data.tokensIn) {
+          if (data.tokensIn !== undefined) {
             tokensIn += parseInt(data.tokensIn, 10);
-          }
-          if (data.tokensOut) {
-            tokensOut += parseInt(data.tokensOut, 10);
-          }
-          if (data.cost) {
-            totalCost += parseFloat(data.cost);
+            tokensOut += parseInt(data.tokensOut || 0, 10);
+            totalCost += parseFloat(data.cost || 0);
+            messagesWithTokens++;
+            logger.info(`Message ${messagesWithTokens} tokens - In: ${data.tokensIn}, Out: ${data.tokensOut || 0}`);
           }
         } catch (e) {
           // If JSON parsing fails, try regex matching
@@ -333,24 +179,41 @@ class MetricsCalculator {
           const tokensOutMatch = message.text.match(/tokensOut["\s:]+(\d+)/i);
           const costMatch = message.text.match(/cost["\s:]+([0-9.]+)/i);
 
-          if (tokensInMatch && tokensInMatch[1]) {
-            tokensIn += parseInt(tokensInMatch[1], 10);
-          }
-          if (tokensOutMatch && tokensOutMatch[1]) {
-            tokensOut += parseInt(tokensOutMatch[1], 10);
-          }
-          if (costMatch && costMatch[1]) {
-            totalCost += parseFloat(costMatch[1]);
+          if (tokensInMatch || tokensOutMatch) {
+            if (tokensInMatch && tokensInMatch[1]) tokensIn += parseInt(tokensInMatch[1], 10);
+            if (tokensOutMatch && tokensOutMatch[1]) tokensOut += parseInt(tokensOutMatch[1], 10);
+            if (costMatch && costMatch[1]) totalCost += parseFloat(costMatch[1]);
+            messagesWithTokens++;
+            logger.info(`Message ${messagesWithTokens} tokens - In: ${tokensInMatch ? tokensInMatch[1] : 0}, Out: ${tokensOutMatch ? tokensOutMatch[1] : 0}`);
           }
         }
       }
     }
 
-    // Calculate cost if not already set
-    if (totalCost === 0) {
-      // Claude 3 Opus pricing: $15 per million input tokens, $75 per million output tokens
-      totalCost = ((tokensIn / 1000000) * 15) + ((tokensOut / 1000000) * 75);
+    // Second pass: Check API calls for any additional token usage
+    let apiCallsWithTokens = 0;
+    for (const apiCall of this.segment.apiCalls) {
+      if (apiCall.usage) {
+        if (apiCall.usage.input_tokens) tokensIn += apiCall.usage.input_tokens;
+        if (apiCall.usage.output_tokens) tokensOut += apiCall.usage.output_tokens;
+        if (apiCall.usage.cost) totalCost += apiCall.usage.cost;
+        apiCallsWithTokens++;
+        logger.info(`API Call ${apiCallsWithTokens} tokens - In: ${apiCall.usage.input_tokens || 0}, Out: ${apiCall.usage.output_tokens || 0}`);
+      }
     }
+
+    // Calculate total cost if not already set
+    if (totalCost === 0) {
+      // Claude-3 pricing: $0.008/1K input tokens, $0.024/1K output tokens
+      totalCost = (tokensIn * 0.008 / 1000) + (tokensOut * 0.024 / 1000);
+    }
+
+    logger.info(`Token metrics for task ${this.segment.taskNumber}:
+      Messages with tokens: ${messagesWithTokens}
+      API calls with tokens: ${apiCallsWithTokens}
+      Total input tokens: ${tokensIn}
+      Total output tokens: ${tokensOut}
+      Total cost: ${totalCost}`);
 
     return { tokensIn, tokensOut, totalCost };
   }

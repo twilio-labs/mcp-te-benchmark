@@ -82,16 +82,26 @@ async function extractChatMetrics() {
  */
 async function getChatDirectories() {
   try {
-    const allDirs = await fs.readdir(CLAUDE_LOGS_DIR);
+    const rootDir = CLAUDE_LOGS_DIR;
     const chatDirs = [];
-
-    for (const dir of allDirs) {
-      if (dir.startsWith('.')) continue;
-
-      const itemPath = path.join(CLAUDE_LOGS_DIR, dir);
-      const stats = await fs.stat(itemPath);
-
-      if (stats.isDirectory()) {
+    
+    // Check if the root directory exists
+    try {
+      await fs.access(rootDir);
+    } catch (error) {
+      logger.error(`Error accessing directory ${rootDir}:`, error);
+      return [];
+    }
+    
+    // Get all subdirectories
+    const items = await fs.readdir(rootDir, { withFileTypes: true });
+    
+    // Process each subdirectory
+    for (const item of items) {
+      if (item.isDirectory()) {
+        const itemPath = path.join(rootDir, item.name);
+        
+        // Check if this directory contains the required files
         const [apiExists, uiExists] = await Promise.all([
           fs.access(path.join(itemPath, 'api_conversation_history.json'))
             .then(() => true)
@@ -100,16 +110,16 @@ async function getChatDirectories() {
             .then(() => true)
             .catch(() => false)
         ]);
-
+        
         if (apiExists && uiExists) {
-          chatDirs.push(itemPath);
           if (VERBOSE) {
-            console.log(`Found chat directory: ${dir}`);
+            console.log(`Found chat directory: ${item.name}`);
           }
+          chatDirs.push(itemPath);
         }
       }
     }
-
+    
     return chatDirs;
   } catch (error) {
     logger.error('Error getting chat directories:', error);

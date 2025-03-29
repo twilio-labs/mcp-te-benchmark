@@ -124,14 +124,36 @@ class ChatProcessor {
         }
       }
 
-      // Set end boundaries
+      // Get the last valid message timestamp
+      let lastValidMessageTs = null;
+      for (let i = this.uiMessages.length - 1; i >= 0; i--) {
+        const message = this.uiMessages[i];
+        // Skip resume_completed_task messages as they can appear much later
+        if (message && message.ts && typeof message.ts === 'number' && 
+            !(message.type === 'ask' && message.ask === 'resume_completed_task')) {
+          lastValidMessageTs = message.ts;
+          break;
+        }
+      }
+
+      // Set end boundaries with validation
       for (let i = 0; i < taskBoundaries.length; i++) {
         if (i < taskBoundaries.length - 1) {
+          // For non-last tasks, end at the start of next task
           taskBoundaries[i].endIndex = taskBoundaries[i + 1].startIndex - 1;
           taskBoundaries[i].endTime = taskBoundaries[i + 1].startTime;
         } else {
+          // For the last task, use the last valid message timestamp
           taskBoundaries[i].endIndex = this.uiMessages.length - 1;
-          taskBoundaries[i].endTime = this.uiMessages[this.uiMessages.length - 1].ts;
+          taskBoundaries[i].endTime = lastValidMessageTs;
+        }
+
+        // Validate endTime is after startTime and within reasonable bounds
+        if (!taskBoundaries[i].endTime || 
+            taskBoundaries[i].endTime < taskBoundaries[i].startTime ||
+            taskBoundaries[i].endTime > lastValidMessageTs) {
+          logger.warn(`Invalid endTime detected for task ${taskBoundaries[i].taskNumber}. Using last valid message timestamp.`);
+          taskBoundaries[i].endTime = lastValidMessageTs;
         }
       }
 
@@ -181,48 +203,12 @@ class ChatProcessor {
       
       boundary.userMessages = relevantMessages;
 
-      // Match API calls to task segment
-      const apiCalls = this.apiHistory.filter(entry => {
-        // First check timestamp
-        const timestamp = this.getTimestampFromApiEntry(entry);
-        if (!timestamp || 
-            timestamp < boundary.startTime || 
-            (boundary.endTime !== null && timestamp > boundary.endTime)) {
-          return false;
-        }
-
-        // Include assistant messages with tool calls
-        if (entry.role === 'assistant' && entry.content) {
-          return entry.content.some(content => 
-            content.type === 'text' && 
-            content.text && (
-              content.text.includes('<function_calls>') ||
-              content.text.includes('<function_results>')
-            )
-          );
-        }
-
-        // Include user messages with queries
-        if (entry.role === 'user' && entry.content) {
-          return entry.content.some(content =>
-            content.type === 'text' && 
-            content.text && 
-            content.text.includes('<user_query>')
-          );
-        }
-
-        return false;
-      });
+      // Include all API calls in the task segment
+      // This is a simplified approach that assigns all API calls to the task
+      boundary.apiCalls = this.apiHistory;
       
-      logger.info(`Found ${apiCalls.length} API calls for task ${boundary.taskNumber}`);
-      apiCalls.forEach(call => {
-        if (call.usage) {
-          logger.info(`API Call with usage info: ${JSON.stringify(call.usage, null, 2)}`);
-        }
-      });
+      logger.info(`Assigned ${boundary.apiCalls.length} API calls for task ${boundary.taskNumber}`);
       
-      boundary.apiCalls = apiCalls;
-
       return boundary;
     } catch (error) {
       logger.error(`Error processing task segment: ${error.message}`);
