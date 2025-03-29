@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const fs = require('fs').promises;
 const path = require('path');
+const yargs = require('yargs/yargs');
+const { hideBin } = require('yargs/helpers');
 const config = require('../utils/config');
 const logger = require('../utils/logger');
 const ChatProcessor = require('./metrics/chat-processor');
@@ -11,36 +13,65 @@ const SummaryGenerator = require('./metrics/summary-generator');
 const CLAUDE_LOGS_DIR = '/Users/nmogil/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/tasks';
 const METRICS_DIR = config.metrics.dataPath;
 
-// Parse command line arguments
-const args = process.argv.slice(2);
-const SHOW_HELP = args.includes('--help') || args.includes('-h');
-const FORCE_REGENERATE = args.includes('--force') || args.includes('-f');
-const VERBOSE = args.includes('--verbose') || args.includes('-v');
+// Parse command line arguments using yargs
+const argv = yargs(hideBin(process.argv))
+  .option('force', {
+    alias: 'f',
+    type: 'boolean',
+    description: 'Force regeneration of all metrics, even if they already exist',
+    default: false,
+  })
+  .option('verbose', {
+    alias: 'v',
+    type: 'boolean',
+    description: 'Enable verbose logging for debugging',
+    default: false,
+  })
+  .option('model', {
+    type: 'string',
+    description: 'Specify the model name to use if not found in logs',
+  })
+  .option('client', {
+    type: 'string',
+    description: 'Specify the client name (e.g., MCP client) to use',
+  })
+  .option('server', {
+    type: 'string',
+    description: 'Specify the MCP server name to use',
+  })
+  .help()
+  .alias('help', 'h')
+  .argv;
 
-// Show help message if requested
-if (SHOW_HELP) {
-  console.log(`
-Usage: node extract-chat-metrics.js [options]
+// Use parsed arguments
+const FORCE_REGENERATE = argv.force;
+const VERBOSE = argv.verbose;
+const MODEL_ARG = argv.model;
+const CLIENT_ARG = argv.client;
+const SERVER_ARG = argv.server;
 
-Options:
-  -f, --force    Force regeneration of all metrics, even if they already exist
-  -v, --verbose  Enable verbose logging for debugging
-  -h, --help     Show this help message
-
-Description:
-  Extracts metrics from Claude chat logs and generates summary.json file.
-  By default, it will skip tasks that already have metrics in the summary.
-  Use --force to regenerate all metrics.
-  `);
-  process.exit(0);
+// Show help message if requested (yargs handles this automatically, but good practice)
+// Note: yargs automatically exits after showing help, so this block might not be strictly needed
+if (argv.help) {
+  // yargs handles printing help, we just need to ensure the script exits cleanly if needed.
+  // process.exit(0); // yargs usually handles exit
 }
 
+// Log argument usage
 if (VERBOSE) {
   console.log('Verbose mode enabled - will show detailed logging');
 }
-
 if (FORCE_REGENERATE) {
   console.log('Force regeneration mode enabled - will regenerate all metrics');
+}
+if (MODEL_ARG) {
+  console.log(`Using provided model override: ${MODEL_ARG}`);
+}
+if (CLIENT_ARG) {
+  console.log(`Using provided client override: ${CLIENT_ARG}`);
+}
+if (SERVER_ARG) {
+  console.log(`Using provided server override: ${SERVER_ARG}`);
 }
 
 /**
@@ -55,9 +86,9 @@ async function extractChatMetrics() {
     const chatDirs = await getChatDirectories();
     logger.info(`Found ${chatDirs.length} chat directories`);
 
-    // Process each chat directory in parallel
+    // Process each chat directory in parallel, passing arguments
     const allTaskMetrics = await Promise.all(
-      chatDirs.map(dir => processDirectory(dir))
+      chatDirs.map(dir => processDirectory(dir, MODEL_ARG, CLIENT_ARG, SERVER_ARG))
     );
 
     // Flatten and filter out null results
@@ -135,8 +166,12 @@ async function getChatDirectories() {
 
 /**
  * Process a single chat directory
+ * @param {string} dir - The directory path
+ * @param {string|undefined} modelArg - The model name provided via CLI argument
+ * @param {string|undefined} clientArg - The client name provided via CLI argument
+ * @param {string|undefined} serverArg - The server name provided via CLI argument
  */
-async function processDirectory(dir) {
+async function processDirectory(dir, modelArg, clientArg, serverArg) {
   try {
     const chatProcessor = new ChatProcessor(dir);
     const initialized = await chatProcessor.initialize();
@@ -176,7 +211,8 @@ async function processDirectory(dir) {
           return [];
         }
       }
-      const calculator = new MetricsCalculator(taskSegment, testType, directoryId);
+      // Pass model, client, and server args to the calculator
+      const calculator = new MetricsCalculator(taskSegment, testType, directoryId, modelArg, clientArg, serverArg);
       const metrics = await calculator.calculate();
       return metrics ? [metrics] : [];
     }

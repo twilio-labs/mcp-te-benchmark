@@ -7,9 +7,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
-# Run the extract-chat-metrics.js script
+# Run the extract-chat-metrics.js script, passing along any arguments ($@)
 echo "Extracting metrics from Claude chat logs..."
-node "$PROJECT_ROOT/src/cli/extract-chat-metrics.js"
+node "$PROJECT_ROOT/src/cli/extract-chat-metrics.js" "$@"
 
 # Check if the script ran successfully
 if [ $? -eq 0 ]; then

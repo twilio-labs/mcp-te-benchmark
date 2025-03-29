@@ -1,0 +1,17 @@
+{
+  "mode": "control",
+  "taskNumber": 1,
+  "directoryId": "1743279685196",
+  "model": "gemini-2.5-pro-exp-03-25",
+  "startTime": 1743279685202,
+  "completed": true,
+  "apiCalls": 9,
+  "interactions": 1,
+  "tokensIn": 136443,
+  "tokensOut": 1289,
+  "totalTokens": 137732,
+  "cost": 1.1224800000000001,
+  "success": true,
+  "endTime": 1743279821480,
+  "duration": 136278
+}

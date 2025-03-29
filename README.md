@@ -182,6 +182,24 @@ This script analyzes the Claude chat logs in `/Users/nmogil/Library/Application 
 - Token usage and estimated cost
 - Success/failure status
 
+You can also specify the model, client, and server names to use in the metrics:
+
+```
+npm run extract-metrics -- --model <model-name> --client <client-name> --server <server-name>
+```
+
+For example:
+```
+npm run extract-metrics -- --model claude-3.7-sonnet --client Cline --server Twilio
+```
+
+These arguments are optional and will override any values found in the logs or the default values. This is useful when the information isn't available in the logs or needs to be standardized across different runs.
+
+Additional options:
+- `--force` or `-f`: Force regeneration of all metrics, even if they already exist
+- `--verbose` or `-v`: Enable verbose logging for debugging
+- `--help` or `-h`: Show help message
+
 The extracted metrics are saved to the `src/server/metrics/` directory and the `summary.json` file is updated.
 
 ### Interactive Dashboard

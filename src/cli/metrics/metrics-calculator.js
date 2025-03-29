@@ -1,10 +1,14 @@
 const logger = require('../../utils/logger');
 
 class MetricsCalculator {
-  constructor(segment, testType, directoryId) {
+  // Add modelArg, clientArg, and serverArg to the constructor
+  constructor(segment, testType, directoryId, modelArg, clientArg, serverArg) {
     this.segment = segment;
     this.testType = testType;
     this.directoryId = directoryId || '';
+    this.modelArg = modelArg; // Store the model argument
+    this.clientArg = clientArg; // Store the client argument
+    this.serverArg = serverArg; // Store the server argument
   }
 
   async calculate() {
@@ -23,7 +27,7 @@ class MetricsCalculator {
         this.calculateApiCalls(),
         this.calculateUserMessages(),
         this.calculateTokenMetrics(),
-        this.determineModel()
+        this.determineModel() // Pass modelArg here
       ]);
 
       const { tokensIn, tokensOut, totalCost } = tokenMetrics;
@@ -42,9 +46,9 @@ class MetricsCalculator {
         taskId: this.segment.taskNumber,
         directoryId: this.directoryId, // Use the directoryId passed in the constructor
         mode: finalMode,
-        model: model,
-        mcpServer: 'Twilio', // Default value
-        mcpClient: 'Cline', // Changed from 'Cursor' to 'Cline'
+        model: model, // Use the determined model
+        mcpServer: this.serverArg || 'Twilio', // Prioritize serverArg, fallback to 'Twilio'
+        mcpClient: this.clientArg || 'Cline', // Prioritize clientArg, fallback to 'Cline'
         startTime: this.segment.startTime,
         endTime: this.segment.startTime + duration, // Ensure endTime is consistent with duration
         duration: duration,
@@ -220,22 +224,37 @@ class MetricsCalculator {
   }
 
   async determineModel() {
+    // Prioritize the command-line argument if provided
+    if (this.modelArg) {
+      logger.info(`Using model from command-line argument: ${this.modelArg}`);
+      return this.modelArg;
+    }
+
+    // Otherwise, try to determine from logs
     for (const apiCall of this.segment.apiCalls) {
       if (apiCall.role === 'assistant' && apiCall.content && Array.isArray(apiCall.content)) {
         for (const content of apiCall.content) {
           if (content.type === 'text' && content.text) {
             // Look for model in system prompt
-            const systemPromptMatch = content.text.match(/You are a powerful agentic AI coding assistant, powered by Claude 3\.5 Sonnet/i);
-            if (systemPromptMatch) {
-              return 'claude-3.7-sonnet';  // Return the correct model name
+            const systemPromptMatch = content.text.match(/You are a powerful agentic AI coding assistant, powered by (Claude [\d.]+ \w+)/i);
+            if (systemPromptMatch && systemPromptMatch[1]) {
+              // Attempt to normalize model name slightly if needed, or just return matched group
+              const detectedModel = systemPromptMatch[1].toLowerCase().replace('claude ', 'claude-').replace(' ', '-');
+              logger.info(`Detected model from logs: ${detectedModel}`);
+              // Simple normalization example:
+              if (detectedModel === 'claude-3.5-sonnet') return 'claude-3.5-sonnet'; // Keep known format
+              // Add more normalization rules if needed
+              return detectedModel; // Return the detected model string
             }
           }
         }
       }
     }
     
-    // Default to the correct model if not found in logs
-    return 'claude-3.7-sonnet';
+    // Default if not found in logs and no argument provided
+    const defaultModel = 'claude-3.7-sonnet'; // Keep the original default
+    logger.info(`Model not found in logs or args, defaulting to: ${defaultModel}`);
+    return defaultModel;
   }
 }
 

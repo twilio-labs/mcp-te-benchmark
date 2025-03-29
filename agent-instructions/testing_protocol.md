@@ -83,9 +83,42 @@ Confirm in the results.md file:
 - End time was recorded
 - Duration was calculated
 
+## Extracting Metrics from Chat Logs
+
+After running tests, you need to extract metrics from the Claude chat logs:
+
+```bash
+npm run extract-metrics
+```
+
+This script analyzes the Claude chat logs and automatically extracts:
+- Duration of each task
+- Number of API calls
+- Number of user interactions
+- Token usage and estimated cost
+- Success/failure status
+
+You can also specify the model, client, and server names to use in the metrics:
+
+```bash
+npm run extract-metrics -- --model <model-name> --client <client-name> --server <server-name>
+```
+
+For example:
+```bash
+npm run extract-metrics -- --model claude-3.7-sonnet --client Cline --server Twilio
+```
+
+These arguments are optional and will override any values found in the logs or the default values. This is useful when the information isn't available in the logs or needs to be standardized across different runs.
+
+Additional options:
+- `--force` or `-f`: Force regeneration of all metrics, even if they already exist
+- `--verbose` or `-v`: Enable verbose logging for debugging
+- `--help` or `-h`: Show help message
+
 ## Results Analysis
 
-After tests are complete, you have multiple ways to view and analyze results:
+After tests are complete and metrics are extracted, you have multiple ways to view and analyze results:
 
 ### Interactive Dashboard
 The dashboard provides visual comparison of metrics:
