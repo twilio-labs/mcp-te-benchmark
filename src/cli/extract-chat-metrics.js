@@ -165,17 +165,17 @@ async function processDirectory(dir) {
     if (taskSegments.length > 0) {
       const taskSegment = taskSegments[0];
       
+      // Get the directory ID
+      const directoryId = path.basename(dir);
+      
       // Check if metrics for this task already exist (unless force regenerate is enabled)
       if (!FORCE_REGENERATE) {
         const summaryGenerator = new SummaryGenerator(METRICS_DIR);
-        if (await summaryGenerator.metricFileExists(testType, taskSegment.taskNumber)) {
-          logger.info(`Skipping task ${taskSegment.taskNumber} (${testType}) - metrics file already exists`);
+        if (await summaryGenerator.metricFileExists(testType, taskSegment.taskNumber, directoryId)) {
+          logger.info(`Skipping task ${taskSegment.taskNumber} (${testType}) - metrics file already exists for directory ${directoryId}`);
           return [];
         }
       }
-      
-      // Pass the directory ID to the calculator
-      const directoryId = path.basename(dir);
       const calculator = new MetricsCalculator(taskSegment, testType, directoryId);
       const metrics = await calculator.calculate();
       return metrics ? [metrics] : [];

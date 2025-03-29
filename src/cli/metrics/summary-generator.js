@@ -220,11 +220,19 @@ class SummaryGenerator {
     }
   }
 
-  async metricFileExists(mode, taskId) {
+  async metricFileExists(mode, taskId, directoryId) {
     try {
       const files = await fs.readdir(this.metricsDir);
-      const pattern = new RegExp(`^${mode}_task${taskId}_.*\\.json$`);
-      return files.some(file => pattern.test(file));
+      
+      // If directoryId is provided, check for a specific file with that directoryId
+      if (directoryId) {
+        const specificPattern = new RegExp(`^${mode}_task${taskId}_${directoryId}\\.json$`);
+        return files.some(file => specificPattern.test(file));
+      } else {
+        // Otherwise, check for any file matching the task and mode
+        const pattern = new RegExp(`^${mode}_task${taskId}_.*\\.json$`);
+        return files.some(file => pattern.test(file));
+      }
     } catch (error) {
       logger.error(`Error checking for existing metric file: ${error.message}`);
       return false;
