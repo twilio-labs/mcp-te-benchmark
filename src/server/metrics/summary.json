@@ -98,7 +98,7 @@
     "endTime": 1743350112275,
     "duration": 93510,
     "apiCalls": 11,
-    "interactions": 1,
+    "interactions": 2,
     "tokensIn": 44,
     "tokensOut": 2191,
     "totalTokens": 2235,
@@ -208,7 +208,7 @@
     "endTime": 1743344552215,
     "duration": 82465,
     "apiCalls": 12,
-    "interactions": 1,
+    "interactions": 2,
     "tokensIn": 48,
     "tokensOut": 2692,
     "totalTokens": 2740,
@@ -260,7 +260,7 @@
     "cacheReads": 76843,
     "conversationHistoryIndex": 8,
     "cost": 0.060590399999999996,
-    "success": true,
+    "success": false,
     "notes": ""
   },
   {
@@ -282,7 +282,7 @@
     "cacheReads": 60206,
     "conversationHistoryIndex": 6,
     "cost": 0.0379173,
-    "success": true,
+    "success": false,
     "notes": ""
   },
   {

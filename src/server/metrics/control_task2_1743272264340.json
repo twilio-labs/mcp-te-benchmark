@@ -14,7 +14,7 @@
   "cacheReads": 76843,
   "conversationHistoryIndex": 8,
   "cost": 0.060590399999999996,
-  "success": true,
+  "success": false,
   "endTime": 1743272296874,
   "duration": 32528
 }
