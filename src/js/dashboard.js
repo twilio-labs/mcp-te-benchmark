@@ -29,6 +29,9 @@ async function loadData() {
         const modelFilter = document.getElementById('modelFilter');
         populateFilter(modelFilter, models);
         
+        // Set default to claude-3.7-sonnet
+        modelFilter.value = "claude-3.7-sonnet";
+        
         // Apply filters and update UI
         filterData();
         displayMetrics();
