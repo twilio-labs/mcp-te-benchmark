@@ -188,7 +188,7 @@ class ChatProcessor {
               msg.text.includes('grep_search') ||
               msg.text.includes('file_search') ||
               msg.text.includes('<function_calls>') ||
-              msg.text.includes('<function_results>')) {
+              msg.text.includes('<fnr>')) {
             return true;
           }
         }
@@ -198,18 +198,64 @@ class ChatProcessor {
           return true;
         }
 
+        // Include all other 'say' messages for completeness
+        if (msg.type === 'say') {
+          return true;
+        }
+
         return false;
       });
-      
-      boundary.userMessages = relevantMessages;
 
-      // Include all API calls in the task segment
-      // This is a simplified approach that assigns all API calls to the task
-      boundary.apiCalls = this.apiHistory;
+      // Find API calls for this task segment
+      let apiEntries = [];
       
-      logger.info(`Assigned ${boundary.apiCalls.length} API calls for task ${boundary.taskNumber}`);
+      // Create a combined boundary timestamp for filtering API entries
+      const startBoundary = boundary.startTime - (60 * 1000); // 1 minute before task start to account for any slight clock difference
+      const endBoundary = boundary.endTime + (5 * 60 * 1000); // 5 minutes after task end to account for trailing API responses
       
-      return boundary;
+      // Filter API entries that fall within this task's time boundaries
+      apiEntries = this.apiHistory.filter(entry => {
+        const timestamp = this.getTimestampFromApiEntry(entry);
+        
+        // Include entries with timestamps within the segment bounds
+        if (timestamp && timestamp >= startBoundary && timestamp <= endBoundary) {
+          return true;
+        }
+        
+        return false;
+      });
+
+      // Extract conversation history index from UI messages if available
+      for (let i = 0; i < relevantMessages.length; i++) {
+        const msg = relevantMessages[i];
+        
+        // Try to extract conversation history index if present
+        if (msg.type === 'say' && msg.text) {
+          try {
+            // First try to parse JSON to get index from structured data
+            const jsonData = JSON.parse(msg.text);
+            if (jsonData.conversationHistoryIndex !== undefined) {
+              msg.conversationHistoryIndex = jsonData.conversationHistoryIndex;
+            }
+          } catch (e) {
+            // If JSON parsing fails, try regex
+            const indexMatch = msg.text.match(/conversationHistoryIndex["\s:]+(\d+)/i);
+            if (indexMatch && indexMatch[1]) {
+              msg.conversationHistoryIndex = parseInt(indexMatch[1], 10);
+            }
+          }
+        }
+      }
+
+      // Return the processed task segment
+      return {
+        ...boundary,
+        apiCalls: apiEntries,
+        userMessages: relevantMessages,
+        taskNumber: boundary.taskNumber,
+        apiCallCount: apiEntries.length,
+        messageCount: relevantMessages.length
+      };
     } catch (error) {
       logger.error(`Error processing task segment: ${error.message}`);
       return boundary;

@@ -10,8 +10,11 @@
   "tokensIn": 16,
   "tokensOut": 785,
   "totalTokens": 801,
+  "cacheWrites": 2142,
+  "cacheReads": 60206,
+  "conversationHistoryIndex": 6,
   "cost": 0.0379173,
-  "success": false,
+  "success": true,
   "endTime": 1743272362160,
   "duration": 19306
 }

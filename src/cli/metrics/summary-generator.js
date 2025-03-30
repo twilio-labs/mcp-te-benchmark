@@ -86,6 +86,9 @@ class SummaryGenerator {
           tokensIn: metric.tokensIn,
           tokensOut: metric.tokensOut,
           totalTokens: metric.totalTokens,
+          cacheWrites: metric.cacheWrites || 0,
+          cacheReads: metric.cacheReads || 0,
+          conversationHistoryIndex: metric.conversationHistoryIndex || 0,
           cost: metric.cost,
           success: metric.success,
           endTime: metric.endTime,
@@ -135,6 +138,9 @@ class SummaryGenerator {
             tokensIn: metric.tokensIn || 0,
             tokensOut: metric.tokensOut || 0,
             totalTokens: metric.totalTokens || 0,
+            cacheWrites: metric.cacheWrites || 0,
+            cacheReads: metric.cacheReads || 0,
+            conversationHistoryIndex: metric.conversationHistoryIndex || 0,
             cost: metric.cost || 0,
             success: metric.success !== false,
             notes: metric.notes || ''
@@ -194,14 +200,20 @@ class SummaryGenerator {
           allMetrics[existingIndex] = {
             ...newMetric,
             apiCalls: newMetric.apiCalls || 0,
-            interactions: newMetric.interactions || 0
+            interactions: newMetric.interactions || 0,
+            cacheWrites: newMetric.cacheWrites || 0,
+            cacheReads: newMetric.cacheReads || 0,
+            conversationHistoryIndex: newMetric.conversationHistoryIndex || 0
           };
         } else {
           // Add new metric
           allMetrics.push({
             ...newMetric,
             apiCalls: newMetric.apiCalls || 0,
-            interactions: newMetric.interactions || 0
+            interactions: newMetric.interactions || 0,
+            cacheWrites: newMetric.cacheWrites || 0,
+            cacheReads: newMetric.cacheReads || 0,
+            conversationHistoryIndex: newMetric.conversationHistoryIndex || 0
           });
         }
       }
@@ -270,18 +282,33 @@ class SummaryGenerator {
     console.log(`API Calls: Control=${controlAvg.apiCalls.toFixed(1)}, MCP=${mcpAvg.apiCalls.toFixed(1)} (${this.percentageChange(mcpAvg.apiCalls, controlAvg.apiCalls)}% change)`);
     console.log(`Interactions: Control=${controlAvg.interactions.toFixed(1)}, MCP=${mcpAvg.interactions.toFixed(1)} (${this.percentageChange(mcpAvg.interactions, controlAvg.interactions)}% change)`);
     console.log(`Tokens: Control=${controlAvg.tokens.toFixed(0)}, MCP=${mcpAvg.tokens.toFixed(0)} (${this.percentageChange(mcpAvg.tokens, controlAvg.tokens)}% change)`);
+    console.log(`Cache Writes: Control=${controlAvg.cacheWrites.toFixed(0)}, MCP=${mcpAvg.cacheWrites.toFixed(0)} (${this.percentageChange(mcpAvg.cacheWrites, controlAvg.cacheWrites)}% change)`);
+    console.log(`Cache Reads: Control=${controlAvg.cacheReads.toFixed(0)}, MCP=${mcpAvg.cacheReads.toFixed(0)} (${this.percentageChange(mcpAvg.cacheReads, controlAvg.cacheReads)}% change)`);
+    console.log(`Conversation History: Control=${controlAvg.convHistoryIndex.toFixed(1)}, MCP=${mcpAvg.convHistoryIndex.toFixed(1)} (${this.percentageChange(mcpAvg.convHistoryIndex, controlAvg.convHistoryIndex)}% change)`);
     console.log(`Cost ($): Control=${controlAvg.cost.toFixed(4)}, MCP=${mcpAvg.cost.toFixed(4)} (${this.percentageChange(mcpAvg.cost, controlAvg.cost)}% change)`);
   }
 
   calculateAverages(tasks) {
     const count = tasks.length;
-    if (count === 0) return { duration: 0, apiCalls: 0, interactions: 0, tokens: 0, cost: 0 };
+    if (count === 0) return { 
+      duration: 0, 
+      apiCalls: 0, 
+      interactions: 0, 
+      tokens: 0, 
+      cacheWrites: 0, 
+      cacheReads: 0, 
+      convHistoryIndex: 0, 
+      cost: 0 
+    };
 
     return {
       duration: tasks.reduce((sum, t) => sum + t.duration, 0) / count,
       apiCalls: tasks.reduce((sum, t) => sum + t.apiCalls, 0) / count,
       interactions: tasks.reduce((sum, t) => sum + t.interactions, 0) / count,
       tokens: tasks.reduce((sum, t) => sum + (t.totalTokens || 0), 0) / count,
+      cacheWrites: tasks.reduce((sum, t) => sum + (t.cacheWrites || 0), 0) / count,
+      cacheReads: tasks.reduce((sum, t) => sum + (t.cacheReads || 0), 0) / count,
+      convHistoryIndex: tasks.reduce((sum, t) => sum + (t.conversationHistoryIndex || 0), 0) / count,
       cost: tasks.reduce((sum, t) => sum + (t.cost || 0), 0) / count
     };
   }

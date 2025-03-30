@@ -109,6 +109,16 @@ function displayMetrics() {
             mcp: average(mcpSessions.map(s => s.totalTokens || 0)),
             unit: 'tokens'
         },
+        'Average Cache Reads': {
+            control: average(controlSessions.map(s => s.cacheReads || 0)),
+            mcp: average(mcpSessions.map(s => s.cacheReads || 0)),
+            unit: 'reads'
+        },
+        'Average Cache Writes': {
+            control: average(controlSessions.map(s => s.cacheWrites || 0)),
+            mcp: average(mcpSessions.map(s => s.cacheWrites || 0)),
+            unit: 'writes'
+        },
         'Average Cost': {
             control: average(controlSessions.map(s => s.cost || 0)),
             mcp: average(mcpSessions.map(s => s.cost || 0)),
@@ -127,6 +137,8 @@ function displayMetrics() {
         calls: percentageChange(metrics['Average API Calls'].mcp, metrics['Average API Calls'].control),
         interactions: percentageChange(metrics['Average Interactions'].mcp, metrics['Average Interactions'].control),
         tokens: percentageChange(metrics['Average Tokens'].mcp, metrics['Average Tokens'].control),
+        cacheReads: percentageChange(metrics['Average Cache Reads'].mcp, metrics['Average Cache Reads'].control),
+        cacheWrites: percentageChange(metrics['Average Cache Writes'].mcp, metrics['Average Cache Writes'].control),
         cost: percentageChange(metrics['Average Cost'].mcp, metrics['Average Cost'].control),
         success: percentageChange(metrics['Success Rate'].mcp, metrics['Success Rate'].control)
     };
@@ -135,6 +147,8 @@ function displayMetrics() {
     document.getElementById('improvementCalls').textContent = `${-parseFloat(improvements.calls)}%`;
     document.getElementById('improvementInteractions').textContent = `${-parseFloat(improvements.interactions)}%`;
     document.getElementById('improvementTokens').textContent = `${-parseFloat(improvements.tokens)}%`;
+    document.getElementById('improvementCacheReads').textContent = `${-parseFloat(improvements.cacheReads)}%`;
+    document.getElementById('improvementCacheWrites').textContent = `${-parseFloat(improvements.cacheWrites)}%`;
     document.getElementById('improvementCost').textContent = `${-parseFloat(improvements.cost)}%`;
     document.getElementById('improvementSuccess').textContent = `${improvements.success}%`;
 
@@ -231,6 +245,16 @@ function displayModelMetrics() {
                 mcp: average(data.mcp.map(s => s.totalTokens || 0)),
                 unit: 'tokens'
             },
+            'Cache Reads': {
+                control: average(data.control.map(s => s.cacheReads || 0)),
+                mcp: average(data.mcp.map(s => s.cacheReads || 0)),
+                unit: 'reads'
+            },
+            'Cache Writes': {
+                control: average(data.control.map(s => s.cacheWrites || 0)),
+                mcp: average(data.mcp.map(s => s.cacheWrites || 0)),
+                unit: 'writes'
+            },
             'Cost': {
                 control: average(data.control.map(s => s.cost || 0)),
                 mcp: average(data.mcp.map(s => s.cost || 0)),
@@ -302,7 +326,7 @@ function displaySessions() {
     const tbody = document.getElementById('sessionsBody');
     
     if (filteredSessions.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="13" style="text-align: center;">No data available for the selected filters.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align: center;">No data available for the selected filters.</td></tr>`;
         return;
     }
     
@@ -333,6 +357,8 @@ function displaySessions() {
                 <td>${s.apiCalls}</td>
                 <td>${s.interactions}</td>
                 <td>${s.totalTokens || 0}</td>
+                <td>${s.cacheReads || 0}</td>
+                <td>${s.cacheWrites || 0}</td>
                 <td>${(s.cost || 0).toFixed(4)}</td>
                 <td class="${s.success ? 'success' : 'failure'}">${s.success ? '✓' : '✗'}</td>
                 <td>${s.notes || '-'}</td>
@@ -520,6 +546,28 @@ function updateComparisonChart(metric) {
                 data.mcp[i-1] = average(mcpTokens);
             }
             break;
+        case 'cacheReads':
+            titleText = 'Cache Reads Comparison (count)';
+            for (let i = 1; i <= 3; i++) {
+                const taskId = i.toString();
+                // Only include sessions with non-null cache reads
+                const controlReads = taskData[taskId].control.map(s => s.cacheReads || 0).filter(r => r !== null);
+                const mcpReads = taskData[taskId].mcp.map(s => s.cacheReads || 0).filter(r => r !== null);
+                data.control[i-1] = average(controlReads);
+                data.mcp[i-1] = average(mcpReads);
+            }
+            break;
+        case 'cacheWrites':
+            titleText = 'Cache Writes Comparison (count)';
+            for (let i = 1; i <= 3; i++) {
+                const taskId = i.toString();
+                // Only include sessions with non-null cache writes
+                const controlWrites = taskData[taskId].control.map(s => s.cacheWrites || 0).filter(w => w !== null);
+                const mcpWrites = taskData[taskId].mcp.map(s => s.cacheWrites || 0).filter(w => w !== null);
+                data.control[i-1] = average(controlWrites);
+                data.mcp[i-1] = average(mcpWrites);
+            }
+            break;
         case 'cost':
             titleText = 'Cost Comparison ($)';
             for (let i = 1; i <= 3; i++) {
@@ -553,7 +601,7 @@ function downloadCsv() {
     let csvContent = "data:text/csv;charset=utf-8,";
     
     // Add headers
-    csvContent += "Directory ID,MCP Server,MCP Client,Task ID,Mode,Model,Duration (s),API Calls (count),User Interactions (count),Tokens (count),Cost ($),Success,Notes\n";
+    csvContent += "Directory ID,MCP Server,MCP Client,Task ID,Mode,Model,Duration (s),API Calls (count),User Interactions (count),Tokens (count),Cache Reads (count),Cache Writes (count),Cost ($),Success,Notes\n";
     
     // Add data rows
     filteredSessions.forEach(s => {
@@ -568,6 +616,8 @@ function downloadCsv() {
             s.apiCalls,
             s.interactions,
             s.totalTokens || 0,
+            s.cacheReads || 0,
+            s.cacheWrites || 0,
             (s.cost || 0).toFixed(4),
             s.success ? 'Yes' : 'No',
             (s.notes || '').replace(/,/g, ';') // Replace commas to avoid CSV issues

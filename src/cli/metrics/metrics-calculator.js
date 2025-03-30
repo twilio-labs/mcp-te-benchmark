@@ -30,7 +30,14 @@ class MetricsCalculator {
         this.determineModel() // Pass modelArg here
       ]);
 
-      const { tokensIn, tokensOut, totalCost } = tokenMetrics;
+      const { 
+        tokensIn, 
+        tokensOut, 
+        totalCost, 
+        cacheWrites, 
+        cacheReads, 
+        conversationHistoryIndex 
+      } = tokenMetrics;
 
       // Validate and calculate duration
       let duration = this.segment.endTime - this.segment.startTime;
@@ -57,6 +64,9 @@ class MetricsCalculator {
         tokensIn: tokensIn,
         tokensOut: tokensOut,
         totalTokens: tokensIn + tokensOut,
+        cacheWrites: cacheWrites || 0,
+        cacheReads: cacheReads || 0,
+        conversationHistoryIndex: conversationHistoryIndex || 0,
         cost: totalCost,
         success: true,
         notes: ''
@@ -163,6 +173,9 @@ class MetricsCalculator {
     let tokensOut = 0;
     let totalCost = 0;
     let messagesWithTokens = 0;
+    let cacheWrites = 0;
+    let cacheReads = 0;
+    let highestConvHistoryIndex = -1;
 
     logger.info(`Starting token calculation for task ${this.segment.taskNumber}`);
 
@@ -175,6 +188,15 @@ class MetricsCalculator {
             tokensIn += parseInt(data.tokensIn, 10);
             tokensOut += parseInt(data.tokensOut || 0, 10);
             totalCost += parseFloat(data.cost || 0);
+            
+            // Track cache metrics if available
+            if (data.cacheWrites !== undefined) {
+              cacheWrites += parseInt(data.cacheWrites, 10);
+            }
+            if (data.cacheReads !== undefined) {
+              cacheReads += parseInt(data.cacheReads, 10);
+            }
+            
             messagesWithTokens++;
             logger.info(`Message ${messagesWithTokens} tokens - In: ${data.tokensIn}, Out: ${data.tokensOut || 0}`);
           }
@@ -183,14 +205,26 @@ class MetricsCalculator {
           const tokensInMatch = message.text.match(/tokensIn["\s:]+(\d+)/i);
           const tokensOutMatch = message.text.match(/tokensOut["\s:]+(\d+)/i);
           const costMatch = message.text.match(/cost["\s:]+([0-9.]+)/i);
+          const cacheWritesMatch = message.text.match(/cacheWrites["\s:]+(\d+)/i);
+          const cacheReadsMatch = message.text.match(/cacheReads["\s:]+(\d+)/i);
 
           if (tokensInMatch || tokensOutMatch) {
             if (tokensInMatch && tokensInMatch[1]) tokensIn += parseInt(tokensInMatch[1], 10);
             if (tokensOutMatch && tokensOutMatch[1]) tokensOut += parseInt(tokensOutMatch[1], 10);
             if (costMatch && costMatch[1]) totalCost += parseFloat(costMatch[1]);
+            if (cacheWritesMatch && cacheWritesMatch[1]) cacheWrites += parseInt(cacheWritesMatch[1], 10);
+            if (cacheReadsMatch && cacheReadsMatch[1]) cacheReads += parseInt(cacheReadsMatch[1], 10);
             messagesWithTokens++;
             logger.info(`Message ${messagesWithTokens} tokens - In: ${tokensInMatch ? tokensInMatch[1] : 0}, Out: ${tokensOutMatch ? tokensOutMatch[1] : 0}`);
           }
+        }
+      }
+      
+      // Track conversation history index
+      if (message.conversationHistoryIndex !== undefined) {
+        const indexValue = parseInt(message.conversationHistoryIndex, 10);
+        if (!isNaN(indexValue) && indexValue > highestConvHistoryIndex) {
+          highestConvHistoryIndex = indexValue;
         }
       }
     }
@@ -218,9 +252,19 @@ class MetricsCalculator {
       API calls with tokens: ${apiCallsWithTokens}
       Total input tokens: ${tokensIn}
       Total output tokens: ${tokensOut}
+      Cache writes: ${cacheWrites}
+      Cache reads: ${cacheReads}
+      Highest conversation history index: ${highestConvHistoryIndex}
       Total cost: ${totalCost}`);
 
-    return { tokensIn, tokensOut, totalCost };
+    return { 
+      tokensIn, 
+      tokensOut, 
+      totalCost,
+      cacheWrites,
+      cacheReads,
+      conversationHistoryIndex: highestConvHistoryIndex
+    };
   }
 
   async determineModel() {

@@ -77,15 +77,6 @@
             </div>
         </div>
 
-        <!-- Data Skew Warning -->
-        <div class="card" style="border-left: 4px solid var(--warning); background-color: rgba(236, 201, 75, 0.1);">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.5rem;">⚠️</span>
-                <h3 style="margin: 0; color: var(--secondary-dark);">Data Skew Warning</h3>
-            </div>
-            <p style="margin-top: 0.5rem;">The gemini-2.5-pro-exp-03-25 model results have significantly higher token usage and duration, which may skew overall comparisons. For fair analysis, the dashboard now defaults to showing only claude-3.7-sonnet data. Use the Model filter to view all data if needed.</p>
-        </div>
-        
         <!-- Overall Stats -->
         <div class="card">
             <h2>Overall Performance</h2>
@@ -107,6 +98,14 @@
                     <div class="stat-label">Token Usage Reduction</div>
                 </div>
                 <div class="stat-item">
+                    <div id="improvementCacheReads" class="stat-value">--%</div>
+                    <div class="stat-label">Cache Reads Reduction</div>
+                </div>
+                <div class="stat-item">
+                    <div id="improvementCacheWrites" class="stat-value">--%</div>
+                    <div class="stat-label">Cache Writes Reduction</div>
+                </div>
+                <div class="stat-item">
                     <div id="improvementCost" class="stat-value">--%</div>
                     <div class="stat-label">Cost Reduction</div>
                 </div>
@@ -126,6 +125,8 @@
                 <div class="tab" data-chart="apiCalls">API Calls</div>
                 <div class="tab" data-chart="interactions">Interactions</div>
                 <div class="tab" data-chart="tokens">Tokens</div>
+                <div class="tab" data-chart="cacheReads">Cache Reads</div>
+                <div class="tab" data-chart="cacheWrites">Cache Writes</div>
                 <div class="tab" data-chart="cost">Cost</div>
                 <div class="tab" data-chart="success">Success Rate</div>
             </div>
@@ -208,6 +209,8 @@
                             <th>API Calls (count)</th>
                             <th>User Interactions (count)</th>
                             <th>Tokens (count)</th>
+                            <th>Cache Reads (count)</th>
+                            <th>Cache Writes (count)</th>
                             <th>Cost ($)</th>
                             <th>Success</th>
                             <th>Notes</th>
