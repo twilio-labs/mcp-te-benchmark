@@ -73,7 +73,7 @@
     "totalTokens": 137732,
     "cost": 1.1224800000000001,
     "success": true,
-    "notes": "Prompt caching not supported"
+    "notes": ""
   },
   {
     "taskId": 1,
@@ -129,6 +129,25 @@
     "tokensOut": 1238,
     "totalTokens": 1258,
     "cost": 0.15950820000000002,
+    "success": true,
+    "notes": ""
+  },
+  {
+    "taskId": 1,
+    "directoryId": "1743344469745",
+    "mode": "mcp",
+    "model": "claude-3.7-sonnet",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cline",
+    "startTime": 1743344469750,
+    "endTime": 1743344552215,
+    "duration": 82465,
+    "apiCalls": 12,
+    "interactions": 2,
+    "tokensIn": 48,
+    "tokensOut": 2692,
+    "totalTokens": 2740,
+    "cost": 0.3064407,
     "success": true,
     "notes": ""
   },
@@ -244,7 +263,7 @@
     "totalTokens": 107881,
     "cost": 0.876936,
     "success": true,
-    "notes": "Prompt caching not supported"
+    "notes": ""
   },
   {
     "taskId": 2,
@@ -300,6 +319,25 @@
     "tokensOut": 1227,
     "totalTokens": 1251,
     "cost": 0.181974,
+    "success": true,
+    "notes": ""
+  },
+  {
+    "taskId": 2,
+    "directoryId": "1743344562690",
+    "mode": "mcp",
+    "model": "claude-3.7-sonnet",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cline",
+    "startTime": 1743344562698,
+    "endTime": 1743344595456,
+    "duration": 32758,
+    "apiCalls": 7,
+    "interactions": 1,
+    "tokensIn": 28,
+    "tokensOut": 1301,
+    "totalTokens": 1329,
+    "cost": 0.11964914999999998,
     "success": true,
     "notes": ""
   },
@@ -377,7 +415,7 @@
     "totalTokens": 65679,
     "cost": 0.541176,
     "success": true,
-    "notes": "Prompt caching not supported"
+    "notes": ""
   },
   {
     "taskId": 3,
@@ -433,6 +471,25 @@
     "tokensOut": 2472,
     "totalTokens": 2508,
     "cost": 0.1700679,
+    "success": true,
+    "notes": ""
+  },
+  {
+    "taskId": 3,
+    "directoryId": "1743344636739",
+    "mode": "mcp",
+    "model": "claude-3.7-sonnet",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cline",
+    "startTime": 1743344636747,
+    "endTime": 1743344673765,
+    "duration": 37018,
+    "apiCalls": 7,
+    "interactions": 1,
+    "tokensIn": 28,
+    "tokensOut": 1490,
+    "totalTokens": 1518,
+    "cost": 0.1185405,
     "success": true,
     "notes": ""
   }

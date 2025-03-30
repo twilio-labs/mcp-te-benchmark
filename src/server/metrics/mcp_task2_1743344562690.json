@@ -1,0 +1,17 @@
+{
+  "mode": "mcp",
+  "taskNumber": 2,
+  "directoryId": "1743344562690",
+  "model": "claude-3.7-sonnet",
+  "startTime": 1743344562698,
+  "completed": true,
+  "apiCalls": 7,
+  "interactions": 1,
+  "tokensIn": 28,
+  "tokensOut": 1301,
+  "totalTokens": 1329,
+  "cost": 0.11964914999999998,
+  "success": true,
+  "endTime": 1743344595456,
+  "duration": 32758
+}
