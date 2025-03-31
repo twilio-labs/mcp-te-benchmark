@@ -9,8 +9,6 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 
 ## Leaderboard
 
-**Note:** Due to a limitation in the current MCP Client (Cursor), model selection is restricted in some test runs. 'Auto' indicates the client's automatic model selection. Results for specific models will be added as they become available.
-
 ### Overall Performance
 
 | Metric | Control | MCP | Improvement |
@@ -30,7 +28,7 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 - 8.3% improvement in success rate
 - Significant improvements in cache utilization
 
-*Environment:* Twilio (MCP Server), Cursor (MCP Client), Mixed models
+*Environment:* Twilio (MCP Server), Cline (MCP Client), Mixed models
 
 ### Task-Specific Performance
 
