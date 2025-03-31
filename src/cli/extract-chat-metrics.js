@@ -59,19 +59,19 @@ if (argv.help) {
 
 // Log argument usage
 if (VERBOSE) {
-  console.log('Verbose mode enabled - will show detailed logging');
+  logger.debug('Verbose mode enabled - will show detailed logging');
 }
 if (FORCE_REGENERATE) {
-  console.log('Force regeneration mode enabled - will regenerate all metrics');
+  logger.info('Force regeneration mode enabled - will regenerate all metrics');
 }
 if (MODEL_ARG) {
-  console.log(`Using provided model override: ${MODEL_ARG}`);
+  logger.info(`Using provided model override: ${MODEL_ARG}`);
 }
 if (CLIENT_ARG) {
-  console.log(`Using provided client override: ${CLIENT_ARG}`);
+  logger.info(`Using provided client override: ${CLIENT_ARG}`);
 }
 if (SERVER_ARG) {
-  console.log(`Using provided server override: ${SERVER_ARG}`);
+  logger.info(`Using provided server override: ${SERVER_ARG}`);
 }
 
 /**
@@ -80,7 +80,11 @@ if (SERVER_ARG) {
 async function extractChatMetrics() {
   try {
     // Ensure metrics directory exists
-    await fs.mkdir(METRICS_DIR, { recursive: true });
+    try {
+      await fs.access(METRICS_DIR);
+    } catch (error) {
+      throw new Error(`Metrics directory ${METRICS_DIR} does not exist. Please create it before running this script.`);
+    }
 
     // Get all chat directories
     const chatDirs = await getChatDirectories();
@@ -119,41 +123,41 @@ async function extractChatMetrics() {
  */
 async function getChatDirectories() {
   try {
-    const rootDir = CLAUDE_LOGS_DIR;
     const chatDirs = [];
     
     // Check if the root directory exists
     try {
-      await fs.access(rootDir);
+      await fs.access(CLAUDE_LOGS_DIR);
     } catch (error) {
-      logger.error(`Error accessing directory ${rootDir}:`, error);
-      return [];
+      throw new Error(`Claude logs directory ${CLAUDE_LOGS_DIR} does not exist. Please ensure the Claude extension is installed and has generated logs.`);
     }
     
     // Get all subdirectories
-    const items = await fs.readdir(rootDir, { withFileTypes: true });
+    const items = await fs.readdir(CLAUDE_LOGS_DIR, { withFileTypes: true });
     
     // Process each subdirectory
     for (const item of items) {
-      if (item.isDirectory()) {
-        const itemPath = path.join(rootDir, item.name);
-        
-        // Check if this directory contains the required files
-        const [apiExists, uiExists] = await Promise.all([
-          fs.access(path.join(itemPath, 'api_conversation_history.json'))
-            .then(() => true)
-            .catch(() => false),
-          fs.access(path.join(itemPath, 'ui_messages.json'))
-            .then(() => true)
-            .catch(() => false)
-        ]);
-        
-        if (apiExists && uiExists) {
-          if (VERBOSE) {
-            console.log(`Found chat directory: ${item.name}`);
-          }
-          chatDirs.push(itemPath);
+      if (!item.isDirectory()) {
+        continue;
+      }
+      
+      const itemPath = path.join(CLAUDE_LOGS_DIR, item.name);
+      
+      // Check if this directory contains the required files
+      const [apiExists, uiExists] = await Promise.all([
+        fs.access(path.join(itemPath, 'api_conversation_history.json'))
+          .then(() => true)
+          .catch(() => false),
+        fs.access(path.join(itemPath, 'ui_messages.json'))
+          .then(() => true)
+          .catch(() => false)
+      ]);
+      
+      if (apiExists && uiExists) {
+        if (VERBOSE) {
+          logger.debug(`Found chat directory: ${item.name}`);
         }
+        chatDirs.push(itemPath);
       }
     }
     
@@ -189,35 +193,32 @@ async function processDirectory(dir, modelArg, clientArg, serverArg) {
 
     // Extract task segments
     const taskSegments = await chatProcessor.extractTaskSegments(testType);
-    if (VERBOSE) {
-      console.log(`Found ${taskSegments.length} task segments`);
-    } else {
-      logger.info(`Found ${taskSegments.length} task segments`);
+    logger[VERBOSE ? 'debug' : 'info'](`Found ${taskSegments.length} task segments`);
+
+    // Return early if no task segments found
+    if (taskSegments.length === 0) {
+      return [];
     }
 
-    // Only process the first task segment found for this directory
+    // Process only the first task segment found for this directory
     // This ensures we don't create multiple metrics for the same directory
-    if (taskSegments.length > 0) {
-      const taskSegment = taskSegments[0];
+    const taskSegment = taskSegments[0];
       
-      // Get the directory ID
-      const directoryId = path.basename(dir);
+    // Get the directory ID
+    const directoryId = path.basename(dir);
       
-      // Check if metrics for this task already exist (unless force regenerate is enabled)
-      if (!FORCE_REGENERATE) {
-        const summaryGenerator = new SummaryGenerator(METRICS_DIR);
-        if (await summaryGenerator.metricFileExists(testType, taskSegment.taskNumber, directoryId)) {
-          logger.info(`Skipping task ${taskSegment.taskNumber} (${testType}) - metrics file already exists for directory ${directoryId}`);
-          return [];
-        }
+    // Check if metrics for this task already exist (unless force regenerate is enabled)
+    if (!FORCE_REGENERATE) {
+      const summaryGenerator = new SummaryGenerator(METRICS_DIR);
+      if (await summaryGenerator.metricFileExists(testType, taskSegment.taskNumber, directoryId)) {
+        logger.info(`Skipping task ${taskSegment.taskNumber} (${testType}) - metrics file already exists for directory ${directoryId}`);
+        return [];
       }
-      // Pass model, client, and server args to the calculator
-      const calculator = new MetricsCalculator(taskSegment, testType, directoryId, modelArg, clientArg, serverArg);
-      const metrics = await calculator.calculate();
-      return metrics ? [metrics] : [];
     }
-
-    return [];
+    // Pass model, client, and server args to the calculator
+    const calculator = new MetricsCalculator(taskSegment, testType, directoryId, modelArg, clientArg, serverArg);
+    const metrics = await calculator.calculate();
+    return metrics ? [metrics] : [];
   } catch (error) {
     logger.error(`Error processing directory ${dir}:`, error);
     return [];

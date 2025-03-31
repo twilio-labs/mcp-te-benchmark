@@ -14,7 +14,7 @@ node "$PROJECT_ROOT/src/cli/regenerate-summary.js"
 # Check if the script ran successfully
 if [ $? -eq 0 ]; then
     echo "Summary regeneration completed successfully."
-    echo "Summary file was generated at $PROJECT_ROOT/src/server/metrics/summary.json"
+    echo "Summary file was generated at $PROJECT_ROOT/metrics/tasks/summary.json"
     echo "You can view the metrics dashboard by running: npm start"
 else
     echo "Error: Summary regeneration failed."

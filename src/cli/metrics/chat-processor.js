@@ -1,7 +1,7 @@
-const fs = require('fs').promises;
-const path = require('path');
-const logger = require('../../utils/logger');
-const { CONTROL_MARKER, MCP_MARKER } = require('./types');
+import { promises as fs } from 'fs';
+import path from 'path';
+import logger from '../../utils/logger';
+import { CONTROL_MARKER, MCP_MARKER } from './types';
 
 class ChatProcessor {
   constructor(chatDir) {
@@ -171,6 +171,15 @@ class ChatProcessor {
       const messages = this.uiMessages.slice(boundary.startIndex, boundary.endIndex + 1);
       logger.info(`Processing ${messages.length} messages for task ${boundary.taskNumber}`);
       
+      const TASK_SEGMENT_TEXTS = [
+        'read_file',
+        'codebase_search',
+        'grep_search',
+        'file_search',
+        '<function_calls>',
+        '<fnr>'
+      ];
+
       // Filter messages to include only relevant ones
       const relevantMessages = messages.filter(msg => {
         // Include API requests and MCP server requests
@@ -183,14 +192,7 @@ class ChatProcessor {
 
         // Include tool usage messages
         if (msg.type === 'say' && msg.say === 'text' && msg.text) {
-          if (msg.text.includes('read_file') || 
-              msg.text.includes('codebase_search') || 
-              msg.text.includes('grep_search') ||
-              msg.text.includes('file_search') ||
-              msg.text.includes('<function_calls>') ||
-              msg.text.includes('<fnr>')) {
-            return true;
-          }
+          return TASK_SEGMENT_TEXTS.some(text => msg.text.includes(text));
         }
 
         // Include user messages
@@ -282,4 +284,4 @@ class ChatProcessor {
   }
 }
 
-module.exports = ChatProcessor;
+export default ChatProcessor;

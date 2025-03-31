@@ -109,7 +109,7 @@ class MetricsCalculator {
 
     logger.info(`API Call Count for Task ${this.segment.taskNumber}: ${apiCallCount}`);
 
-    return apiCallCount || 0;
+    return apiCallCount;
   }
 
   async calculateUserMessages() {

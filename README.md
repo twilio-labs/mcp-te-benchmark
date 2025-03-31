@@ -82,7 +82,7 @@ To extract metrics from chat logs, run:
 ./scripts/extract-metrics.sh
 ```
 
-This script will analyze the Claude chat logs and generate metrics files in the `src/server/metrics/` directory, including an updated `summary.json` file that powers the dashboard.
+This script will analyze the Claude chat logs and generate metrics files in the `metrics/tasks/` directory, including an updated `summary.json` file that powers the dashboard.
 
 ## Tasks
 
@@ -166,7 +166,7 @@ Additional options:
 - `--verbose` or `-v`: Enable verbose logging for debugging
 - `--help` or `-h`: Show help message
 
-The extracted metrics are saved to the `src/server/metrics/` directory and the `summary.json` file is updated.
+The extracted metrics are saved to the `metrics/tasks/` directory and the `summary.json` file is updated.
 
 ### Interactive Dashboard
 

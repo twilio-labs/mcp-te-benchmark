@@ -205,17 +205,16 @@ class SummaryGenerator {
             cacheReads: newMetric.cacheReads || 0,
             conversationHistoryIndex: newMetric.conversationHistoryIndex || 0
           };
-        } else {
-          // Add new metric
-          allMetrics.push({
-            ...newMetric,
-            apiCalls: newMetric.apiCalls || 0,
-            interactions: newMetric.interactions || 0,
-            cacheWrites: newMetric.cacheWrites || 0,
-            cacheReads: newMetric.cacheReads || 0,
-            conversationHistoryIndex: newMetric.conversationHistoryIndex || 0
-          });
         }
+        // Add new metric
+        allMetrics.push({
+          ...newMetric,
+          apiCalls: newMetric.apiCalls || 0,
+          interactions: newMetric.interactions || 0,
+          cacheWrites: newMetric.cacheWrites || 0,
+          cacheReads: newMetric.cacheReads || 0,
+          conversationHistoryIndex: newMetric.conversationHistoryIndex || 0
+        });
       }
 
       // Sort metrics
@@ -236,15 +235,13 @@ class SummaryGenerator {
     try {
       const files = await fs.readdir(this.metricsDir);
       
-      // If directoryId is provided, check for a specific file with that directoryId
       if (directoryId) {
         const specificPattern = new RegExp(`^${mode}_task${taskId}_${directoryId}\\.json$`);
         return files.some(file => specificPattern.test(file));
-      } else {
-        // Otherwise, check for any file matching the task and mode
-        const pattern = new RegExp(`^${mode}_task${taskId}_.*\\.json$`);
-        return files.some(file => pattern.test(file));
       }
+      // Otherwise, check for any file matching the task and mode
+      const pattern = new RegExp(`^${mode}_task${taskId}_.*\\.json$`);
+      return files.some(file => pattern.test(file));
     } catch (error) {
       logger.error(`Error checking for existing metric file: ${error.message}`);
       return false;
