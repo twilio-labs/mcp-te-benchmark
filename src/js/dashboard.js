@@ -85,13 +85,22 @@ function displayMetrics() {
     
     if (controlSessions.length === 0 || mcpSessions.length === 0) {
         document.getElementById('summary').innerHTML = '<p>No data available for the selected filters.</p>';
-        // Clear executive summary values when no data is available
-        document.getElementById('apiCallsReduction').textContent = '--';
-        document.getElementById('interactionsReduction').textContent = '--';
-        document.getElementById('successImprovement').textContent = '--';
-        document.getElementById('tokenIncrease').textContent = '--';
-        document.getElementById('costIncrease').textContent = '--';
-        document.getElementById('cacheWritesIncrease').textContent = '--';
+        // Clear executive summary values when no data is available - safely handle potentially missing elements
+        const executiveSummaryElements = [
+            'apiCallsReduction',
+            'interactionsReduction',
+            'successImprovement',
+            'tokenIncrease',
+            'costIncrease',
+            'cacheWritesIncrease'
+        ];
+        
+        executiveSummaryElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = '--';
+            }
+        });
         return;
     }
     
@@ -150,23 +159,43 @@ function displayMetrics() {
         success: percentageChange(metrics['Success Rate'].mcp, metrics['Success Rate'].control)
     };
     
-    // Update overall performance stats
-    document.getElementById('improvementTime').textContent = `${-parseFloat(improvements.time)}%`;
-    document.getElementById('improvementCalls').textContent = `${-parseFloat(improvements.calls)}%`;
-    document.getElementById('improvementInteractions').textContent = `${-parseFloat(improvements.interactions)}%`;
-    document.getElementById('improvementTokens').textContent = `${-parseFloat(improvements.tokens)}%`;
-    document.getElementById('improvementCacheReads').textContent = `${-parseFloat(improvements.cacheReads)}%`;
-    document.getElementById('improvementCacheWrites').textContent = `${-parseFloat(improvements.cacheWrites)}%`;
-    document.getElementById('improvementCost').textContent = `${-parseFloat(improvements.cost)}%`;
-    document.getElementById('improvementSuccess').textContent = `${improvements.success}%`;
+    // Update overall performance stats - safely handle potentially missing elements
+    const performanceElements = {
+        'improvementTime': -parseFloat(improvements.time),
+        'improvementCalls': -parseFloat(improvements.calls),
+        'improvementInteractions': -parseFloat(improvements.interactions),
+        'improvementTokens': -parseFloat(improvements.tokens),
+        'improvementCacheReads': -parseFloat(improvements.cacheReads),
+        'improvementCacheWrites': -parseFloat(improvements.cacheWrites),
+        'improvementCost': -parseFloat(improvements.cost),
+        'improvementSuccess': improvements.success
+    };
 
-    // Update executive summary values
-    document.getElementById('apiCallsReduction').textContent = `${-parseFloat(improvements.calls).toFixed(1)}%`;
-    document.getElementById('interactionsReduction').textContent = `${-parseFloat(improvements.interactions).toFixed(1)}%`;
-    document.getElementById('successImprovement').textContent = `${parseFloat(improvements.success).toFixed(1)}%`;
-    document.getElementById('tokenIncrease').textContent = `${parseFloat(improvements.tokens).toFixed(1)}%`;
-    document.getElementById('costIncrease').textContent = `${parseFloat(improvements.cost).toFixed(1)}%`;
-    document.getElementById('cacheWritesIncrease').textContent = `${parseFloat(improvements.cacheWrites).toFixed(1)}%`;
+    Object.entries(performanceElements).forEach(([elementId, value]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = `${value}%`;
+            element.classList.remove('positive', 'negative');
+            element.classList.add(value > 0 ? 'positive' : 'negative');
+        }
+    });
+
+    // Update executive summary values - safely handle potentially missing elements
+    const executiveSummaryUpdates = {
+        'apiCallsReduction': -parseFloat(improvements.calls).toFixed(1),
+        'interactionsReduction': -parseFloat(improvements.interactions).toFixed(1),
+        'successImprovement': parseFloat(improvements.success).toFixed(1),
+        'tokenIncrease': parseFloat(improvements.tokens).toFixed(1),
+        'costIncrease': parseFloat(improvements.cost).toFixed(1),
+        'cacheWritesIncrease': parseFloat(improvements.cacheWrites).toFixed(1)
+    };
+
+    Object.entries(executiveSummaryUpdates).forEach(([elementId, value]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = `${value}%`;
+        }
+    });
 
     const summaryEl = document.getElementById('summary');
     summaryEl.innerHTML = Object.entries(metrics)
@@ -552,7 +581,7 @@ function updateComparisonChart(metric) {
             }
             break;
         case 'tokens':
-            titleText = 'Token Usage Comparison (count)';
+            titleText = 'Token Usage Comparison (tokens)';
             for (let i = 1; i <= 3; i++) {
                 const taskId = i.toString();
                 // Only include sessions with non-null tokens
@@ -563,7 +592,7 @@ function updateComparisonChart(metric) {
             }
             break;
         case 'cacheReads':
-            titleText = 'Cache Reads Comparison (count)';
+            titleText = 'Cache Reads Comparison (tokens)';
             for (let i = 1; i <= 3; i++) {
                 const taskId = i.toString();
                 // Only include sessions with non-null cache reads
@@ -574,7 +603,7 @@ function updateComparisonChart(metric) {
             }
             break;
         case 'cacheWrites':
-            titleText = 'Cache Writes Comparison (count)';
+            titleText = 'Cache Writes Comparison (tokens)';
             for (let i = 1; i <= 3; i++) {
                 const taskId = i.toString();
                 // Only include sessions with non-null cache writes

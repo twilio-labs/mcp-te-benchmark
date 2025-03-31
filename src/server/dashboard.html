@@ -17,14 +17,15 @@
             </a>
             <div class="header-content">
                 <h1>Model Context Protocol Task Efficiency (MCP-TE) Benchmark</h1>
-                <p>Compare the performance metrics of AI Coding Agents using default tools (Control) and those utilizing MCP implementations.</p>
+                <p>Comparing the performance metrics of tasked based AI Coding Agents using default tools (Control) and those utilizing MCP implementations.</p>
             </div>
         </header>
         
         <!-- Executive Summary -->
+        <!--
         <div class="card">
             <h2>Executive Summary</h2>
-            <p>Model Context Protocol (MCP) is a new approach that enables AI agents to interact with APIs more efficiently by providing structured context about API capabilities.</p>
+            <p>Model Context Protocol (MCP) is a new approach that enables AI agents to interact with Applications more efficiently by providing structured context.</p>
             <div class="key-findings">
                 <h3>Cost & Resource Impact:</h3>
                 <ul>
@@ -38,10 +39,12 @@
                     <li><strong><span id="successImprovement">--</span> improvement in success rate</strong> - higher reliability</li>
                 </ul>
             </div>
-            <p><strong>Bottom line:</strong> While MCP increases computational resource usage and associated costs, it delivers substantial improvements in API efficiency, automation, and reliability. Organizations should weigh these trade-offs against their specific needs and constraints.</p>
+            <p><strong>Bottom line:</strong> While MCP increases computational resource usage and associated costs, it only delivers small improvements in API efficiency, automation, and reliability. Organizations should weigh these trade-offs against their specific needs and constraints.</p>
         </div>
+        -->
         
         <!-- Why This Matters -->
+        <!--
         <div class="card">
             <h2>Why This Matters</h2>
             <div class="columns-container">
@@ -57,6 +60,7 @@
                 </div>
             </div>
         </div>
+        -->
         
         <!-- Test Approaches -->
         <div class="card">
@@ -65,7 +69,7 @@
                 <!-- Full-width box -->
                 <div class="metric-card" style="width: 100%;">
                     <div class="metric-title">Testing Environment & Methodology</div>
-                    <p>Tests are conducted using Cline VS Code Extension in "auto-run" mode, allowing AI agents to execute actions autonomously. Task duration, API calls, user interactions, token usage, and cost are automatically tracked by the system according to the methodology documented in our <a href="https://github.com/nmogil-tw/mcp-te-benchmark" target="_blank" style="color: var(--primary);">GitHub repository</a>.</p>
+                    <p>Tests are conducted using Cline, <a href=""></a> VS Code Extension in "auto-run" mode, allowing AI agents to execute actions autonomously. Task duration, API calls, user interactions, token usage, and cost are automatically tracked by the system according to the methodology documented in our <a href="https://github.com/nmogil-tw/mcp-te-benchmark" target="_blank" style="color: var(--primary);">GitHub repository</a>.</p>
                     <p style="margin-top: 10px">Each task is performed twice - once using traditional methods and once using MCP. The results are stored in summary.json which serves as the single source of truth for this dashboard.</p>
                 </div>
                 <!-- Two side-by-side boxes container -->
@@ -74,7 +78,7 @@
                         <div class="metric-title">
                             <span class="badge badge-control">Control</span>
                         </div>
-                        <p>Traditional method using web search and terminal capabilities to complete API tasks. The Control approach requires manually looking up documentation and writing code from scratch.</p>
+                        <p>Out of the box method using web search and terminal capabilities to complete API tasks. The Control approach leans on pre-trained data and requires manually looking up documentation and writing code from scratch.</p>
                     </div>
                     <div class="metric-card">
                         <div class="metric-title">
@@ -123,26 +127,6 @@
                     <div class="stat-label">Time Improvement</div>
                 </div>
                 <div class="stat-item">
-                    <div id="improvementCalls" class="stat-value">--%</div>
-                    <div class="stat-label">API Calls Reduction</div>
-                </div>
-                <div class="stat-item">
-                    <div id="improvementInteractions" class="stat-value">--%</div>
-                    <div class="stat-label">Interaction Reduction</div>
-                </div>
-                <div class="stat-item">
-                    <div id="improvementTokens" class="stat-value">--%</div>
-                    <div class="stat-label">Token Usage Reduction</div>
-                </div>
-                <div class="stat-item">
-                    <div id="improvementCacheReads" class="stat-value">--%</div>
-                    <div class="stat-label">Cache Reads Reduction</div>
-                </div>
-                <div class="stat-item">
-                    <div id="improvementCacheWrites" class="stat-value">--%</div>
-                    <div class="stat-label">Cache Writes Reduction</div>
-                </div>
-                <div class="stat-item">
                     <div id="improvementCost" class="stat-value">--%</div>
                     <div class="stat-label">Cost Reduction</div>
                 </div>
@@ -155,6 +139,7 @@
         </div>
         
         <!-- Cost Analysis -->
+        <!--
         <div class="card">
             <h2>Cost-Benefit Analysis of MCP</h2>
             <div class="metrics">
@@ -204,8 +189,10 @@
                 </div>
             </div>
         </div>
+        -->
         
         <!-- Prompt Caching Effects -->
+        <!--
         <div class="card">
             <h2>Prompt Caching Effects</h2>
             <div class="metrics">
@@ -253,6 +240,7 @@
                 </div>
             </div>
         </div>
+        -->
         
         <!-- Charts -->
         <div class="card">
