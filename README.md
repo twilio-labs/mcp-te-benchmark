@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/twilioAlphaLogo.png" height="100" alt="Twilio Alpha"/></p>
+<p align="center"><img src="docs/twilioAlphaLogoLight.png#gh-dark-mode-only" height="100" alt="Twilio Alpha"/><img src="docs/twilioAlphaLogoDark.png#gh-light-mode-only" height="100" alt="Twilio Alpha"/></p>
 <h1 align="center">MCP-TE Benchmark</h1> 
 
 A standardized framework for evaluating the efficiency gains of AI agents using Model Context Protocol (MCP) compared to custom tools, such as terminal execution and web search.
@@ -9,18 +9,26 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 
 ## Leaderboard
 
-**Note:** Due to a limitation in the current MCP Client (Cursor), model selection is restricted in some test runs. 'Auto' indicates the client's automatic model selection. Results for specific models will be added as they become available.
-
 ### Overall Performance
 
 | Metric | Control | MCP | Improvement |
 |--------|---------|-----|-------------|
-| Average Duration (s) | 43.3 | 42.7 | -1.4% |
-| Average API Calls | 6.9 | 2.5 | -63.8% |
-| Average Interactions | 1.2 | 1.0 | -16.7% |
-| Success Rate | 100.0% | 100.0% | 0.0% |
+| Average Duration (s) | 62.5 | 49.7 | -20.6% |
+| Average API Calls | 10.3 | 8.3 | -19.3% |
+| Average Interactions | 1.1 | 1.0 | -3.3% |
+| Average Tokens | 2286.1 | 2141.4 | -6.3% |
+| Average Cache Reads | 191539.5 | 246152.5 | +28.5% |
+| Average Cache Writes | 11043.5 | 16973.9 | +53.7% |
+| Average Cost ($) | 0.1 | 0.2 | +27.5% |
+| Success Rate | 92.3% | 100.0% | +8.3% |
 
-*Environment:* Twilio (MCP Server), Cursor (MCP Client), Mixed models
+*Key Improvements:*
+- 20.6% reduction in task completion time
+- 27.5% reduction in overall cost
+- 8.3% improvement in success rate
+- Significant improvements in cache utilization
+
+*Environment:* Twilio (MCP Server), Cline (MCP Client), Mixed models
 
 ### Task-Specific Performance
 
@@ -67,12 +75,23 @@ The MCP-TE Benchmark evaluates AI coding agents' performance using a Control vs.
 | Interactions | Number of exchanges between the user and the AI assistant |
 | Success Rate | Percentage of tasks completed successfully |
 
-### Metric Collection Limitations
+### Metrics Collection
 
-Some metrics are collected with different methods due to client limitations:
+All metrics are now collected automatically from the Claude chat logs:
 
-- **Duration and Success/Failure:** Logged automatically by the metrics server
-- **API Calls and Interactions:** Currently manually counted post-run by observing the agent's behavior in Cursor, as Cursor does not provide detailed execution logs that would allow for automatic extraction of these metrics
+- **Duration:** Time from task start to completion, measured automatically
+- **API Calls:** Number of API calls made during task completion, extracted from chat logs
+- **Interactions:** Number of exchanges between the user and the AI assistant, extracted from chat logs
+- **Token Usage:** Input and output tokens used during the task
+- **Cost:** Estimated cost based on token usage
+- **Success Rate:** Percentage of tasks completed successfully
+
+To extract metrics from chat logs, run:
+```bash
+npm run extract-metrics
+```
+
+This script will analyze the Claude chat logs and generate metrics files in the `metrics/tasks/` directory, including an updated `summary.json` file that powers the dashboard.
 
 ## Tasks
 
@@ -103,11 +122,7 @@ While the initial task suite focuses on Twilio MCP Server functionality, the MCP
    ```
    npm install
    ```
-6. Start the metrics server:
-   ```
-   npm run start:metrics
-   ```
-7. Start the dashboard server (optional, for real-time visualization):
+6. Start the dashboard server:
    ```
    npm start
    ```
@@ -116,53 +131,57 @@ While the initial task suite focuses on Twilio MCP Server functionality, the MCP
 
 ### Testing Protocol
 
-1. Start the metrics server if not already running:
-   ```
-   npm run start:metrics
-   ```
+1. Open Cline and start a new chat with Claude
 
-2. Use the run-test.sh script to prepare a specific test:
-   ```
-   ./scripts/run-test.sh [control|mcp] [1|2|3] [model-name]
-   ```
-   Where:
-   - First parameter is the test mode (control or mcp)
-   - Second parameter is the task number (1, 2, or 3)
-   - Third parameter is the model name (e.g., "claude-3.7-sonnet")
+2. Upload the appropriate instruction file as context:
+   - For control tests: `agent-instructions/control_instructions.md`
+   - For MCP tests: `agent-instructions/mcp_instructions.md`
 
-3. Follow the on-screen instructions:
-   - Open Cursor with the AI Agent
-   - Load the appropriate instructions file (control_instructions.md or mcp_instructions.md) as context
-   - Start the conversation with: "Complete Task [TASK_NUMBER] using the commands in the instructions"
+3. Start the test with: `Complete Task [TASK_NUMBER] using the commands in the instructions`
 
-4. The AI agent will then:
-   - Read the instructions
-   - Execute the start curl command to begin timing
-   - Complete the required task
-   - Execute the complete curl command to end timing
+4. The AI assistant will complete the task, and all metrics will be automatically collected from the chat logs
 
-5. After the AI agent completes the task, press Enter in the terminal window to continue with the next test or generate the summary
+### Extracting Metrics from Chat Logs
 
-6. Important: Before running tests, ensure the instruction documents contain the correct endpoint paths:
-   - The start command should use `/metrics/start`
-   - The complete command should use `/metrics/complete`
-   - The model parameter should be included in the start command
+After running tests, extract metrics from Claude chat logs:
 
-### Batch Testing
-
-To run all tests in sequence:
-```
-./scripts/run-test.sh run-all --model [model-name]
+```bash
+npm run extract-metrics
 ```
 
-## Viewing Results
+This script analyzes the Claude chat logs and automatically extracts:
+- Duration of each task
+- Number of API calls
+- Number of user interactions
+- Token usage and estimated cost
+- Success/failure status
+
+You can also specify the model, client, and server names to use in the metrics:
+
+```bash
+npm run extract-metrics -- --model <model-name> --client <client-name> --server <server-name>
+```
+
+For example:
+```bash
+npm run extract-metrics -- --model claude-3.7-sonnet --client Cline --server Twilio
+```
+
+These arguments are optional and will override any values found in the logs or the default values. This is useful when the information isn't available in the logs or needs to be standardized across different runs.
+
+Additional options:
+- `--force` or `-f`: Force regeneration of all metrics, even if they already exist
+- `--verbose` or `-v`: Enable verbose logging for debugging
+- `--help` or `-h`: Show help message
+
+The extracted metrics are saved to the `metrics/tasks/` directory and the `summary.json` file is updated.
 
 ### Interactive Dashboard
 
 For a visual representation of results:
 
-1. Start the dashboard server (if not already running):
-   ```
+1. Start the dashboard server:
+   ```bash
    npm start
    ```
 2. Open your browser and navigate to:
@@ -174,8 +193,8 @@ For a visual representation of results:
 ### Command Line Summary
 
 Generate a text-based summary of results:
-```
-npm run generate-summary
+```bash
+npm run regenerate-summary
 ```
 
 ## Results Interpretation

@@ -5,20 +5,22 @@
     "main": "src/server/dashboard-server.js",
     "scripts": {
         "start": "node src/server/dashboard-server.js",
-        "start:metrics": "node src/server/metrics-server.js",
         "test": "mocha tests/**/*.test.js",
         "test:watch": "mocha tests/**/*.test.js --watch",
         "lint": "eslint src/**/*.js tests/**/*.js",
-        "generate-summary": "node src/cli/generate-summary.js"
+        "generate-summary": "node src/cli/generate-summary.js",
+        "extract-metrics": "./scripts/extract-metrics.sh",
+        "regenerate-summary": "./scripts/regenerate-summary.sh"
     },
     "author": "",
     "license": "MIT",
     "dependencies": {
         "cors": "^2.8.5",
-        "dotenv": "^16.0.3",
+        "dotenv": "^16.4.7",
         "express": "^4.18.2",
         "twilio": "^5.5.1",
-        "winston": "^3.8.2"
+        "winston": "^3.8.2",
+        "yargs": "^17.7.2"
     },
     "devDependencies": {
         "chai": "^4.3.7",

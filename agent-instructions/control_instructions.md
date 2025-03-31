@@ -7,22 +7,6 @@ This document contains three Twilio implementation tasks to complete using web s
 - The Cursor coding agent has access to web search and terminal commands
 - Use the .env file to access any twilio authentication credentials, like Twilio accound SID
 
-## Metrics Recording
-
-For accurate performance measurement, you must execute these commands:
-
-1. When starting each task:
-```bash
-curl -X POST http://localhost:3000/test/start -H "Content-Type: application/json" -d '{"mode": "control", "taskNumber": TASK_NUMBER}', "model": "claude-3.7-sonnet"
-```
-
-2. When completing each task:
-```bash
-curl -X POST http://localhost:3000/test/complete -H "Content-Type: application/json" -d '{"testId": "TEST_ID", "success": true|false}'
-```
-
-Replace TASK_NUMBER with the current task number (1, 2, or 3) and TEST_ID with the ID received from the start command.
-
 ## Testing Protocol
 
 For each task:
@@ -39,6 +23,7 @@ Goal: Search for and purchase an available Canadian phone number.
 Requirements:
 - Use area code 416 if available
 - If 416 is not available, any Canadian number is acceptable
+- Name it "Control {{timestamp}}"
 - Store the purchased number for use in Task 3
 
 Success Criteria:

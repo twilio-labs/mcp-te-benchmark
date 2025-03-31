@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP-TE</title>
+    <link rel="icon" type="image/x-icon" href="/docs/flavicon.ico">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <!-- Include Chart.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="https://twilioalpha.com/" target="_blank" rel="noopener noreferrer">
+                <img src="/docs/twilioAlphaLogoLight.png" alt="Twilio Alpha" class="logo">
+            </a>
+            <div class="header-content">
+                <h1>Model Context Protocol Task Efficiency (MCP-TE) Benchmark</h1>
+                <p>Comparing the performance metrics of tasked based AI Coding Agents using default tools (Control) and those utilizing MCP implementations.</p>
+            </div>
+        </header>
+        
+        <!-- Executive Summary -->
+        <!--
+        <div class="card">
+            <h2>Executive Summary</h2>
+            <p>Model Context Protocol (MCP) is a new approach that enables AI agents to interact with Applications more efficiently by providing structured context.</p>
+            <div class="key-findings">
+                <h3>Cost & Resource Impact:</h3>
+                <ul>
+                    <li><strong>Resource Usage:</strong> <span id="tokenIncrease">--</span> higher token consumption and <span id="cacheWritesIncrease">--</span> more cache writes</li>
+                    <li><strong>Cost Implication:</strong> <span id="costIncrease">--</span> higher per-task cost</li>
+                </ul>
+                <h3>Performance Benefits:</h3>
+                <ul>
+                    <li><strong><span id="apiCallsReduction">--</span> reduction in API calls</strong> - fewer external service requests</li>
+                    <li><strong><span id="interactionsReduction">--</span> reduction in user interactions</strong> - improved automation</li>
+                    <li><strong><span id="successImprovement">--</span> improvement in success rate</strong> - higher reliability</li>
+                </ul>
+            </div>
+            <p><strong>Bottom line:</strong> While MCP increases computational resource usage and associated costs, it only delivers small improvements in API efficiency, automation, and reliability. Organizations should weigh these trade-offs against their specific needs and constraints.</p>
+        </div>
+        -->
+        
+        <!-- Why This Matters -->
+        <!--
+        <div class="card">
+            <h2>Why This Matters</h2>
+            <div class="columns-container">
+                <div class="column">
+                    <h3>For Developers</h3>
+                    <p>MCP reduces the time spent on API integration by enabling AI assistants to directly understand and use APIs without documentation lookup or trial-and-error coding.</p>
+                    <p>Example: A task that would normally require 10 API calls and careful documentation reading can be completed with just 4 API calls using MCP.</p>
+                </div>
+                <div class="column">
+                    <h3>For Organizations</h3>
+                    <p>Faster development cycles and more reliable API usage translate to reduced costs and improved product quality.</p>
+                    <p>The slight increase in token costs (15%) is offset by substantial efficiency gains in developer productivity and reduced API usage.</p>
+                </div>
+            </div>
+        </div>
+        -->
+        
+        <!-- Test Approaches -->
+        <div class="card">
+            <h2>Test Approach</h2>
+            <div class="metrics" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Full-width box -->
+                <div class="metric-card" style="width: 100%;">
+                    <div class="metric-title">Testing Environment & Methodology</div>
+                    <p>Tests are conducted using Cline, <a href=""></a> VS Code Extension in "auto-run" mode, allowing AI agents to execute actions autonomously. Task duration, API calls, user interactions, token usage, and cost are automatically tracked by the system according to the methodology documented in our <a href="https://github.com/nmogil-tw/mcp-te-benchmark" target="_blank" style="color: var(--primary);">GitHub repository</a>.</p>
+                    <p style="margin-top: 10px">Each task is performed twice - once using traditional methods and once using MCP. The results are stored in summary.json which serves as the single source of truth for this dashboard.</p>
+                </div>
+                <!-- Two side-by-side boxes container -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="metric-card">
+                        <div class="metric-title">
+                            <span class="badge badge-control">Control</span>
+                        </div>
+                        <p>Out of the box method using web search and terminal capabilities to complete API tasks. The Control approach leans on pre-trained data and requires manually looking up documentation and writing code from scratch.</p>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">
+                            <span class="badge badge-mcp">MCP</span>
+                        </div>
+                        <p>Model Context Protocol approach that provides AI coding agents with direct access to API functions. MCP enables AI to understand API structure without external documentation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Task Description -->
+        <div class="card">
+            <h2>Task Description</h2>
+            <div class="tabs" id="taskTabs">
+                <div class="tab active" data-task="1">Task 1</div>
+                <div class="tab" data-task="2">Task 2</div>
+                <div class="tab" data-task="3">Task 3</div>
+            </div>
+            <div class="task-content" id="task-1">
+                <div class="metric-card">
+                    <div class="metric-title">Task 1: Purchase a Canadian Phone Number</div>
+                    <p>Search for and purchase an available Canadian phone number (preferably with area code 416).</p>
+                </div>
+            </div>
+            <div class="task-content" id="task-2" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-title">Task 2: Create a Task Router Activity</div>
+                    <p>Create a new Task Router activity named "Bathroom", this already exists so the Agent won't be able to create it.</p>
+                </div>
+            </div>
+            <div class="task-content" id="task-3" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-title">Task 3: Create a Queue with Task Filter</div>
+                    <p>Create a queue with a task filter that prevents routing tasks to workers in the "Bathroom" activity.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Stats -->
+        <div class="card">
+            <h2>Overall Performance</h2>
+            <div class="stat-card">
+                <div class="stat-item">
+                    <div id="improvementTime" class="stat-value">--%</div>
+                    <div class="stat-label">Time Improvement</div>
+                </div>
+                <div class="stat-item">
+                    <div id="improvementCost" class="stat-value">--%</div>
+                    <div class="stat-label">Cost Reduction</div>
+                </div>
+                <div class="stat-item">
+                    <div id="improvementSuccess" class="stat-value">--%</div>
+                    <div class="stat-label">Success Rate Improvement</div>
+                </div>
+            </div>
+            <div id="summary" class="metrics"></div>
+        </div>
+        
+        <!-- Cost Analysis -->
+        <!--
+        <div class="card">
+            <h2>Cost-Benefit Analysis of MCP</h2>
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-title">Cost Implications Framework</div>
+                    <p>While MCP shows a 63.8% reduction in API calls and 16.7% reduction in interactions, our analysis reveals important cost considerations. The increased context provided by MCP results in:</p>
+                    <ul class="metric-list">
+                        <li>47% higher token usage compared to traditional methods</li>
+                        <li>3.2× more cache writes during initial context loading</li>
+                        <li>15% higher per-task cost on average</li>
+                    </ul>
+                    <p>This presents a nuanced efficiency equation: operational gains must be weighed against increased LLM costs.</p>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Claude Pricing Impact</div>
+                    <div class="table-container">
+                        <table class="cost-table">
+                            <thead>
+                                <tr>
+                                    <th>Approach</th>
+                                    <th>Avg Tokens/Task</th>
+                                    <th>Input/Output Split</th>
+                                    <th>Cost/Task</th>
+                                    <th>Cost/1000 Tasks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Control</td>
+                                    <td>4,250</td>
+                                    <td>850/3,400</td>
+                                    <td>$0.054</td>
+                                    <td>$54.00</td>
+                                </tr>
+                                <tr>
+                                    <td>MCP</td>
+                                    <td>6,230</td>
+                                    <td>1,246/4,984</td>
+                                    <td>$0.079</td>
+                                    <td>$79.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="note">Based on Claude 3.7 Sonnet pricing: $3/million input tokens, $15/million output tokens, plus prompt caching costs ($3.75/million tokens for writes, $0.30/million tokens for reads).</p>
+                </div>
+            </div>
+        </div>
+        -->
+        
+        <!-- Prompt Caching Effects -->
+        <!--
+        <div class="card">
+            <h2>Prompt Caching Effects</h2>
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-title">Cache Utilization Analysis</div>
+                    <p>Anthropic's prompt caching system significantly impacts MCP efficiency metrics. When Claude receives identical portions of text in multiple API calls, it caches these segments to avoid charging twice.</p>
+                    <div class="table-container">
+                        <table class="cache-table">
+                            <thead>
+                                <tr>
+                                    <th>Approach</th>
+                                    <th>Avg Cache Reads</th>
+                                    <th>Avg Cache Writes</th>
+                                    <th>Cache Efficiency Ratio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Control</td>
+                                    <td><span class="cache-metric">143,169</span></td>
+                                    <td><span class="cache-metric">13,621</span></td>
+                                    <td><span class="efficiency-ratio">10.5×</span></td>
+                                </tr>
+                                <tr>
+                                    <td>MCP</td>
+                                    <td><span class="cache-metric">309,134</span></td>
+                                    <td><span class="cache-metric">29,011</span></td>
+                                    <td><span class="efficiency-ratio">10.7×</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="note">Cache efficiency ratio represents the number of cache reads per write, indicating how effectively the system reuses cached content.</p>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Cache Performance Impact</div>
+                    <p>The data reveals a significant difference in cache utilization between approaches:</p>
+                    <ul class="metric-list">
+                        <li>MCP shows <span class="cache-metric">2.16×</span> higher cache reads compared to Control</li>
+                        <li>MCP demonstrates <span class="cache-metric">2.13×</span> more cache writes than Control</li>
+                        <li>Both approaches maintain similar cache efficiency ratios (<span class="efficiency-ratio">~10.6×</span>)</li>
+                    </ul>
+                    <p>This explains the apparent paradox in our results: while MCP uses more tokens overall, it achieves better performance through effective cache utilization, particularly in reusing API documentation and context information across multiple calls.</p>
+                </div>
+            </div>
+        </div>
+        -->
+        
+        <!-- Charts -->
+        <div class="card">
+            <h2>Performance Charts</h2>
+            <div class="tabs">
+                <div class="tab active" data-chart="duration">Duration</div>
+                <div class="tab" data-chart="apiCalls">API Calls</div>
+                <div class="tab" data-chart="interactions">Interactions</div>
+                <div class="tab" data-chart="tokens">Tokens</div>
+                <div class="tab" data-chart="cacheReads">Cache Reads</div>
+                <div class="tab" data-chart="cacheWrites">Cache Writes</div>
+                <div class="tab" data-chart="cost">Cost</div>
+                <div class="tab" data-chart="success">Success Rate</div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="modelMetrics"></div>
+        
+        <div class="card">
+            <h2>Detailed Results</h2>
+            <div class="actions">
+                <button id="refreshBtn" class="btn">
+                    <span>↻</span> Refresh Data
+                </button>
+                <button id="downloadBtn" class="btn btn-secondary">
+                    <span>↓</span> Download CSV
+                </button>
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <span>Loading data...</span>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label" for="mcpServerFilter">MCP Server:</label>
+                    <select id="mcpServerFilter">
+                        <option value="all">All Servers</option>
+                        <!-- Will be dynamically populated -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="mcpClientFilter">MCP Client:</label>
+                    <select id="mcpClientFilter">
+                        <option value="all">All Clients</option>
+                        <!-- Will be dynamically populated -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="modelFilter">Model:</label>
+                    <select id="modelFilter">
+                        <option value="all">All Models</option>
+                        <!-- Will be dynamically populated -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="taskFilter">Task:</label>
+                    <select id="taskFilter">
+                        <option value="all">All Tasks</option>
+                        <option value="1">Task 1</option>
+                        <option value="2">Task 2</option>
+                        <option value="3">Task 3</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" for="modeFilter">Mode:</label>
+                    <select id="modeFilter">
+                        <option value="all">All Modes</option>
+                        <option value="control">Control</option>
+                        <option value="mcp">MCP</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="sessionsTable">
+                    <thead>
+                        <tr>
+                            <th>Directory ID</th>
+                            <th>MCP Server</th>
+                            <th>MCP Client</th>
+                            <th>Task</th>
+                            <th>Mode</th>
+                            <th>Model</th>
+                            <th>Duration (s)</th>
+                            <th>API Calls (count)</th>
+                            <th>User Interactions (count)</th>
+                            <th>Tokens (count)</th>
+                            <th>Cache Reads (count)</th>
+                            <th>Cache Writes (count)</th>
+                            <th>Cost ($)</th>
+                            <th>Success</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Model Context Protocol Performance Dashboard</p>
+            <p>Last updated: <span id="lastUpdated">-</span></p>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

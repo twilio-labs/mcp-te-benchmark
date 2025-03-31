@@ -1,0 +1,20 @@
+{
+  "mode": "control",
+  "taskNumber": 3,
+  "directoryId": "1743435995583",
+  "model": "claude-3.7-sonnet",
+  "startTime": 1743435995588,
+  "completed": true,
+  "apiCalls": 9,
+  "interactions": 1,
+  "tokensIn": 36,
+  "tokensOut": 2398,
+  "totalTokens": 2434,
+  "cacheWrites": 6650,
+  "cacheReads": 155652,
+  "conversationHistoryIndex": 16,
+  "cost": 0.10771110000000002,
+  "success": true,
+  "endTime": 1743436044399,
+  "duration": 48811
+}
