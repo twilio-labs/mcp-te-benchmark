@@ -128,12 +128,12 @@ function displayMetrics() {
         'Average Cache Reads': {
             control: average(controlSessions.map(s => s.cacheReads || 0)),
             mcp: average(mcpSessions.map(s => s.cacheReads || 0)),
-            unit: 'reads'
+            unit: 'tokens'
         },
         'Average Cache Writes': {
             control: average(controlSessions.map(s => s.cacheWrites || 0)),
             mcp: average(mcpSessions.map(s => s.cacheWrites || 0)),
-            unit: 'writes'
+            unit: 'tokens'
         },
         'Average Cost': {
             control: average(controlSessions.map(s => s.cost || 0)),
