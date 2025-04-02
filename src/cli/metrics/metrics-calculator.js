@@ -1,21 +1,73 @@
 const logger = require('../../utils/logger');
 
+/**
+ * Calculator for processing and extracting metrics from task segments
+ */
 class MetricsCalculator {
-  // Add modelArg, clientArg, and serverArg to the constructor
+  /**
+   * Create a default metrics result object
+   * @param {Object} segment The task segment (or null)
+   * @param {string} directoryId The directory ID
+   * @returns {Object} A default metrics object with zero values
+   */
+  static createDefaultResult(segment, directoryId) {
+    return {
+      taskId: segment?.taskNumber ?? 0,
+      directoryId: directoryId ?? '',
+      mode: 'unknown',
+      model: 'unknown',
+      mcpServer: 'Twilio',
+      mcpClient: 'Cline',
+      startTime: segment?.startTime ?? 0,
+      endTime: segment?.endTime ?? 0,
+      duration: 0,
+      apiCalls: 0,
+      interactions: 0,
+      tokensIn: 0,
+      tokensOut: 0,
+      totalTokens: 0,
+      cacheWrites: 0,
+      cacheReads: 0,
+      conversationHistoryIndex: 0,
+      cost: 0,
+      success: false,
+      notes: 'Failed to calculate metrics'
+    };
+  }
+
+  /**
+   * Constructor for MetricsCalculator
+   * @param {Object} segment The task segment
+   * @param {string} testType The test type (control or mcp)
+   * @param {string} directoryId The directory ID
+   * @param {string} modelArg The model argument from command line
+   * @param {string} clientArg The client argument from command line
+   * @param {string} serverArg The server argument from command line
+   */
   constructor(segment, testType, directoryId, modelArg, clientArg, serverArg) {
     this.segment = segment;
     this.testType = testType;
-    this.directoryId = directoryId || '';
-    this.modelArg = modelArg; // Store the model argument
-    this.clientArg = clientArg; // Store the client argument
-    this.serverArg = serverArg; // Store the server argument
+    this.directoryId = directoryId ?? '';
+    this.modelArg = modelArg;
+    this.clientArg = clientArg;
+    this.serverArg = serverArg;
   }
 
+  /**
+   * Calculate metrics for the task segment
+   * @returns {Promise<Object>} The calculated metrics
+   */
   async calculate() {
+    // Validate input
+    if (!this.segment) {
+      logger.error('Cannot calculate metrics: segment is missing');
+      return MetricsCalculator.createDefaultResult(null, this.directoryId);
+    }
+
     try {
       // Check for MCP usage in API calls
       const hasMcpUsage = this.checkForMcpUsage();
-      const finalMode = hasMcpUsage ? 'mcp' : (this.segment.testType || this.testType);
+      const finalMode = hasMcpUsage ? 'mcp' : (this.segment.testType ?? this.testType);
 
       // Calculate metrics in parallel
       const [
@@ -27,17 +79,17 @@ class MetricsCalculator {
         this.calculateApiCalls(),
         this.calculateUserMessages(),
         this.calculateTokenMetrics(),
-        this.determineModel() // Pass modelArg here
+        this.determineModel()
       ]);
 
       const { 
-        tokensIn, 
-        tokensOut, 
-        totalCost, 
-        cacheWrites, 
-        cacheReads, 
-        conversationHistoryIndex 
-      } = tokenMetrics;
+        tokensIn = 0, 
+        tokensOut = 0, 
+        totalCost = 0, 
+        cacheWrites = 0, 
+        cacheReads = 0, 
+        conversationHistoryIndex = 0 
+      } = tokenMetrics ?? {};
 
       // Validate and calculate duration
       let duration = this.segment.endTime - this.segment.startTime;
@@ -46,38 +98,46 @@ class MetricsCalculator {
       const MAX_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
       if (duration < 0 || duration > MAX_DURATION) {
         logger.warn(`Invalid duration detected for task ${this.segment.taskNumber}: ${duration}ms. Capping at 24 hours.`);
-        duration = Math.min(Math.max(0, duration), MAX_DURATION);
+        duration = Math.max(0, Math.min(duration, MAX_DURATION));
       }
 
       return {
         taskId: this.segment.taskNumber,
-        directoryId: this.directoryId, // Use the directoryId passed in the constructor
-        mode: finalMode,
-        model: model, // Use the determined model
-        mcpServer: this.serverArg || 'Twilio', // Prioritize serverArg, fallback to 'Twilio'
-        mcpClient: this.clientArg || 'Cline', // Prioritize clientArg, fallback to 'Cline'
+        directoryId: this.directoryId,
+        mode: finalMode ?? 'unknown',
+        model: model ?? 'unknown',
+        mcpServer: this.serverArg ?? 'Twilio',
+        mcpClient: this.clientArg ?? 'Cline',
         startTime: this.segment.startTime,
-        endTime: this.segment.startTime + duration, // Ensure endTime is consistent with duration
-        duration: duration,
+        endTime: this.segment.startTime + duration,
+        duration,
         apiCalls: apiCallCount,
         interactions: userMessageCount,
-        tokensIn: tokensIn,
-        tokensOut: tokensOut,
+        tokensIn,
+        tokensOut,
         totalTokens: tokensIn + tokensOut,
-        cacheWrites: cacheWrites || 0,
-        cacheReads: cacheReads || 0,
-        conversationHistoryIndex: conversationHistoryIndex || 0,
+        cacheWrites,
+        cacheReads,
+        conversationHistoryIndex,
         cost: totalCost,
         success: true,
         notes: ''
       };
     } catch (error) {
       logger.error(`Error calculating metrics: ${error.message}`);
-      return null;
+      return MetricsCalculator.createDefaultResult(this.segment, this.directoryId);
     }
   }
 
+  /**
+   * Check if the task segment contains MCP usage
+   * @returns {boolean} True if MCP was used
+   */
   checkForMcpUsage() {
+    if (!this.segment?.apiCalls?.length) {
+      return false;
+    }
+
     for (const apiCall of this.segment.apiCalls) {
       if (apiCall.role === 'assistant' && apiCall.content && Array.isArray(apiCall.content)) {
         for (const content of apiCall.content) {
@@ -93,7 +153,15 @@ class MetricsCalculator {
     return false;
   }
 
+  /**
+   * Calculate the number of API calls in the task segment
+   * @returns {Promise<number>} The number of API calls
+   */
   async calculateApiCalls() {
+    if (!this.segment?.userMessages?.length) {
+      return 0;
+    }
+    
     let apiCallCount = 0;
     
     // Count API calls from UI messages only - only counting api_req_started events
@@ -101,7 +169,7 @@ class MetricsCalculator {
       // Count API request operations
       if (msg.type === 'say' && msg.say === 'api_req_started') {
         apiCallCount++;
-        logger.debug(`Found API request in task ${this.segment.taskNumber}: ${msg.text}`);
+        logger.debug(`Found API request in task ${this.segment.taskNumber}: ${msg.text ?? '[no text]'}`);
       }
       
       // No longer counting MCP tool requests as per requirements
@@ -112,7 +180,17 @@ class MetricsCalculator {
     return apiCallCount;
   }
 
+  /**
+   * Calculate the number of user messages in the task segment
+   * @returns {Promise<number>} The number of user messages
+   */
   async calculateUserMessages() {
+    // Default to 1 interaction if no data is available
+    if (!this.segment?.apiCalls?.length) {
+      logger.info(`No API calls found, defaulting to 1 interaction for task ${this.segment?.taskNumber ?? 'unknown'}`);
+      return 1;
+    }
+    
     // For benchmarking MCP tasks, we want the true number of human interactions
     // In most cases, this should be just 1 (the initial task instruction)
     
@@ -123,38 +201,36 @@ class MetricsCalculator {
     let foundInitialTask = false;
     
     // Look in API conversation history (most reliable source)
-    if (this.segment.apiCalls && Array.isArray(this.segment.apiCalls)) {
-      for (const entry of this.segment.apiCalls) {
-        // Only process user messages
-        if (entry.role === 'user' && entry.content && Array.isArray(entry.content)) {
-          // Extract the text from all content items
-          const fullText = entry.content
-            .filter(item => item.type === 'text')
-            .map(item => item.text || '')
-            .join(' ');
-          
-          // Check if this is the initial task request
-          if (!foundInitialTask && (
-              fullText.includes('Complete Task') || 
-              fullText.includes('agent-instructions/mcp_instructions.md') ||
-              fullText.includes('agent-instructions/control_instructions.md')
-            )) {
-            foundInitialTask = true;
-            userInteractionCount = 1;  // Set to exactly 1 for the initial task
-            logger.info(`Found initial task instruction for task ${this.segment.taskNumber}`);
-            continue;  // Skip to next message
-          }
-          
-          // Only count additional user messages if they appear to be actual human follow-ups
-          // and not system messages
-          if (foundInitialTask && 
-              !fullText.includes('<environment_details>') && 
-              !fullText.startsWith('[') &&
-              fullText.trim().length > 10) {  // Minimum length to exclude noise
-            // This appears to be a genuine follow-up question
-            userInteractionCount++;
-            logger.info(`Found follow-up user message for task ${this.segment.taskNumber}: "${fullText.substring(0, 50)}..."`);
-          }
+    for (const entry of this.segment.apiCalls) {
+      // Only process user messages
+      if (entry.role === 'user' && entry.content && Array.isArray(entry.content)) {
+        // Extract the text from all content items
+        const fullText = entry.content
+          .filter(item => item.type === 'text')
+          .map(item => item.text ?? '')
+          .join(' ');
+        
+        // Check if this is the initial task request
+        if (!foundInitialTask && (
+            fullText.includes('Complete Task') || 
+            fullText.includes('agent-instructions/mcp_instructions.md') ||
+            fullText.includes('agent-instructions/control_instructions.md')
+          )) {
+          foundInitialTask = true;
+          userInteractionCount = 1;  // Set to exactly 1 for the initial task
+          logger.info(`Found initial task instruction for task ${this.segment.taskNumber}`);
+          continue;  // Skip to next message
+        }
+        
+        // Only count additional user messages if they appear to be actual human follow-ups
+        // and not system messages
+        if (foundInitialTask && 
+            !fullText.includes('<environment_details>') && 
+            !fullText.startsWith('[') &&
+            fullText.trim().length > 10) {  // Minimum length to exclude noise
+          // This appears to be a genuine follow-up question
+          userInteractionCount++;
+          logger.info(`Found follow-up user message for task ${this.segment.taskNumber}: "${fullText.substring(0, 50)}..."`);
         }
       }
     }
@@ -168,7 +244,25 @@ class MetricsCalculator {
     return userInteractionCount;
   }
 
+  /**
+   * Calculate token metrics for the task segment
+   * @returns {Promise<Object>} Token metrics
+   */
   async calculateTokenMetrics() {
+    // Default values
+    const defaultMetrics = {
+      tokensIn: 0,
+      tokensOut: 0,
+      totalCost: 0,
+      cacheWrites: 0,
+      cacheReads: 0,
+      conversationHistoryIndex: 0
+    };
+
+    if (!this.segment?.userMessages?.length) {
+      return defaultMetrics;
+    }
+
     let tokensIn = 0;
     let tokensOut = 0;
     let totalCost = 0;
@@ -186,8 +280,8 @@ class MetricsCalculator {
           const data = JSON.parse(message.text);
           if (data.tokensIn !== undefined) {
             tokensIn += parseInt(data.tokensIn, 10);
-            tokensOut += parseInt(data.tokensOut || 0, 10);
-            totalCost += parseFloat(data.cost || 0);
+            tokensOut += parseInt(data.tokensOut ?? 0, 10);
+            totalCost += parseFloat(data.cost ?? 0);
             
             // Track cache metrics if available
             if (data.cacheWrites !== undefined) {
@@ -198,7 +292,7 @@ class MetricsCalculator {
             }
             
             messagesWithTokens++;
-            logger.info(`Message ${messagesWithTokens} tokens - In: ${data.tokensIn}, Out: ${data.tokensOut || 0}`);
+            logger.info(`Message ${messagesWithTokens} tokens - In: ${data.tokensIn}, Out: ${data.tokensOut ?? 0}`);
           }
         } catch (e) {
           // If JSON parsing fails, try regex matching
@@ -209,13 +303,13 @@ class MetricsCalculator {
           const cacheReadsMatch = message.text.match(/cacheReads["\s:]+(\d+)/i);
 
           if (tokensInMatch || tokensOutMatch) {
-            if (tokensInMatch && tokensInMatch[1]) tokensIn += parseInt(tokensInMatch[1], 10);
-            if (tokensOutMatch && tokensOutMatch[1]) tokensOut += parseInt(tokensOutMatch[1], 10);
-            if (costMatch && costMatch[1]) totalCost += parseFloat(costMatch[1]);
-            if (cacheWritesMatch && cacheWritesMatch[1]) cacheWrites += parseInt(cacheWritesMatch[1], 10);
-            if (cacheReadsMatch && cacheReadsMatch[1]) cacheReads += parseInt(cacheReadsMatch[1], 10);
+            if (tokensInMatch?.[1]) tokensIn += parseInt(tokensInMatch[1], 10);
+            if (tokensOutMatch?.[1]) tokensOut += parseInt(tokensOutMatch[1], 10);
+            if (costMatch?.[1]) totalCost += parseFloat(costMatch[1]);
+            if (cacheWritesMatch?.[1]) cacheWrites += parseInt(cacheWritesMatch[1], 10);
+            if (cacheReadsMatch?.[1]) cacheReads += parseInt(cacheReadsMatch[1], 10);
             messagesWithTokens++;
-            logger.info(`Message ${messagesWithTokens} tokens - In: ${tokensInMatch ? tokensInMatch[1] : 0}, Out: ${tokensOutMatch ? tokensOutMatch[1] : 0}`);
+            logger.info(`Message ${messagesWithTokens} tokens - In: ${tokensInMatch?.[1] ?? 0}, Out: ${tokensOutMatch?.[1] ?? 0}`);
           }
         }
       }
@@ -230,26 +324,27 @@ class MetricsCalculator {
     }
 
     // Second pass: Check API calls for any additional token usage
-    let apiCallsWithTokens = 0;
-    for (const apiCall of this.segment.apiCalls) {
-      if (apiCall.usage) {
-        if (apiCall.usage.input_tokens) tokensIn += apiCall.usage.input_tokens;
-        if (apiCall.usage.output_tokens) tokensOut += apiCall.usage.output_tokens;
-        if (apiCall.usage.cost) totalCost += apiCall.usage.cost;
-        apiCallsWithTokens++;
-        logger.info(`API Call ${apiCallsWithTokens} tokens - In: ${apiCall.usage.input_tokens || 0}, Out: ${apiCall.usage.output_tokens || 0}`);
+    if (this.segment.apiCalls?.length) {
+      let apiCallsWithTokens = 0;
+      for (const apiCall of this.segment.apiCalls) {
+        if (apiCall.usage) {
+          if (apiCall.usage.input_tokens) tokensIn += apiCall.usage.input_tokens;
+          if (apiCall.usage.output_tokens) tokensOut += apiCall.usage.output_tokens;
+          if (apiCall.usage.cost) totalCost += apiCall.usage.cost;
+          apiCallsWithTokens++;
+          logger.info(`API Call ${apiCallsWithTokens} tokens - In: ${apiCall.usage.input_tokens ?? 0}, Out: ${apiCall.usage.output_tokens ?? 0}`);
+        }
       }
     }
 
     // Calculate total cost if not already set
-    if (totalCost === 0) {
+    if (totalCost === 0 && (tokensIn > 0 || tokensOut > 0)) {
       // Claude-3 pricing: $0.008/1K input tokens, $0.024/1K output tokens
       totalCost = (tokensIn * 0.008 / 1000) + (tokensOut * 0.024 / 1000);
     }
 
     logger.info(`Token metrics for task ${this.segment.taskNumber}:
       Messages with tokens: ${messagesWithTokens}
-      API calls with tokens: ${apiCallsWithTokens}
       Total input tokens: ${tokensIn}
       Total output tokens: ${tokensOut}
       Cache writes: ${cacheWrites}
@@ -263,10 +358,14 @@ class MetricsCalculator {
       totalCost,
       cacheWrites,
       cacheReads,
-      conversationHistoryIndex: highestConvHistoryIndex
+      conversationHistoryIndex: highestConvHistoryIndex > -1 ? highestConvHistoryIndex : 0
     };
   }
 
+  /**
+   * Determine the model used for the task
+   * @returns {Promise<string>} The model name
+   */
   async determineModel() {
     // Prioritize the command-line argument if provided
     if (this.modelArg) {
@@ -274,21 +373,28 @@ class MetricsCalculator {
       return this.modelArg;
     }
 
-    // Otherwise, try to determine from logs
+    // Check if we have API calls to analyze
+    if (!this.segment?.apiCalls?.length) {
+      const defaultModel = 'claude-3.7-sonnet';
+      logger.info(`No API calls found, defaulting to: ${defaultModel}`);
+      return defaultModel;
+    }
+
+    // Try to determine from logs
     for (const apiCall of this.segment.apiCalls) {
       if (apiCall.role === 'assistant' && apiCall.content && Array.isArray(apiCall.content)) {
         for (const content of apiCall.content) {
           if (content.type === 'text' && content.text) {
             // Look for model in system prompt
             const systemPromptMatch = content.text.match(/You are a powerful agentic AI coding assistant, powered by (Claude [\d.]+ \w+)/i);
-            if (systemPromptMatch && systemPromptMatch[1]) {
-              // Attempt to normalize model name slightly if needed, or just return matched group
-              const detectedModel = systemPromptMatch[1].toLowerCase().replace('claude ', 'claude-').replace(' ', '-');
+            if (systemPromptMatch?.[1]) {
+              // Normalize model name
+              const detectedModel = systemPromptMatch[1].toLowerCase()
+                .replace('claude ', 'claude-')
+                .replace(' ', '-');
+              
               logger.info(`Detected model from logs: ${detectedModel}`);
-              // Simple normalization example:
-              if (detectedModel === 'claude-3.5-sonnet') return 'claude-3.5-sonnet'; // Keep known format
-              // Add more normalization rules if needed
-              return detectedModel; // Return the detected model string
+              return detectedModel;
             }
           }
         }
@@ -296,7 +402,7 @@ class MetricsCalculator {
     }
     
     // Default if not found in logs and no argument provided
-    const defaultModel = 'claude-3.7-sonnet'; // Keep the original default
+    const defaultModel = 'claude-3.7-sonnet';
     logger.info(`Model not found in logs or args, defaulting to: ${defaultModel}`);
     return defaultModel;
   }
