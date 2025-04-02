@@ -174,7 +174,8 @@ function displayMetrics() {
     Object.entries(performanceElements).forEach(([elementId, value]) => {
         const element = document.getElementById(elementId);
         if (element) {
-            element.textContent = `${value}%`;
+            // Ensure value is treated as a number before calling toFixed
+            element.textContent = `${Number(value).toFixed(2)}%`;
             element.classList.remove('positive', 'negative');
             element.classList.add(value > 0 ? 'positive' : 'negative');
         }
@@ -182,12 +183,12 @@ function displayMetrics() {
 
     // Update executive summary values - safely handle potentially missing elements
     const executiveSummaryUpdates = {
-        'apiCallsReduction': -parseFloat(improvements.calls).toFixed(1),
-        'interactionsReduction': -parseFloat(improvements.interactions).toFixed(1),
-        'successImprovement': parseFloat(improvements.success).toFixed(1),
-        'tokenIncrease': parseFloat(improvements.tokens).toFixed(1),
-        'costIncrease': parseFloat(improvements.cost).toFixed(1),
-        'cacheWritesIncrease': parseFloat(improvements.cacheWrites).toFixed(1)
+        'apiCallsReduction': (-parseFloat(improvements.calls)).toFixed(2),
+        'interactionsReduction': (-parseFloat(improvements.interactions)).toFixed(2),
+        'successImprovement': (parseFloat(improvements.success)).toFixed(2),
+        'tokenIncrease': (parseFloat(improvements.tokens)).toFixed(2),
+        'costIncrease': (parseFloat(improvements.cost)).toFixed(2),
+        'cacheWritesIncrease': (parseFloat(improvements.cacheWrites)).toFixed(2)
     };
 
     Object.entries(executiveSummaryUpdates).forEach(([elementId, value]) => {
@@ -211,11 +212,11 @@ function displayMetrics() {
                     <div class="metric-unit">Measured in ${values.unit}</div>
                     <div class="metric-value">
                         <span class="mode">Control:</span>
-                        <span>${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</span>
+                        <span>${values.control.toFixed(2)}${title.includes('Rate') ? '%' : ''}</span>
                     </div>
                     <div class="metric-value">
                         <span class="mode">MCP:</span>
-                        <span>${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</span>
+                        <span>${values.mcp.toFixed(2)}${title.includes('Rate') ? '%' : ''}</span>
                     </div>
                     <div class="metric-value">
                         <span class="mode">Change:</span>
@@ -343,9 +344,9 @@ function displayModelMetrics() {
                             <div class="compact-metric-title">${title}</div>
                             <div class="compact-metric-content">
                                 <div class="compact-metric-label">Control:</div>
-                                <div class="compact-metric-value">${values.control.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                                <div class="compact-metric-value">${values.control.toFixed(2)}${title.includes('Rate') ? '%' : ''}</div>
                                 <div class="compact-metric-label">MCP:</div>
-                                <div class="compact-metric-value">${values.mcp.toFixed(1)}${title.includes('Rate') ? '%' : ''}</div>
+                                <div class="compact-metric-value">${values.mcp.toFixed(2)}${title.includes('Rate') ? '%' : ''}</div>
                                 <div class="compact-metric-label">Change:</div>
                                 <div class="compact-metric-value ${changeClass}">${change}%</div>
                             </div>
@@ -398,7 +399,7 @@ function displaySessions() {
                 <td>Task ${s.taskId}</td>
                 <td><span class="badge badge-${s.mode}">${s.mode}</span></td>
                 <td><strong>${s.model || 'Unknown'}</strong></td>
-                <td>${(s.duration/1000).toFixed(1)}</td>
+                <td>${(s.duration/1000).toFixed(2)}</td>
                 <td>${s.apiCalls}</td>
                 <td>${s.interactions}</td>
                 <td>${s.totalTokens || 0}</td>
@@ -657,7 +658,7 @@ function downloadCsv() {
             s.taskId,
             s.mode,
             s.model || 'unknown',
-            (s.duration/1000).toFixed(1),
+            (s.duration/1000).toFixed(2),
             s.apiCalls,
             s.interactions,
             s.totalTokens || 0,
@@ -691,7 +692,9 @@ function percentage(part, total) {
 }
 
 function percentageChange(newValue, oldValue) {
-    return oldValue ? (((newValue - oldValue) / oldValue) * 100).toFixed(1) : 'N/A';
+    if (!oldValue) return 'N/A';
+    const result = ((newValue - oldValue) / oldValue) * 100;
+    return result.toFixed(2);
 }
 
 // Event listeners
