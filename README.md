@@ -13,16 +13,16 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 
 *Environment: Twilio (MCP Server), Cline (MCP Client), Model: claude-3.7-sonnet*
 
-| Metric                 | Control    | MCP        | Change |
-| :--------------------- | :--------- | :--------- | :----- |
-| Average Duration (s)   | 62.5       | 49.7       | -20.5% |
-| Average API Calls      | 10.3       | 8.3        | -19.3% |
-| Average Interactions   | 1.1        | 1.0        | -3.3%  |
-| Average Tokens         | 2286.1     | 2141.4     | -6.3%  |
-| Average Cache Reads    | 191539.5   | 246152.5   | +28.5% |
-| Average Cache Writes   | 11043.5    | 16973.9    | +53.7% |
-| Average Cost ($)       | 0.1        | 0.2        | +27.5% |
-| Success Rate           | 92.3%      | 100.0%     | +8.3%  |
+| Metric                 | Control    | MCP        | Change  |
+| :--------------------- | :--------- | :--------- | :-----  |
+| Average Duration (s)   | 62.54      | 49.68      | -20.56% |
+| Average API Calls      | 10.27      | 8.29       | -19.26% |
+| Average Interactions   | 1.08       | 1.04       | -3.27%  |
+| Average Tokens         | 2286.12    | 2141.38    | -6.33%  |
+| Average Cache Reads    | 191539.50  | 246152.46  | +28.51% |
+| Average Cache Writes   | 11043.46   | 16973.88   | +53.70% |
+| Average Cost ($)       | 0.13       | 0.17       | +27.55% |
+| Success Rate           | 92.31%     | 100.0%     | +8.33%  |
 
 *Note: Calculations based on data in `metrics/summary.json`.*
 
@@ -40,24 +40,42 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 
 #### Task 1: Purchase a Canadian Phone Number
 
-| Mode    | Duration (s) | API Calls | Interactions | Success Rate |
-| :------ | :----------- | :-------- | :----------- | :----------- |
-| Control | 79.4         | 12.8      | 1.2          | 100.0%       |
-| MCP     | 62.3         | 9.6       | 1.1          | 100.0%       |
+| Metric                  | Control    | MCP        | Change   |
+| :--------------------- | :--------- | :--------- | :------- |
+| Duration (s)           | 79.41      | 62.27      | -21.57%  |
+| API Calls              | 12.78      | 9.63       | -24.67%  |
+| Interactions           | 1.22       | 1.13       | -7.95%   |
+| Tokens                 | 2359.33    | 2659.88    | +12.74%  |
+| Cache Reads            | 262556.11  | 281086.13  | +7.06%   |
+| Cache Writes           | 17196.33   | 25627.63   | +49.03%  |
+| Cost ($)               | 0.18       | 0.22       | +23.50%  |
+| Success Rate           | 100.00%    | 100.00%    | 0.00%    |
 
 #### Task 2: Create a Task Router Activity
 
-| Mode    | Duration (s) | API Calls | Interactions | Success Rate |
-| :------ | :----------- | :-------- | :----------- | :----------- |
-| Control | 46.4         | 8.4       | 1.0          | 77.8%        |
-| MCP     | 30.7         | 5.9       | 1.0          | 100.0%       |
+| Metric                  | Control    | MCP        | Change   |
+| :--------------------- | :--------- | :--------- | :------- |
+| Duration (s)           | 46.37      | 30.71      | -33.77%  |
+| API Calls              | 8.44       | 5.88       | -30.43%  |
+| Interactions           | 1.00       | 1.00       | 0.00%    |
+| Tokens                 | 2058.89    | 1306.63    | -36.54%  |
+| Cache Reads            | 144718.44  | 164311.50  | +13.54%  |
+| Cache Writes           | 6864.44    | 11219.13   | +63.44%  |
+| Cost ($)               | 0.10       | 0.11       | +11.09%  |
+| Success Rate           | 77.78%     | 100.00%    | +28.57%  |
 
 #### Task 3: Create a Queue with Task Filter
 
-| Mode    | Duration (s) | API Calls | Interactions | Success Rate |
-| :------ | :----------- | :-------- | :----------- | :----------- |
-| Control | 61.8         | 9.5       | 1.0          | 100.0%       |
-| MCP     | 56.1         | 9.4       | 1.0          | 100.0%       |
+| Metric                  | Control    | MCP        | Change   |
+| :--------------------- | :--------- | :--------- | :------- |
+| Duration (s)           | 61.77      | 56.07      | -9.23%   |
+| API Calls              | 9.50       | 9.38       | -1.32%   |
+| Interactions           | 1.00       | 1.00       | 0.00%    |
+| Tokens                 | 2459.38    | 2457.63    | -0.07%   |
+| Cache Reads            | 164319.50  | 293059.75  | +78.35%  |
+| Cache Writes           | 8822.88    | 14074.88   | +59.53%  |
+| Cost ($)               | 0.12       | 0.18       | +49.06%  |
+| Success Rate           | 100.00%    | 100.00%    | 0.00%    |
 
 ## Benchmark Design & Metrics
 
@@ -191,7 +209,8 @@ The benchmark focuses on these key insights:
 1. **Time Efficiency:** Comparing the time it takes to complete tasks using MCP vs. traditional methods
 2. **API Efficiency:** Measuring the reduction in API calls when using MCP
 3. **Interaction Efficiency:** Evaluating if MCP reduces the number of interactions needed to complete tasks
-4. **Success Rate:** Determining if MCP improves the reliability of task completion
+4. **Cost Efficiency** Evalutating if the added MCP context has an impact on Token Costs
+5. **Success Rate:** Determining if MCP improves the reliability of task completion
 
 Negative percentage changes in duration, API calls, and interactions indicate improvements, while positive changes in success rate indicate improvements.
 
