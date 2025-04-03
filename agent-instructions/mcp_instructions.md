@@ -4,7 +4,7 @@ This document contains three Twilio implementation tasks to complete using the T
 
 ## Environment Setup
 
-- The Cursor coding agent has access to Twilio MCP functions
+- The Cline coding agent has access to Twilio MCP functions
 - Use the .env file to access any twilio authentication credentials, like Twilio accound SID
 
 ## Testing Protocol
