@@ -1,5 +1,14 @@
 const logger = require('../../utils/logger');
 
+const DEFAULT_METRICS = {
+  tokensIn: 0,
+  tokensOut: 0,
+  totalCost: 0,
+  cacheWrites: 0,
+  cacheReads: 0,
+  conversationHistoryIndex: 0
+};
+
 /**
  * Calculator for processing and extracting metrics from task segments
  */
@@ -138,19 +147,17 @@ class MetricsCalculator {
       return false;
     }
 
-    for (const apiCall of this.segment.apiCalls) {
+    return this.segment.apiCalls.some(apiCall => {
       if (apiCall.role === 'assistant' && apiCall.content && Array.isArray(apiCall.content)) {
-        for (const content of apiCall.content) {
-          if (content.type === 'text' && content.text && 
-              (content.text.includes('use_mcp_tool') || 
-               content.text.includes('use_mcp_server') || 
-               content.text.includes('access_mcp_resource'))) {
-            return true;
-          }
-        }
+        return apiCall.content.some(content => 
+          content.type === 'text' && content.text && 
+          (content.text.includes('use_mcp_tool') || 
+           content.text.includes('use_mcp_server') || 
+           content.text.includes('access_mcp_resource'))
+        );
       }
-    }
-    return false;
+      return false;
+    });
   }
 
   /**
@@ -165,15 +172,13 @@ class MetricsCalculator {
     let apiCallCount = 0;
     
     // Count API calls from UI messages only - only counting api_req_started events
-    for (const msg of this.segment.userMessages) {
+    this.segment.userMessages.forEach(msg => {
       // Count API request operations
       if (msg.type === 'say' && msg.say === 'api_req_started') {
         apiCallCount++;
         logger.debug(`Found API request in task ${this.segment.taskNumber}: ${msg.text ?? '[no text]'}`);
       }
-      
-      // No longer counting MCP tool requests as per requirements
-    }
+    });
 
     logger.info(`API Call Count for Task ${this.segment.taskNumber}: ${apiCallCount}`);
 
@@ -201,39 +206,41 @@ class MetricsCalculator {
     let foundInitialTask = false;
     
     // Look in API conversation history (most reliable source)
-    for (const entry of this.segment.apiCalls) {
+    this.segment.apiCalls.forEach(entry => {
       // Only process user messages
-      if (entry.role === 'user' && entry.content && Array.isArray(entry.content)) {
-        // Extract the text from all content items
-        const fullText = entry.content
-          .filter(item => item.type === 'text')
-          .map(item => item.text ?? '')
-          .join(' ');
-        
-        // Check if this is the initial task request
-        if (!foundInitialTask && (
-            fullText.includes('Complete Task') || 
-            fullText.includes('agent-instructions/mcp_instructions.md') ||
-            fullText.includes('agent-instructions/control_instructions.md')
-          )) {
-          foundInitialTask = true;
-          userInteractionCount = 1;  // Set to exactly 1 for the initial task
-          logger.info(`Found initial task instruction for task ${this.segment.taskNumber}`);
-          continue;  // Skip to next message
-        }
-        
-        // Only count additional user messages if they appear to be actual human follow-ups
-        // and not system messages
-        if (foundInitialTask && 
-            !fullText.includes('<environment_details>') && 
-            !fullText.startsWith('[') &&
-            fullText.trim().length > 10) {  // Minimum length to exclude noise
-          // This appears to be a genuine follow-up question
-          userInteractionCount++;
-          logger.info(`Found follow-up user message for task ${this.segment.taskNumber}: "${fullText.substring(0, 50)}..."`);
-        }
+      if (entry.role !== 'user' || !entry.content || !Array.isArray(entry.content)) {
+        return;
       }
-    }
+
+      // Extract the text from all content items
+      const fullText = entry.content
+        .filter(item => item.type === 'text')
+        .map(item => item.text ?? '')
+        .join(' ');
+      
+      // Check if this is the initial task request
+      if (!foundInitialTask && (
+          fullText.includes('Complete Task') || 
+          fullText.includes('agent-instructions/mcp_instructions.md') ||
+          fullText.includes('agent-instructions/control_instructions.md')
+        )) {
+        foundInitialTask = true;
+        userInteractionCount = 1;  // Set to exactly 1 for the initial task
+        logger.info(`Found initial task instruction for task ${this.segment.taskNumber}`);
+        return;  // Skip to next message
+      }
+      
+      // Only count additional user messages if they appear to be actual human follow-ups
+      // and not system messages
+      if (foundInitialTask && 
+          !fullText.includes('<environment_details>') && 
+          !fullText.startsWith('[') &&
+          fullText.trim().length > 10) {  // Minimum length to exclude noise
+        // This appears to be a genuine follow-up question
+        userInteractionCount++;
+        logger.info(`Found follow-up user message for task ${this.segment.taskNumber}: "${fullText.substring(0, 50)}..."`);
+      }
+    });
     
     // If we still haven't found any interactions, default to 1
     if (userInteractionCount === 0) {
@@ -250,17 +257,10 @@ class MetricsCalculator {
    */
   async calculateTokenMetrics() {
     // Default values
-    const defaultMetrics = {
-      tokensIn: 0,
-      tokensOut: 0,
-      totalCost: 0,
-      cacheWrites: 0,
-      cacheReads: 0,
-      conversationHistoryIndex: 0
-    };
+    const metrics = { ...DEFAULT_METRICS };
 
     if (!this.segment?.userMessages?.length) {
-      return defaultMetrics;
+      return metrics;
     }
 
     let tokensIn = 0;
@@ -274,7 +274,7 @@ class MetricsCalculator {
     logger.info(`Starting token calculation for task ${this.segment.taskNumber}`);
 
     // First pass: Collect reported token usage from Claude
-    for (const message of this.segment.userMessages) {
+    this.segment.userMessages.forEach(message => {
       if (message.type === 'say' && message.text) {
         try {
           const data = JSON.parse(message.text);
@@ -321,12 +321,12 @@ class MetricsCalculator {
           highestConvHistoryIndex = indexValue;
         }
       }
-    }
+    });
 
     // Second pass: Check API calls for any additional token usage
     if (this.segment.apiCalls?.length) {
       let apiCallsWithTokens = 0;
-      for (const apiCall of this.segment.apiCalls) {
+      this.segment.apiCalls.forEach(apiCall => {
         if (apiCall.usage) {
           if (apiCall.usage.input_tokens) tokensIn += apiCall.usage.input_tokens;
           if (apiCall.usage.output_tokens) tokensOut += apiCall.usage.output_tokens;
@@ -334,7 +334,7 @@ class MetricsCalculator {
           apiCallsWithTokens++;
           logger.info(`API Call ${apiCallsWithTokens} tokens - In: ${apiCall.usage.input_tokens ?? 0}, Out: ${apiCall.usage.output_tokens ?? 0}`);
         }
-      }
+      });
     }
 
     // Calculate total cost if not already set
@@ -381,24 +381,27 @@ class MetricsCalculator {
     }
 
     // Try to determine from logs
-    for (const apiCall of this.segment.apiCalls) {
+    const modelFromLogs = this.segment.apiCalls.find(apiCall => {
       if (apiCall.role === 'assistant' && apiCall.content && Array.isArray(apiCall.content)) {
-        for (const content of apiCall.content) {
+        return apiCall.content.some(content => {
           if (content.type === 'text' && content.text) {
             // Look for model in system prompt
             const systemPromptMatch = content.text.match(/You are a powerful agentic AI coding assistant, powered by (Claude [\d.]+ \w+)/i);
-            if (systemPromptMatch?.[1]) {
-              // Normalize model name
-              const detectedModel = systemPromptMatch[1].toLowerCase()
-                .replace('claude ', 'claude-')
-                .replace(' ', '-');
-              
-              logger.info(`Detected model from logs: ${detectedModel}`);
-              return detectedModel;
-            }
+            return systemPromptMatch?.[1];
           }
-        }
+          return false;
+        });
       }
+      return false;
+    });
+
+    if (modelFromLogs) {
+      const detectedModel = modelFromLogs.toLowerCase()
+        .replace('claude ', 'claude-')
+        .replace(' ', '-');
+      
+      logger.info(`Detected model from logs: ${detectedModel}`);
+      return detectedModel;
     }
     
     // Default if not found in logs and no argument provided
