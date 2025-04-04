@@ -4,7 +4,7 @@ This document contains three Twilio implementation tasks to complete using web s
 
 ## Environment Setup
 
-- The Cursor coding agent has access to web search and terminal commands
+- The Cline coding agent has access to web search and terminal commands
 - Use the .env file to access any twilio authentication credentials, like Twilio accound SID
 
 ## Testing Protocol

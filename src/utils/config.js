@@ -15,8 +15,8 @@ const config = {
     level: process.env.LOG_LEVEL || 'info',
   },
   metrics: {
-    dataPath: process.env.METRICS_DATA_PATH || path.resolve(__dirname, '../../metrics/tasks'),
+    dataPath: process.env.METRICS_DATA_PATH || path.resolve(__dirname, '../../metrics'),
   }
 };
 
-module.exports = config; 
+module.exports = config;
