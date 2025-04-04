@@ -1,8 +1,18 @@
 {
-    "name": "mcp-te-benchmark",
-    "version": "1.0.0",
+    "name": "@twilio-alpha/mcp-te-benchmark",
+    "version": "1.1.0",
     "description": "MCP Tool Efficiency (TE) Benchmark",
     "main": "src/server/dashboard-server.js",
+    "bin": {
+        "mcp-te-benchmark": "./src/cli/extract-chat-metrics.js"
+    },
+    "files": [
+        "src/",
+        "agent-instructions/",
+        "scripts/regenerate-summary.sh",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "start": "node src/server/dashboard-server.js",
         "test": "mocha tests/**/*.test.js",
