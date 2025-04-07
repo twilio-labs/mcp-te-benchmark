@@ -7,21 +7,21 @@
   "type": "module",
   "main": "dist/server/dashboard-server.js",
   "bin": {
-    "mcp-te-benchmark": "./dist/cli/extract-chat-metrics.js"
+    "mcp-te-benchmark": "./dist/cli.js"
   },
   "files": [
-    "src/",
-    "dist/",
-    "scripts/regenerate-summary.sh"
+    "public/",
+    "server/",
+    "dist/"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
+    "cli:extract-metrics": "node --import tsx/esm src/cli.ts extract-metrics",
+    "cli:generate-summary": "node --import tsx/esm src/cli.ts generate-summary",
     "dashboard": "node --watch --import tsx/esm dashboard/server.ts",
-    "extract-metrics": "node --import tsx/esm src/extract-chat-metrics.ts",
-    "generate-summary": "node --import tsx/esm src/generate-summary.ts",
-    "prepare": "husky",
     "lint": "eslint src/**/*.ts dashboard/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts dashboard/**/*.ts --fix"
+    "lint:fix": "eslint src/**/*.ts dashboard/**/*.ts --fix",
+    "prepare": "husky"
   },
   "lint-staged": {
     "src/**/*.ts": [

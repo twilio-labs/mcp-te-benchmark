@@ -1,7 +1,7 @@
-import { promises as fs } from 'fs';
+import fs from 'fs';
 import path from 'path';
 
-import logger from '../utils/logger';
+import { logger } from '../utils';
 import SummaryResult from './summary-result';
 import { TaskMetrics } from './types';
 
@@ -46,6 +46,7 @@ class SummaryGenerator {
 
       for (const metric of taskMetrics) {
         if (!metric.directoryId) {
+          // eslint-disable-next-line no-continue
           continue;
         }
 
@@ -60,7 +61,7 @@ class SummaryGenerator {
 
       // Write the summary file
       const summaryPath = path.join(this.metricsDir, 'summary.json');
-      await fs.writeFile(summaryPath, JSON.stringify(uniqueMetrics, null, 2));
+      fs.writeFileSync(summaryPath, JSON.stringify(uniqueMetrics, null, 2));
 
       this.printSummaryStatistics(uniqueMetrics);
 
@@ -167,7 +168,7 @@ class SummaryGenerator {
           `Writing metric file for task ${metric.taskId} with ${metric.apiCalls ?? 0} API calls`,
         );
 
-        await fs.writeFile(
+        fs.writeFileSync(
           filePath,
           JSON.stringify(
             {
@@ -229,7 +230,7 @@ class SummaryGenerator {
     const tasksDir = path.join(this.metricsDir, 'tasks');
     let files: string[];
     try {
-      files = await fs.readdir(tasksDir);
+      files = fs.readdirSync(tasksDir);
     } catch (error) {
       logger.error(
         `Failed to read tasks directory: ${(error as Error).message}`,
@@ -305,7 +306,7 @@ class SummaryGenerator {
     try {
       // Write the summary file
       const summaryPath = path.join(this.metricsDir, 'summary.json');
-      await fs.writeFile(summaryPath, JSON.stringify(allMetrics, null, 2));
+      fs.writeFileSync(summaryPath, JSON.stringify(allMetrics, null, 2));
 
       this.printSummaryStatistics(allMetrics);
 
@@ -340,7 +341,7 @@ class SummaryGenerator {
     const summaryPath = path.join(this.metricsDir, 'summary.json');
 
     try {
-      const content = await fs.readFile(summaryPath, 'utf8');
+      const content = fs.readFileSync(summaryPath, 'utf8');
       existingMetrics = JSON.parse(content);
     } catch (error) {
       logger.warn(
@@ -402,7 +403,7 @@ class SummaryGenerator {
 
     try {
       // Write the merged summary
-      await fs.writeFile(summaryPath, JSON.stringify(allMetrics, null, 2));
+      fs.writeFileSync(summaryPath, JSON.stringify(allMetrics, null, 2));
 
       return SummaryResult.success(
         `Merged summary: updated ${updatedMetrics.length}, added ${addedMetrics.length} metrics`,
@@ -435,7 +436,7 @@ class SummaryGenerator {
 
     try {
       const tasksDir = path.join(this.metricsDir, 'tasks');
-      const files = await fs.readdir(tasksDir);
+      const files = fs.readdirSync(tasksDir);
 
       if (directoryId) {
         const specificPattern = new RegExp(
@@ -497,29 +498,29 @@ class SummaryGenerator {
     const controlAvg = this.calculateAverages(controlTasks);
     const mcpAvg = this.calculateAverages(mcpTasks);
 
-    console.log('\nPerformance Comparison:');
-    console.log(
+    logger.info('\nPerformance Comparison:');
+    logger.info(
       `Duration (s): Control=${controlAvg.duration.toFixed(1)}, MCP=${mcpAvg.duration.toFixed(1)} (${this.percentageChange(mcpAvg.duration, controlAvg.duration)}% change)`,
     );
-    console.log(
+    logger.info(
       `API Calls: Control=${controlAvg.apiCalls.toFixed(1)}, MCP=${mcpAvg.apiCalls.toFixed(1)} (${this.percentageChange(mcpAvg.apiCalls, controlAvg.apiCalls)}% change)`,
     );
-    console.log(
+    logger.info(
       `Interactions: Control=${controlAvg.interactions.toFixed(1)}, MCP=${mcpAvg.interactions.toFixed(1)} (${this.percentageChange(mcpAvg.interactions, controlAvg.interactions)}% change)`,
     );
-    console.log(
+    logger.info(
       `Tokens: Control=${controlAvg.tokens.toFixed(0)}, MCP=${mcpAvg.tokens.toFixed(0)} (${this.percentageChange(mcpAvg.tokens, controlAvg.tokens)}% change)`,
     );
-    console.log(
+    logger.info(
       `Cache Writes: Control=${controlAvg.cacheWrites.toFixed(0)}, MCP=${mcpAvg.cacheWrites.toFixed(0)} (${this.percentageChange(mcpAvg.cacheWrites, controlAvg.cacheWrites)}% change)`,
     );
-    console.log(
+    logger.info(
       `Cache Reads: Control=${controlAvg.cacheReads.toFixed(0)}, MCP=${mcpAvg.cacheReads.toFixed(0)} (${this.percentageChange(mcpAvg.cacheReads, controlAvg.cacheReads)}% change)`,
     );
-    console.log(
+    logger.info(
       `Conversation History: Control=${controlAvg.convHistoryIndex.toFixed(1)}, MCP=${mcpAvg.convHistoryIndex.toFixed(1)} (${this.percentageChange(mcpAvg.convHistoryIndex, controlAvg.convHistoryIndex)}% change)`,
     );
-    console.log(
+    logger.info(
       `Cost ($): Control=${controlAvg.cost.toFixed(4)}, MCP=${mcpAvg.cost.toFixed(4)} (${this.percentageChange(mcpAvg.cost, controlAvg.cost)}% change)`,
     );
   }
@@ -557,7 +558,10 @@ class SummaryGenerator {
   }
 
   percentageChange(newValue: number, oldValue: number): string {
-    if (oldValue === 0) return 'N/A';
+    if (oldValue === 0) {
+      return 'N/A';
+    }
+
     return (((newValue - oldValue) / oldValue) * 100).toFixed(1);
   }
 }

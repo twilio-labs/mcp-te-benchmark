@@ -31,13 +31,12 @@ interface Config {
   metrics: MetricsConfig;
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const dirName = path.dirname(fileURLToPath(import.meta.url));
 
 const config: Config = {
   server: {
-    metricsPort: parseInt(process.env.METRICS_PORT || '3000'),
-    dashboardPort: parseInt(process.env.DASHBOARD_PORT || '3001'),
+    metricsPort: parseInt(process.env.METRICS_PORT || '3000', 10),
+    dashboardPort: parseInt(process.env.DASHBOARD_PORT || '3001', 10),
   },
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
@@ -49,7 +48,7 @@ const config: Config = {
   },
   metrics: {
     dataPath:
-      process.env.METRICS_DATA_PATH || path.resolve(__dirname, '../../metrics'),
+      process.env.METRICS_DATA_PATH || path.resolve(dirName, '../../metrics'),
   },
 };
 
