@@ -1,6 +1,6 @@
 {
     "name": "@twilio-alpha/mcp-te-benchmark",
-    "version": "1.1.0",
+    "version": "0.0.1",
     "description": "MCP Tool Efficiency (TE) Benchmark",
     "main": "src/server/dashboard-server.js",
     "bin": {
@@ -8,10 +8,7 @@
     },
     "files": [
         "src/",
-        "agent-instructions/",
-        "scripts/regenerate-summary.sh",
-        "README.md",
-        "LICENSE"
+        "scripts/regenerate-summary.sh"
     ],
     "scripts": {
         "start": "node src/server/dashboard-server.js",
