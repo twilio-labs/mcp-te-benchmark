@@ -9,7 +9,7 @@ PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Run the regenerate-summary.js script
 echo "Regenerating summary.json from existing metric files..."
-node "$PROJECT_ROOT/src/cli/regenerate-summary.js"
+node "$PROJECT_ROOT/dist/cli/regenerate-summary.js"
 
 # Check if the script ran successfully
 if [ $? -eq 0 ]; then

@@ -374,6 +374,28 @@
     "notes": ""
   },
   {
+    "taskId": 1,
+    "directoryId": "1744055487177",
+    "mode": "mcp",
+    "model": "claude-3.7-sonnet",
+    "mcpServer": "Twilio",
+    "mcpClient": "Cline",
+    "startTime": 1744055487180,
+    "endTime": 1744055550305,
+    "duration": 63125,
+    "apiCalls": 7,
+    "interactions": 1,
+    "tokensIn": 28,
+    "tokensOut": 2317,
+    "totalTokens": 2345,
+    "cacheWrites": 31980,
+    "cacheReads": 173262,
+    "conversationHistoryIndex": 12,
+    "cost": 0.2067426,
+    "success": true,
+    "notes": ""
+  },
+  {
     "taskId": 2,
     "directoryId": "1743272264340",
     "mode": "control",
