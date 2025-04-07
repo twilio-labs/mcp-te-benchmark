@@ -149,6 +149,29 @@ The current benchmark includes the following tasks specific to the Twilio MCP Se
 
 After running tests, extract metrics from the chat logs:
 
+#### Via npx (Recommended for quick use)
+
+You can run the metrics extraction directly without cloning the repository:
+
+```bash
+npx @twilio-alpha/mcp-te-benchmark [options]
+```
+
+For example, to see available options:
+```bash
+npx @twilio-alpha/mcp-te-benchmark --help
+```
+
+To run extraction with specific parameters:
+```bash
+# Make sure Claude logs are present at the default location first
+npx @twilio-alpha/mcp-te-benchmark --model claude-3.7-sonnet --client Cline --server Twilio --verbose
+```
+
+#### Local Installation / Development
+
+If you have cloned the repository, you can run:
+
 ```bash
 # Extracts metrics and updates summary.json
 npm run extract-metrics
