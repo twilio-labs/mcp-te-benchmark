@@ -1,17 +1,17 @@
 // Types and interfaces for metrics processing
 
-export const CONTROL_MARKER = "control_instructions.md";
-export const MCP_MARKER = "mcp_instructions.md";
-export const TASK_START_MARKER = "Complete Task";
+export const CONTROL_MARKER = 'control_instructions.md';
+export const MCP_MARKER = 'mcp_instructions.md';
+export const TASK_START_MARKER = 'Complete Task';
 
 export interface TaskSegment {
   taskNumber: number;
   startIndex: number;
   startTime: number;
   apiCalls: {
-    role: "assistant" | "user";
+    role: 'assistant' | 'user';
     content: {
-      type: "text";
+      type: 'text';
       text: string;
     }[];
   }[];

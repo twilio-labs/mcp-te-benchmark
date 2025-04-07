@@ -1,14 +1,9 @@
-import { promises as fs } from "fs";
-import path from "path";
-import logger from "../utils/logger";
-import { TaskMetrics } from "./types";
+import { promises as fs } from 'fs';
+import path from 'path';
 
-interface SummaryResultData {
-  success: boolean;
-  message: string;
-  data: any[];
-  failedFiles: string[];
-}
+import logger from '../utils/logger';
+import SummaryResult from './summary-result';
+import { TaskMetrics } from './types';
 
 interface MetricAverages {
   duration: number;
@@ -19,65 +14,6 @@ interface MetricAverages {
   cacheReads: number;
   convHistoryIndex: number;
   cost: number;
-}
-
-/**
- * Result class for consistent error handling
- */
-class SummaryResult implements SummaryResultData {
-  success: boolean;
-  message: string;
-  data: any[];
-  failedFiles: string[];
-
-  /**
-   * Create a new SummaryResult
-   * @param {boolean} success Whether the operation was successful
-   * @param {string} message A message describing the result
-   * @param {Array} data The metrics data
-   * @param {Array} failedFiles Any files that failed to process
-   */
-  constructor(
-    success: boolean,
-    message: string,
-    data: any[] = [],
-    failedFiles: string[] = [],
-  ) {
-    this.success = success;
-    this.message = message;
-    this.data = data;
-    this.failedFiles = failedFiles;
-  }
-
-  /**
-   * Create a success result
-   * @param {string} message Success message
-   * @param {Array} data Metrics data
-   * @param {Array} failedFiles Any files that failed to process
-   * @returns {SummaryResult} A success result
-   */
-  static success(
-    message: string,
-    data: any[] = [],
-    failedFiles: string[] = [],
-  ): SummaryResult {
-    return new SummaryResult(true, message, data, failedFiles);
-  }
-
-  /**
-   * Create an error result
-   * @param {string} message Error message
-   * @param {Array} data Any partial data that was collected
-   * @param {Array} failedFiles Any files that failed to process
-   * @returns {SummaryResult} An error result
-   */
-  static error(
-    message: string,
-    data: any[] = [],
-    failedFiles: string[] = [],
-  ): SummaryResult {
-    return new SummaryResult(false, message, data, failedFiles);
-  }
 }
 
 /**
@@ -101,7 +37,7 @@ class SummaryGenerator {
    */
   async generateSummary(taskMetrics: TaskMetrics[]): Promise<SummaryResult> {
     if (!taskMetrics?.length) {
-      return SummaryResult.error("No task metrics provided");
+      return SummaryResult.error('No task metrics provided');
     }
 
     try {
@@ -123,7 +59,7 @@ class SummaryGenerator {
       const uniqueMetrics = Array.from(directoryMap.values());
 
       // Write the summary file
-      const summaryPath = path.join(this.metricsDir, "summary.json");
+      const summaryPath = path.join(this.metricsDir, 'summary.json');
       await fs.writeFile(summaryPath, JSON.stringify(uniqueMetrics, null, 2));
 
       this.printSummaryStatistics(uniqueMetrics);
@@ -133,7 +69,7 @@ class SummaryGenerator {
         uniqueMetrics,
       );
     } catch (error) {
-      logger.error("Error generating summary:", error);
+      logger.error('Error generating summary:', error);
       return SummaryResult.error(
         `Failed to generate summary: ${(error as Error).message}`,
         taskMetrics,
@@ -181,9 +117,9 @@ class SummaryGenerator {
     metrics.sort((a, b) => {
       if (a.taskId === b.taskId) {
         if (a.mode === b.mode) {
-          return (a.model ?? "").localeCompare(b.model ?? "");
+          return (a.model ?? '').localeCompare(b.model ?? '');
         }
-        return (a.mode ?? "").localeCompare(b.mode ?? "");
+        return (a.mode ?? '').localeCompare(b.mode ?? '');
       }
       return (a.taskId ?? 0) - (b.taskId ?? 0);
     });
@@ -198,7 +134,7 @@ class SummaryGenerator {
     taskMetrics: TaskMetrics[],
   ): Promise<SummaryResult> {
     if (!taskMetrics?.length) {
-      return SummaryResult.error("No task metrics provided");
+      return SummaryResult.error('No task metrics provided');
     }
 
     const successfulWrites: string[] = [];
@@ -212,8 +148,8 @@ class SummaryGenerator {
           metric.directoryId ??
           metric.startTime?.toString() ??
           Date.now().toString();
-        const filename = `${metric.mode ?? "unknown"}_task${metric.taskId ?? 0}_${directoryId}.json`;
-        const tasksDir = path.join(this.metricsDir, "tasks");
+        const filename = `${metric.mode ?? 'unknown'}_task${metric.taskId ?? 0}_${directoryId}.json`;
+        const tasksDir = path.join(this.metricsDir, 'tasks');
 
         // Ensure tasks directory exists
         try {
@@ -237,7 +173,7 @@ class SummaryGenerator {
             {
               mode: metric.mode,
               taskNumber: metric.taskId,
-              directoryId: metric.directoryId ?? "",
+              directoryId: metric.directoryId ?? '',
               model: metric.model,
               startTime: metric.startTime,
               completed: true,
@@ -287,10 +223,10 @@ class SummaryGenerator {
    * @returns {Promise<SummaryResult>} Result of the operation
    */
   async generateSummaryFromFiles(): Promise<SummaryResult> {
-    logger.info("Generating summary from individual metric files...");
+    logger.info('Generating summary from individual metric files...');
 
     // Look for metric files in the 'tasks' subdirectory
-    const tasksDir = path.join(this.metricsDir, "tasks");
+    const tasksDir = path.join(this.metricsDir, 'tasks');
     let files: string[];
     try {
       files = await fs.readdir(tasksDir);
@@ -308,8 +244,8 @@ class SummaryGenerator {
     );
 
     if (metricFiles.length === 0) {
-      logger.warn("No metric files found");
-      return SummaryResult.error("No metric files found", []);
+      logger.warn('No metric files found');
+      return SummaryResult.error('No metric files found', []);
     }
 
     logger.info(`Found ${metricFiles.length} individual metric files`);
@@ -319,19 +255,19 @@ class SummaryGenerator {
     const failedFiles: string[] = [];
 
     for (const file of metricFiles) {
-      const filePath = path.join(this.metricsDir, "tasks", file);
+      const filePath = path.join(this.metricsDir, 'tasks', file);
       try {
-        const fileContent = await fs.readFile(filePath, "utf8");
+        const fileContent = await fs.readFile(filePath, 'utf8');
         const metric = JSON.parse(fileContent);
 
         // Convert to the format expected by the summary
         allMetrics.push({
           taskId: metric.taskNumber,
-          directoryId: metric.directoryId ?? "",
+          directoryId: metric.directoryId ?? '',
           mode: metric.mode,
           model: metric.model,
-          mcpServer: metric.mcpServer ?? "Twilio",
-          mcpClient: metric.mcpClient ?? "Cline",
+          mcpServer: metric.mcpServer ?? 'Twilio',
+          mcpClient: metric.mcpClient ?? 'Cline',
           startTime: metric.startTime,
           endTime: metric.endTime,
           duration: metric.duration,
@@ -345,7 +281,7 @@ class SummaryGenerator {
           conversationHistoryIndex: metric.conversationHistoryIndex ?? 0,
           cost: metric.cost ?? 0,
           success: metric.success !== false,
-          notes: metric.notes ?? "",
+          notes: metric.notes ?? '',
         });
       } catch (error) {
         logger.error(
@@ -357,7 +293,7 @@ class SummaryGenerator {
 
     if (allMetrics.length === 0) {
       return SummaryResult.error(
-        "Failed to parse any metric files",
+        'Failed to parse any metric files',
         [],
         failedFiles,
       );
@@ -368,7 +304,7 @@ class SummaryGenerator {
 
     try {
       // Write the summary file
-      const summaryPath = path.join(this.metricsDir, "summary.json");
+      const summaryPath = path.join(this.metricsDir, 'summary.json');
       await fs.writeFile(summaryPath, JSON.stringify(allMetrics, null, 2));
 
       this.printSummaryStatistics(allMetrics);
@@ -397,14 +333,14 @@ class SummaryGenerator {
     newMetrics: TaskMetrics[],
   ): Promise<SummaryResult> {
     if (!newMetrics?.length) {
-      return SummaryResult.error("No new metrics provided");
+      return SummaryResult.error('No new metrics provided');
     }
 
     let existingMetrics: TaskMetrics[] = [];
-    const summaryPath = path.join(this.metricsDir, "summary.json");
+    const summaryPath = path.join(this.metricsDir, 'summary.json');
 
     try {
-      const content = await fs.readFile(summaryPath, "utf8");
+      const content = await fs.readFile(summaryPath, 'utf8');
       existingMetrics = JSON.parse(content);
     } catch (error) {
       logger.warn(
@@ -421,7 +357,7 @@ class SummaryGenerator {
     for (const newMetric of newMetrics) {
       // Validate duration before merging
       const MAX_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-      let duration = newMetric.duration;
+      let { duration } = newMetric;
 
       if (duration < 0 || duration > MAX_DURATION) {
         logger.warn(
@@ -498,7 +434,7 @@ class SummaryGenerator {
     }
 
     try {
-      const tasksDir = path.join(this.metricsDir, "tasks");
+      const tasksDir = path.join(this.metricsDir, 'tasks');
       const files = await fs.readdir(tasksDir);
 
       if (directoryId) {
@@ -525,23 +461,23 @@ class SummaryGenerator {
    */
   printSummaryStatistics(taskMetrics: TaskMetrics[]): void {
     if (!taskMetrics?.length) {
-      logger.info("No metrics to display");
+      logger.info('No metrics to display');
       return;
     }
 
-    const controlTasks = taskMetrics.filter((t) => t.mode === "control");
-    const mcpTasks = taskMetrics.filter((t) => t.mode === "mcp");
+    const controlTasks = taskMetrics.filter((t) => t.mode === 'control');
+    const mcpTasks = taskMetrics.filter((t) => t.mode === 'mcp');
 
-    logger.info("\nExtracted Metrics Summary:");
-    logger.info("-------------------------");
+    logger.info('\nExtracted Metrics Summary:');
+    logger.info('-------------------------');
     logger.info(`Total tasks processed: ${taskMetrics.length}`);
     logger.info(`Control tasks: ${controlTasks.length}`);
     logger.info(`MCP tasks: ${mcpTasks.length}`);
 
-    logger.info("\nTask Details:");
+    logger.info('\nTask Details:');
     taskMetrics.forEach((task) => {
       logger.info(
-        `Task ${task.taskId ?? "unknown"} (${task.mode ?? "unknown"}): duration=${((task.duration ?? 0) / 1000).toFixed(1)}s, interactions=${task.interactions ?? 0}, apiCalls=${task.apiCalls ?? 0}, tokens=${task.tokensIn ?? 0}`,
+        `Task ${task.taskId ?? 'unknown'} (${task.mode ?? 'unknown'}): duration=${((task.duration ?? 0) / 1000).toFixed(1)}s, interactions=${task.interactions ?? 0}, apiCalls=${task.apiCalls ?? 0}, tokens=${task.tokensIn ?? 0}`,
       );
     });
 
@@ -550,7 +486,7 @@ class SummaryGenerator {
     }
 
     logger.info(
-      `Summary file generated at: ${path.join(this.metricsDir, "summary.json")}`,
+      `Summary file generated at: ${path.join(this.metricsDir, 'summary.json')}`,
     );
   }
 
@@ -561,7 +497,7 @@ class SummaryGenerator {
     const controlAvg = this.calculateAverages(controlTasks);
     const mcpAvg = this.calculateAverages(mcpTasks);
 
-    console.log("\nPerformance Comparison:");
+    console.log('\nPerformance Comparison:');
     console.log(
       `Duration (s): Control=${controlAvg.duration.toFixed(1)}, MCP=${mcpAvg.duration.toFixed(1)} (${this.percentageChange(mcpAvg.duration, controlAvg.duration)}% change)`,
     );
@@ -621,7 +557,7 @@ class SummaryGenerator {
   }
 
   percentageChange(newValue: number, oldValue: number): string {
-    if (oldValue === 0) return "N/A";
+    if (oldValue === 0) return 'N/A';
     return (((newValue - oldValue) / oldValue) * 100).toFixed(1);
   }
 }

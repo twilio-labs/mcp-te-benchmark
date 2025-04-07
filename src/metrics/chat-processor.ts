@@ -1,7 +1,8 @@
-import { promises as fs } from "fs";
-import path from "path";
-import logger from "../utils/logger";
-import { CONTROL_MARKER, MCP_MARKER, TaskSegment } from "./types";
+import { promises as fs } from 'fs';
+import path from 'path';
+
+import logger from '../utils/logger';
+import { CONTROL_MARKER, MCP_MARKER, TaskSegment } from './types';
 
 interface ApiHistoryEntry {
   role: string;
@@ -37,9 +38,13 @@ interface TaskBoundary {
 
 class ChatProcessor {
   private chatDir: string;
+
   private apiHistory: ApiHistoryEntry[];
+
   private uiMessages: UiMessage[];
+
   private directoryId: string;
+
   private initialized: boolean;
 
   constructor(chatDir: string) {
@@ -75,7 +80,7 @@ class ChatProcessor {
       }
 
       // Extract and process task segments
-      return this.extractTaskSegments(testType);
+      return await this.extractTaskSegments(testType);
     } catch (error) {
       logger.error(
         `Error processing chat ${this.directoryId}: ${(error as Error).message}`,
@@ -94,10 +99,10 @@ class ChatProcessor {
     try {
       const [apiHistoryContent, uiMessagesContent] = await Promise.all([
         fs.readFile(
-          path.join(this.chatDir, "api_conversation_history.json"),
-          "utf8",
+          path.join(this.chatDir, 'api_conversation_history.json'),
+          'utf8',
         ),
-        fs.readFile(path.join(this.chatDir, "ui_messages.json"), "utf8"),
+        fs.readFile(path.join(this.chatDir, 'ui_messages.json'), 'utf8'),
       ]);
 
       this.apiHistory = JSON.parse(apiHistoryContent);
@@ -127,7 +132,7 @@ class ChatProcessor {
 
     // Check UI messages first
     for (const message of this.uiMessages) {
-      if (message.type === "say" && message.say === "text" && message.text) {
+      if (message.type === 'say' && message.say === 'text' && message.text) {
         if (
           message.text.includes(
             "'agent-instructions/control_instructions.md'",
@@ -137,7 +142,7 @@ class ChatProcessor {
           ) ||
           message.text.includes(CONTROL_MARKER)
         ) {
-          return "control";
+          return 'control';
         }
 
         if (
@@ -145,31 +150,31 @@ class ChatProcessor {
           message.text.includes('"agent-instructions/mcp_instructions.md"') ||
           message.text.includes(MCP_MARKER)
         ) {
-          return "mcp";
+          return 'mcp';
         }
       }
 
       // Check for MCP usage
-      if (message.type === "say" && message.say === "use_mcp_server") {
-        return "mcp";
+      if (message.type === 'say' && message.say === 'use_mcp_server') {
+        return 'mcp';
       }
     }
 
     // Check API history as backup
     for (const entry of this.apiHistory) {
       if (
-        entry.role === "user" &&
+        entry.role === 'user' &&
         entry.content &&
         Array.isArray(entry.content)
       ) {
-        const content = entry.content.map((c) => c.text ?? "").join(" ");
+        const content = entry.content.map((c) => c.text ?? '').join(' ');
 
         if (
           content.includes(CONTROL_MARKER) ||
           content.includes("'agent-instructions/control_instructions.md'") ||
           content.includes('"agent-instructions/control_instructions.md"')
         ) {
-          return "control";
+          return 'control';
         }
 
         if (
@@ -177,7 +182,7 @@ class ChatProcessor {
           content.includes("'agent-instructions/mcp_instructions.md'") ||
           content.includes('"agent-instructions/mcp_instructions.md"')
         ) {
-          return "mcp";
+          return 'mcp';
         }
       }
     }
@@ -192,7 +197,7 @@ class ChatProcessor {
    */
   extractTaskSegments(testType: string): Promise<TaskSegment[]> {
     if (!this.initialized || !this.uiMessages?.length) {
-      logger.warn("Cannot extract task segments: chat data not initialized");
+      logger.warn('Cannot extract task segments: chat data not initialized');
       return Promise.resolve([]);
     }
 
@@ -203,7 +208,7 @@ class ChatProcessor {
     for (let i = 0; i < this.uiMessages.length; i++) {
       const message = this.uiMessages[i];
 
-      if (message.type === "say" && message.say === "text" && message.text) {
+      if (message.type === 'say' && message.say === 'text' && message.text) {
         let taskNumber: number | undefined;
         let messageTestType = testType;
 
@@ -215,10 +220,10 @@ class ChatProcessor {
           taskNumber = parseInt(taskStartMatch[1], 10);
 
           // Verify this is actually a task instruction by checking for instruction file references
-          if (message.text.includes("control_instructions.md")) {
-            messageTestType = "control";
-          } else if (message.text.includes("mcp_instructions.md")) {
-            messageTestType = "mcp";
+          if (message.text.includes('control_instructions.md')) {
+            messageTestType = 'control';
+          } else if (message.text.includes('mcp_instructions.md')) {
+            messageTestType = 'mcp';
           } else {
             // Not a real task instruction
             taskNumber = undefined;
@@ -256,8 +261,8 @@ class ChatProcessor {
       // Skip resume_completed_task messages as they can appear much later
       if (
         message?.ts &&
-        typeof message.ts === "number" &&
-        !(message.type === "ask" && message.ask === "resume_completed_task")
+        typeof message.ts === 'number' &&
+        !(message.type === 'ask' && message.ask === 'resume_completed_task')
       ) {
         lastValidMessageTs = message.ts;
         break;
@@ -322,41 +327,41 @@ class ChatProcessor {
     );
 
     const TASK_SEGMENT_TEXTS = [
-      "read_file",
-      "codebase_search",
-      "grep_search",
-      "file_search",
-      "<function_calls>",
-      "<fnr>",
+      'read_file',
+      'codebase_search',
+      'grep_search',
+      'file_search',
+      '<function_calls>',
+      '<fnr>',
     ];
 
     // Filter messages to include only relevant ones
     const relevantMessages = messages.filter((msg) => {
       // Include API requests and MCP server requests
       if (
-        msg.type === "say" &&
-        (msg.say === "api_req_started" ||
-          msg.say === "mcp_server_request_started")
+        msg.type === 'say' &&
+        (msg.say === 'api_req_started' ||
+          msg.say === 'mcp_server_request_started')
       ) {
         return true;
       }
 
       // Include tool usage messages
-      if (msg.type === "say" && msg.say === "text" && msg.text) {
+      if (msg.type === 'say' && msg.say === 'text' && msg.text) {
         return TASK_SEGMENT_TEXTS.some((text) => msg.text?.includes(text));
       }
 
       // Include user messages
       if (
-        msg.type === "say" &&
-        msg.say === "text" &&
-        (!msg.from || msg.from === "user")
+        msg.type === 'say' &&
+        msg.say === 'text' &&
+        (!msg.from || msg.from === 'user')
       ) {
         return true;
       }
 
       // Include all other 'say' messages for completeness
-      if (msg.type === "say") {
+      if (msg.type === 'say') {
         return true;
       }
 
@@ -377,7 +382,7 @@ class ChatProcessor {
 
     // Extract conversation history index from UI messages if available
     for (const msg of relevantMessages) {
-      if (msg.type === "say" && msg.text) {
+      if (msg.type === 'say' && msg.text) {
         try {
           // First try to parse JSON to get index from structured data
           const jsonData = JSON.parse(msg.text);
@@ -419,15 +424,15 @@ class ChatProcessor {
 
     for (const content of entry.content) {
       if (
-        content.type === "text" &&
+        content.type === 'text' &&
         content.text &&
-        content.text.includes("environment_details") &&
-        content.text.includes("Current Time")
+        content.text.includes('environment_details') &&
+        content.text.includes('Current Time')
       ) {
         const match = content.text.match(/Current Time\s+([^<]+)/);
         if (match?.[1]) {
           const date = new Date(match[1].trim());
-          if (!isNaN(date.getTime())) {
+          if (!Number.isNaN(date.getTime())) {
             return date.getTime();
           }
         }
