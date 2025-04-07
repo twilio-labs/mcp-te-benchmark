@@ -1,5 +1,5 @@
-import logger from "../utils/logger";
-import { TaskSegment, TaskMetrics } from "./types";
+import logger from '../utils/logger';
+import { TaskMetrics, TaskSegment } from './types';
 
 interface TokenMetrics {
   tokensIn: number;
@@ -47,10 +47,15 @@ const DEFAULT_METRICS: TokenMetrics = {
  */
 class MetricsCalculator {
   private segment: TaskSegment;
+
   private testType: string;
+
   private directoryId: string;
+
   private modelArg?: string;
+
   private clientArg?: string;
+
   private serverArg?: string;
 
   /**
@@ -65,11 +70,11 @@ class MetricsCalculator {
   ): TaskMetrics {
     return {
       taskId: segment?.taskNumber ?? 0,
-      directoryId: directoryId ?? "",
-      mode: "unknown",
-      model: "unknown",
-      mcpServer: "Twilio",
-      mcpClient: "Cline",
+      directoryId: directoryId ?? '',
+      mode: 'unknown',
+      model: 'unknown',
+      mcpServer: 'Twilio',
+      mcpClient: 'Cline',
       startTime: segment?.startTime ?? 0,
       endTime: segment?.endTime ?? 0,
       duration: 0,
@@ -83,7 +88,7 @@ class MetricsCalculator {
       conversationHistoryIndex: 0,
       cost: 0,
       success: false,
-      notes: "Failed to calculate metrics",
+      notes: 'Failed to calculate metrics',
     };
   }
 
@@ -106,7 +111,7 @@ class MetricsCalculator {
   ) {
     this.segment = segment;
     this.testType = testType;
-    this.directoryId = directoryId ?? "";
+    this.directoryId = directoryId ?? '';
     this.modelArg = modelArg;
     this.clientArg = clientArg;
     this.serverArg = serverArg;
@@ -119,7 +124,7 @@ class MetricsCalculator {
   async calculate(): Promise<TaskMetrics> {
     // Validate input
     if (!this.segment) {
-      logger.error("Cannot calculate metrics: segment is missing");
+      logger.error('Cannot calculate metrics: segment is missing');
       return MetricsCalculator.createDefaultResult(null, this.directoryId);
     }
 
@@ -127,7 +132,7 @@ class MetricsCalculator {
       // Check for MCP usage in API calls
       const hasMcpUsage = this.checkForMcpUsage();
       const finalMode = hasMcpUsage
-        ? "mcp"
+        ? 'mcp'
         : (this.segment.testType ?? this.testType);
 
       // Calculate metrics in parallel
@@ -163,10 +168,10 @@ class MetricsCalculator {
       return {
         taskId: this.segment.taskNumber,
         directoryId: this.directoryId,
-        mode: finalMode ?? "unknown",
-        model: model ?? "unknown",
-        mcpServer: this.serverArg ?? "Twilio",
-        mcpClient: this.clientArg ?? "Cline",
+        mode: finalMode ?? 'unknown',
+        model: model ?? 'unknown',
+        mcpServer: this.serverArg ?? 'Twilio',
+        mcpClient: this.clientArg ?? 'Cline',
         startTime: this.segment.startTime,
         endTime: this.segment.startTime + duration,
         duration,
@@ -180,7 +185,7 @@ class MetricsCalculator {
         conversationHistoryIndex,
         cost: totalCost,
         success: true,
-        notes: "",
+        notes: '',
       };
     } catch (error) {
       logger.error(`Error calculating metrics: ${(error as Error).message}`);
@@ -202,17 +207,17 @@ class MetricsCalculator {
 
     return this.segment.apiCalls.some((apiCall) => {
       if (
-        apiCall.role === "assistant" &&
+        apiCall.role === 'assistant' &&
         apiCall.content &&
         Array.isArray(apiCall.content)
       ) {
         return apiCall.content.some(
           (content) =>
-            content.type === "text" &&
+            content.type === 'text' &&
             content.text &&
-            (content.text.includes("use_mcp_tool") ||
-              content.text.includes("use_mcp_server") ||
-              content.text.includes("access_mcp_resource")),
+            (content.text.includes('use_mcp_tool') ||
+              content.text.includes('use_mcp_server') ||
+              content.text.includes('access_mcp_resource')),
         );
       }
       return false;
@@ -233,10 +238,10 @@ class MetricsCalculator {
     // Count API calls from UI messages only - only counting api_req_started events
     this.segment.userMessages.forEach((msg: UiMessage) => {
       // Count API request operations
-      if (msg.type === "say" && msg.say === "api_req_started") {
+      if (msg.type === 'say' && msg.say === 'api_req_started') {
         apiCallCount++;
         logger.debug(
-          `Found API request in task ${this.segment.taskNumber}: ${msg.text ?? "[no text]"}`,
+          `Found API request in task ${this.segment.taskNumber}: ${msg.text ?? '[no text]'}`,
         );
       }
     });
@@ -256,7 +261,7 @@ class MetricsCalculator {
     // Default to 1 interaction if no data is available
     if (!this.segment?.apiCalls?.length) {
       logger.info(
-        `No API calls found, defaulting to 1 interaction for task ${this.segment?.taskNumber ?? "unknown"}`,
+        `No API calls found, defaulting to 1 interaction for task ${this.segment?.taskNumber ?? 'unknown'}`,
       );
       return 1;
     }
@@ -274,7 +279,7 @@ class MetricsCalculator {
     this.segment.apiCalls.forEach((entry) => {
       // Only process user messages
       if (
-        entry.role !== "user" ||
+        entry.role !== 'user' ||
         !entry.content ||
         !Array.isArray(entry.content)
       ) {
@@ -283,16 +288,16 @@ class MetricsCalculator {
 
       // Extract the text from all content items
       const fullText = entry.content
-        .filter((item) => item.type === "text")
-        .map((item) => item.text ?? "")
-        .join(" ");
+        .filter((item) => item.type === 'text')
+        .map((item) => item.text ?? '')
+        .join(' ');
 
       // Check if this is the initial task request
       if (
         !foundInitialTask &&
-        (fullText.includes("Complete Task") ||
-          fullText.includes("agent-instructions/mcp_instructions.md") ||
-          fullText.includes("agent-instructions/control_instructions.md"))
+        (fullText.includes('Complete Task') ||
+          fullText.includes('agent-instructions/mcp_instructions.md') ||
+          fullText.includes('agent-instructions/control_instructions.md'))
       ) {
         foundInitialTask = true;
         userInteractionCount = 1; // Set to exactly 1 for the initial task
@@ -306,8 +311,8 @@ class MetricsCalculator {
       // and not system messages
       if (
         foundInitialTask &&
-        !fullText.includes("<environment_details>") &&
-        !fullText.startsWith("[") &&
+        !fullText.includes('<environment_details>') &&
+        !fullText.startsWith('[') &&
         fullText.trim().length > 10
       ) {
         // Minimum length to exclude noise
@@ -356,7 +361,7 @@ class MetricsCalculator {
 
     // First pass: Collect reported token usage from Claude
     this.segment.userMessages.forEach((message: UiMessage) => {
-      if (message.type === "say" && message.text) {
+      if (message.type === 'say' && message.text) {
         try {
           const data = JSON.parse(message.text);
           if (data.tokensIn !== undefined) {
@@ -410,7 +415,7 @@ class MetricsCalculator {
           message.conversationHistoryIndex.toString(),
           10,
         );
-        if (!isNaN(indexValue) && indexValue > highestConvHistoryIndex) {
+        if (!Number.isNaN(indexValue) && indexValue > highestConvHistoryIndex) {
           highestConvHistoryIndex = indexValue;
         }
       }
@@ -473,7 +478,7 @@ class MetricsCalculator {
 
     // Check if we have API calls to analyze
     if (!this.segment?.apiCalls?.length) {
-      const defaultModel = "claude-3.7-sonnet";
+      const defaultModel = 'claude-3.7-sonnet';
       logger.info(`No API calls found, defaulting to: ${defaultModel}`);
       return defaultModel;
     }
@@ -481,12 +486,12 @@ class MetricsCalculator {
     // Try to determine from logs
     const modelFromLogs = this.segment.apiCalls.find((apiCall) => {
       if (
-        apiCall.role === "assistant" &&
+        apiCall.role === 'assistant' &&
         apiCall.content &&
         Array.isArray(apiCall.content)
       ) {
         return apiCall.content.some((content) => {
-          if (content.type === "text" && content.text) {
+          if (content.type === 'text' && content.text) {
             // Look for model in system prompt
             const systemPromptMatch = content.text.match(
               /You are a powerful agentic AI coding assistant, powered by (Claude [\d.]+ \w+)/i,
@@ -501,17 +506,17 @@ class MetricsCalculator {
 
     if (modelFromLogs) {
       // Extract model name from the content match
-      let modelName = "";
+      let modelName = '';
       modelFromLogs.content?.forEach((content) => {
-        if (content.type === "text" && content.text) {
+        if (content.type === 'text' && content.text) {
           const match = content.text.match(
             /You are a powerful agentic AI coding assistant, powered by (Claude [\d.]+ \w+)/i,
           );
           if (match?.[1]) {
             modelName = match[1]
               .toLowerCase()
-              .replace("claude ", "claude-")
-              .replace(" ", "-");
+              .replace('claude ', 'claude-')
+              .replace(' ', '-');
           }
         }
       });
@@ -523,7 +528,7 @@ class MetricsCalculator {
     }
 
     // Default if not found in logs and no argument provided
-    const defaultModel = "claude-3.7-sonnet";
+    const defaultModel = 'claude-3.7-sonnet';
     logger.info(
       `Model not found in logs or args, defaulting to: ${defaultModel}`,
     );

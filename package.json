@@ -1,8 +1,10 @@
 {
   "name": "@twilio-alpha/mcp-te-benchmark",
   "version": "0.0.1",
-  "type": "module",
   "description": "MCP Tool Efficiency (TE) Benchmark",
+  "license": "MIT",
+  "author": "",
+  "type": "module",
   "main": "dist/server/dashboard-server.js",
   "bin": {
     "mcp-te-benchmark": "./dist/cli/extract-chat-metrics.js"
@@ -15,27 +17,43 @@
   "scripts": {
     "build": "tsc",
     "dashboard": "node --watch --import tsx/esm dashboard/server.ts",
-    "lint": "eslint 'src/**/*.{js,ts}' 'tests/**/*.{js,ts}'",
     "extract-metrics": "node --import tsx/esm src/extract-chat-metrics.ts",
-    "generate-summary": "node --import tsx/esm src/generate-summary.ts"
+    "generate-summary": "node --import tsx/esm src/generate-summary.ts",
+    "prepare": "husky",
+    "lint": "eslint src/**/*.ts dashboard/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts dashboard/**/*.ts --fix"
   },
-  "author": "",
-  "license": "MIT",
+  "lint-staged": {
+    "src/**/*.ts": [
+      "npm run lint"
+    ],
+    "dashboard/**/*.ts": [
+      "npm run lint"
+    ]
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.18.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
     "twilio": "^5.5.1",
     "winston": "^3.8.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.0",
     "@types/yargs": "^17.0.32",
     "chai": "^4.3.7",
     "eslint": "^8.36.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-unused-imports": "^3.2.0",
     "mocha": "^10.2.0",
     "sinon": "^15.0.2",
     "supertest": "^6.3.3",

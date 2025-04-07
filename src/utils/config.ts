@@ -1,6 +1,7 @@
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -35,8 +36,8 @@ const __dirname = path.dirname(__filename);
 
 const config: Config = {
   server: {
-    metricsPort: parseInt(process.env.METRICS_PORT || "3000"),
-    dashboardPort: parseInt(process.env.DASHBOARD_PORT || "3001"),
+    metricsPort: parseInt(process.env.METRICS_PORT || '3000'),
+    dashboardPort: parseInt(process.env.DASHBOARD_PORT || '3001'),
   },
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
@@ -44,11 +45,11 @@ const config: Config = {
     workspaceSid: process.env.TWILIO_WORKSPACE_SID,
   },
   logging: {
-    level: process.env.LOG_LEVEL || "info",
+    level: process.env.LOG_LEVEL || 'info',
   },
   metrics: {
     dataPath:
-      process.env.METRICS_DATA_PATH || path.resolve(__dirname, "../../metrics"),
+      process.env.METRICS_DATA_PATH || path.resolve(__dirname, '../../metrics'),
   },
 };
 
