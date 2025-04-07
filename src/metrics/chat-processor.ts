@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-import logger from '../utils/logger';
+import { logger } from '../utils';
 import { CONTROL_MARKER, MCP_MARKER, TaskSegment } from './types';
 
 interface ApiHistoryEntry {

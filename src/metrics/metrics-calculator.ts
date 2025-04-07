@@ -1,4 +1,4 @@
-import logger from '../utils/logger';
+import { logger } from '../utils';
 import { TaskMetrics, TaskSegment } from './types';
 
 interface TokenMetrics {
