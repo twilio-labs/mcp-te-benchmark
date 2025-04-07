@@ -25,3 +25,4 @@ Thumbs.db
 .logs/
 
 example_task_logs/
+dist/

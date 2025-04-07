@@ -1,39 +1,45 @@
 {
-    "name": "@twilio-alpha/mcp-te-benchmark",
-    "version": "0.0.1",
-    "description": "MCP Tool Efficiency (TE) Benchmark",
-    "main": "src/server/dashboard-server.js",
-    "bin": {
-        "mcp-te-benchmark": "./src/cli/extract-chat-metrics.js"
-    },
-    "files": [
-        "src/",
-        "scripts/regenerate-summary.sh"
-    ],
-    "scripts": {
-        "start": "node src/server/dashboard-server.js",
-        "test": "mocha tests/**/*.test.js",
-        "test:watch": "mocha tests/**/*.test.js --watch",
-        "lint": "eslint src/**/*.js tests/**/*.js",
-        "generate-summary": "node src/cli/generate-summary.js",
-        "extract-metrics": "./scripts/extract-metrics.sh",
-        "regenerate-summary": "./scripts/regenerate-summary.sh"
-    },
-    "author": "",
-    "license": "MIT",
-    "dependencies": {
-        "cors": "^2.8.5",
-        "dotenv": "^16.4.7",
-        "express": "^4.18.2",
-        "twilio": "^5.5.1",
-        "winston": "^3.8.2",
-        "yargs": "^17.7.2"
-    },
-    "devDependencies": {
-        "chai": "^4.3.7",
-        "eslint": "^8.36.0",
-        "mocha": "^10.2.0",
-        "sinon": "^15.0.2",
-        "supertest": "^6.3.3"
-    }
+  "name": "@twilio-alpha/mcp-te-benchmark",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "MCP Tool Efficiency (TE) Benchmark",
+  "main": "dist/server/dashboard-server.js",
+  "bin": {
+    "mcp-te-benchmark": "./dist/cli/extract-chat-metrics.js"
+  },
+  "files": [
+    "src/",
+    "dist/",
+    "scripts/regenerate-summary.sh"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dashboard": "node --watch --import tsx/esm dashboard/server.ts",
+    "lint": "eslint 'src/**/*.{js,ts}' 'tests/**/*.{js,ts}'",
+    "extract-metrics": "node --import tsx/esm src/extract-chat-metrics.ts",
+    "generate-summary": "node --import tsx/esm src/generate-summary.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "twilio": "^5.5.1",
+    "winston": "^3.8.2",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "@types/yargs": "^17.0.32",
+    "chai": "^4.3.7",
+    "eslint": "^8.36.0",
+    "mocha": "^10.2.0",
+    "sinon": "^15.0.2",
+    "supertest": "^6.3.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.3.3"
+  }
 }
