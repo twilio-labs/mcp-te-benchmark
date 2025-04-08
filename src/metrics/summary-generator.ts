@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
 import { logger } from '../utils';
@@ -61,7 +61,7 @@ class SummaryGenerator {
 
       // Write the summary file
       const summaryPath = path.join(this.metricsDir, 'summary.json');
-      fs.writeFileSync(summaryPath, JSON.stringify(uniqueMetrics, null, 2));
+      await fs.writeFile(summaryPath, JSON.stringify(uniqueMetrics, null, 2));
 
       this.printSummaryStatistics(uniqueMetrics);
 
@@ -168,33 +168,31 @@ class SummaryGenerator {
           `Writing metric file for task ${metric.taskId} with ${metric.apiCalls ?? 0} API calls`,
         );
 
-        fs.writeFileSync(
-          filePath,
-          JSON.stringify(
-            {
-              mode: metric.mode,
-              taskNumber: metric.taskId,
-              directoryId: metric.directoryId ?? '',
-              model: metric.model,
-              startTime: metric.startTime,
-              completed: true,
-              apiCalls: metric.apiCalls ?? 0,
-              interactions: metric.interactions ?? 0,
-              tokensIn: metric.tokensIn ?? 0,
-              tokensOut: metric.tokensOut ?? 0,
-              totalTokens: metric.totalTokens ?? 0,
-              cacheWrites: metric.cacheWrites ?? 0,
-              cacheReads: metric.cacheReads ?? 0,
-              conversationHistoryIndex: metric.conversationHistoryIndex ?? 0,
-              cost: metric.cost ?? 0,
-              success: metric.success ?? false,
-              endTime: metric.endTime,
-              duration: metric.duration,
-            },
-            null,
-            2,
-          ),
+        const payload = JSON.stringify(
+          {
+            mode: metric.mode,
+            taskNumber: metric.taskId,
+            directoryId: metric.directoryId ?? '',
+            model: metric.model,
+            startTime: metric.startTime,
+            completed: true,
+            apiCalls: metric.apiCalls ?? 0,
+            interactions: metric.interactions ?? 0,
+            tokensIn: metric.tokensIn ?? 0,
+            tokensOut: metric.tokensOut ?? 0,
+            totalTokens: metric.totalTokens ?? 0,
+            cacheWrites: metric.cacheWrites ?? 0,
+            cacheReads: metric.cacheReads ?? 0,
+            conversationHistoryIndex: metric.conversationHistoryIndex ?? 0,
+            cost: metric.cost ?? 0,
+            success: metric.success ?? false,
+            endTime: metric.endTime,
+            duration: metric.duration,
+          },
+          null,
+          2,
         );
+        await fs.writeFile(filePath, payload);
 
         successfulWrites.push(filename);
       } catch (error) {
@@ -230,7 +228,7 @@ class SummaryGenerator {
     const tasksDir = path.join(this.metricsDir, 'tasks');
     let files: string[];
     try {
-      files = fs.readdirSync(tasksDir);
+      files = await fs.readdir(tasksDir);
     } catch (error) {
       logger.error(
         `Failed to read tasks directory: ${(error as Error).message}`,
@@ -306,7 +304,7 @@ class SummaryGenerator {
     try {
       // Write the summary file
       const summaryPath = path.join(this.metricsDir, 'summary.json');
-      fs.writeFileSync(summaryPath, JSON.stringify(allMetrics, null, 2));
+      await fs.writeFile(summaryPath, JSON.stringify(allMetrics, null, 2));
 
       this.printSummaryStatistics(allMetrics);
 
@@ -341,7 +339,7 @@ class SummaryGenerator {
     const summaryPath = path.join(this.metricsDir, 'summary.json');
 
     try {
-      const content = fs.readFileSync(summaryPath, 'utf8');
+      const content = await fs.readFile(summaryPath, 'utf8');
       existingMetrics = JSON.parse(content);
     } catch (error) {
       logger.warn(
@@ -403,7 +401,7 @@ class SummaryGenerator {
 
     try {
       // Write the merged summary
-      fs.writeFileSync(summaryPath, JSON.stringify(allMetrics, null, 2));
+      await fs.writeFile(summaryPath, JSON.stringify(allMetrics, null, 2));
 
       return SummaryResult.success(
         `Merged summary: updated ${updatedMetrics.length}, added ${addedMetrics.length} metrics`,
@@ -436,7 +434,7 @@ class SummaryGenerator {
 
     try {
       const tasksDir = path.join(this.metricsDir, 'tasks');
-      const files = fs.readdirSync(tasksDir);
+      const files = await fs.readdir(tasksDir);
 
       if (directoryId) {
         const specificPattern = new RegExp(
