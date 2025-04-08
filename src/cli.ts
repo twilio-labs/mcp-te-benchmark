@@ -1,9 +1,10 @@
+#!/usr/bin/env node
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 import ExtractMetrics from './extract-metrics';
 import GenerateSummary from './generate-summary';
-import logger from './utils/logger';
+import { logger } from './utils';
 
 // Define the main CLI command structure
 yargs(hideBin(process.argv))
