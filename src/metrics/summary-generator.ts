@@ -104,49 +104,45 @@ class SummaryGenerator {
 
     const successfulWrites: string[] = [];
     const failedWrites: string[] = [];
-
-    for (const metric of taskMetrics) {
-      try {
-        // Include directoryId in the filename for better identification
-        // If directoryId is empty, use the startTime as a fallback
-        const directoryId =
-          metric.directoryId ??
-          metric.startTime?.toString() ??
-          Date.now().toString();
-        const filename = `${metric.mode ?? 'unknown'}_task${metric.taskId ?? 0}_${directoryId}.json`;
-        const tasksDir = path.join(this.metricsDir, 'tasks');
-
-        // Ensure tasks directory exists
-        try {
-          await fs.mkdir(tasksDir, { recursive: true });
-        } catch (mkdirError) {
-          logger.warn(
-            `Could not create tasks directory: ${(mkdirError as Error).message}`,
-          );
-        }
-
-        const filePath = path.join(tasksDir, filename);
-
-        // Log the metric before writing to help debug
-        logger.info(
-          `Writing metric file for task ${metric.taskId} with ${metric.apiCalls ?? 0} API calls`,
-        );
-
-        const payload = JSON.stringify(
-          convertTaskMetricToFilePayload(metric),
-          null,
-          2,
-        );
-        await fs.writeFile(filePath, payload);
-
-        successfulWrites.push(filename);
-      } catch (error) {
-        logger.error(
-          `Error writing metric file for task ${metric.taskId}: ${(error as Error).message}`,
-        );
-        failedWrites.push(`task${metric.taskId ?? 0}`);
-      }
+    const tasksDir = path.join(this.metricsDir, 'tasks');
+    try {
+      await fs.mkdir(tasksDir, { recursive: true });
+    } catch (mkdirError) {
+      logger.warn(
+        `Could not create tasks directory: ${(mkdirError as Error).message}`,
+      );
     }
+
+    await Promise.all(
+      taskMetrics.map(async (metric) => {
+        try {
+          const directoryId =
+            metric.directoryId ??
+            metric.startTime?.toString() ??
+            Date.now().toString();
+          const filename = `${metric.mode ?? 'unknown'}_task${metric.taskId ?? 0}_${directoryId}.json`;
+          const filePath = path.join(tasksDir, filename);
+
+          logger.info(
+            `Writing metric file for task ${metric.taskId} with ${metric.apiCalls ?? 0} API calls`,
+          );
+
+          const payload = JSON.stringify(
+            convertTaskMetricToFilePayload(metric),
+            null,
+            2,
+          );
+          await fs.writeFile(filePath, payload);
+
+          successfulWrites.push(filename);
+        } catch (error) {
+          logger.error(
+            `Error writing metric file for task ${metric.taskId}: ${(error as Error).message}`,
+          );
+          failedWrites.push(`task${metric.taskId ?? 0}`);
+        }
+      }),
+    );
 
     if (failedWrites.length > 0) {
       return {
@@ -209,21 +205,33 @@ class SummaryGenerator {
     const allMetrics: TaskMetrics[] = [];
     const failedFiles: string[] = [];
 
-    for (const file of metricFiles) {
+    const readPromises = metricFiles.map(async (file) => {
       const filePath = path.join(this.metricsDir, 'tasks', file);
       try {
         const fileContent = await fs.readFile(filePath, 'utf8');
         const metric = JSON.parse(fileContent);
-
-        // Convert to the format expected by the summary
-        allMetrics.push(convertFileMetricToTaskMetric(metric));
+        return {
+          success: true,
+          metric: convertFileMetricToTaskMetric(metric),
+          file,
+        };
       } catch (error) {
         logger.error(
           `Error parsing metric file ${file}: ${(error as Error).message}`,
         );
-        failedFiles.push(file);
+        return { success: false, file };
       }
-    }
+    });
+
+    const results = await Promise.all(readPromises);
+
+    results.forEach((result) => {
+      if (result.success && result.metric) {
+        allMetrics.push(result.metric);
+      } else {
+        failedFiles.push(result.file);
+      }
+    });
 
     if (allMetrics.length === 0) {
       return {

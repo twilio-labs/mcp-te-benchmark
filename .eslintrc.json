@@ -19,6 +19,7 @@
     ],
     "no-plusplus": "off",
     "import/extensions": "off",
-    "no-restricted-syntax": "off"
+    "no-restricted-syntax": "off",
+    "no-param-reassign": "off"
   }
 }

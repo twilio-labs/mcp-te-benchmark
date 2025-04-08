@@ -158,47 +158,6 @@ export function percentageChange(newValue: number, oldValue: number): string {
 }
 
 /**
- * Print summary statistics
- * @param {TaskMetrics[]} taskMetrics Array of task metrics
- * @param {string} metricsDir Directory where metrics are stored
- */
-export function printSummaryStatistics(
-  taskMetrics: TaskMetrics[],
-  metricsDir: string,
-): void {
-  if (!taskMetrics?.length) {
-    logger.info('No metrics to display');
-    return;
-  }
-
-  const controlTasks = taskMetrics.filter((t) => t.mode === 'control');
-  const mcpTasks = taskMetrics.filter((t) => t.mode === 'mcp');
-
-  logger.info('\nExtracted Metrics Summary:');
-  logger.info('-------------------------');
-  logger.info(`Total tasks processed: ${taskMetrics.length}`);
-  logger.info(`Control tasks: ${controlTasks.length}`);
-  logger.info(`MCP tasks: ${mcpTasks.length}`);
-
-  logger.info('\nTask Details:');
-  taskMetrics.forEach((task) => {
-    logger.info(
-      `Task ${task.taskId ?? 'unknown'} (${task.mode ?? 'unknown'}): duration=${(
-        (task.duration ?? 0) / 1000
-      ).toFixed(
-        1,
-      )}s, interactions=${task.interactions ?? 0}, apiCalls=${task.apiCalls ?? 0}, tokens=${task.tokensIn ?? 0}`,
-    );
-  });
-
-  if (controlTasks.length > 0 && mcpTasks.length > 0) {
-    printPerformanceComparison(controlTasks, mcpTasks);
-  }
-
-  logger.info(`Summary file generated at: ${metricsDir}/summary.json`);
-}
-
-/**
  * Print performance comparison between control and MCP tasks
  * @param controlTasks Control task metrics
  * @param mcpTasks MCP task metrics
@@ -259,6 +218,47 @@ export function printPerformanceComparison(
       controlAvg.cost,
     )}% change)`,
   );
+}
+
+/**
+ * Print summary statistics
+ * @param {TaskMetrics[]} taskMetrics Array of task metrics
+ * @param {string} metricsDir Directory where metrics are stored
+ */
+export function printSummaryStatistics(
+  taskMetrics: TaskMetrics[],
+  metricsDir: string,
+): void {
+  if (!taskMetrics?.length) {
+    logger.info('No metrics to display');
+    return;
+  }
+
+  const controlTasks = taskMetrics.filter((t) => t.mode === 'control');
+  const mcpTasks = taskMetrics.filter((t) => t.mode === 'mcp');
+
+  logger.info('\nExtracted Metrics Summary:');
+  logger.info('-------------------------');
+  logger.info(`Total tasks processed: ${taskMetrics.length}`);
+  logger.info(`Control tasks: ${controlTasks.length}`);
+  logger.info(`MCP tasks: ${mcpTasks.length}`);
+
+  logger.info('\nTask Details:');
+  taskMetrics.forEach((task) => {
+    logger.info(
+      `Task ${task.taskId ?? 'unknown'} (${task.mode ?? 'unknown'}): duration=${(
+        (task.duration ?? 0) / 1000
+      ).toFixed(
+        1,
+      )}s, interactions=${task.interactions ?? 0}, apiCalls=${task.apiCalls ?? 0}, tokens=${task.tokensIn ?? 0}`,
+    );
+  });
+
+  if (controlTasks.length > 0 && mcpTasks.length > 0) {
+    printPerformanceComparison(controlTasks, mcpTasks);
+  }
+
+  logger.info(`Summary file generated at: ${metricsDir}/summary.json`);
 }
 
 /**
