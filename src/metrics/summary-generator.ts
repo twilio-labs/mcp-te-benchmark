@@ -11,7 +11,7 @@ import {
   sortMetrics,
   SummaryResponse,
   validateDuration,
-} from './summary-utils';
+} from './metrics-utils';
 import { TaskMetrics } from './types';
 
 /**
