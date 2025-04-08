@@ -2,46 +2,20 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 import { logger } from '../utils';
-import { CONTROL_MARKER, MCP_MARKER, TaskSegment } from './types';
-
-interface ApiHistoryEntry {
-  role: string;
-  content: Array<{
-    type: string;
-    text?: string;
-  }>;
-}
-
-interface UiMessage {
-  type: string;
-  say?: string;
-  ask?: string;
-  from?: string;
-  text?: string;
-  ts?: number;
-  conversationHistoryIndex?: number;
-}
-
-interface TaskBoundary {
-  taskNumber: number;
-  directoryId: string;
-  startIndex: number;
-  startTime: number;
-  apiCalls: ApiHistoryEntry[];
-  userMessages: UiMessage[];
-  endIndex: number | null;
-  endTime: number | null;
-  testType: string;
-  apiCallCount?: number;
-  messageCount?: number;
-}
+import {
+  ApiHistoryEntry,
+  CONTROL_MARKER,
+  MCP_MARKER,
+  TaskSegment,
+  UIMessage,
+} from './types';
 
 class ChatProcessor {
   private chatDir: string;
 
   private apiHistory: ApiHistoryEntry[];
 
-  private uiMessages: UiMessage[];
+  private uiMessages: UIMessage[];
 
   private directoryId: string;
 
@@ -201,7 +175,7 @@ class ChatProcessor {
       return Promise.resolve([]);
     }
 
-    const taskBoundaries: TaskBoundary[] = [];
+    const taskBoundaries: TaskSegment[] = [];
     const taskNumbers = new Set<number>();
 
     // Find task boundaries in UI messages
@@ -296,19 +270,19 @@ class ChatProcessor {
 
     // Process task segments in parallel
     return Promise.all(
-      taskBoundaries.map((boundary) => this.processTaskSegment(boundary)),
+      taskBoundaries.map((task) => this.processTaskSegment(task)),
     );
   }
 
   /**
    * Process a single task segment
-   * @param {TaskBoundary} boundary The task boundary information
+   * @param {TaskSegment} task The task task information
    * @returns {Promise<TaskSegment>} The processed task segment
    */
-  async processTaskSegment(boundary: TaskBoundary): Promise<TaskSegment> {
-    if (!boundary || !this.initialized) {
+  async processTaskSegment(task: TaskSegment): Promise<TaskSegment> {
+    if (!task || !this.initialized) {
       return {
-        ...boundary,
+        ...task,
         apiCalls: [],
         userMessages: [],
         apiCallCount: 0,
@@ -318,12 +292,12 @@ class ChatProcessor {
 
     // Collect user messages
     const messages = this.uiMessages.slice(
-      boundary.startIndex,
-      (boundary.endIndex ?? this.uiMessages.length - 1) + 1,
+      task.startIndex,
+      (task.endIndex ?? this.uiMessages.length - 1) + 1,
     );
 
     logger.info(
-      `Processing ${messages.length} messages for task ${boundary.taskNumber}`,
+      `Processing ${messages.length} messages for task ${task.taskNumber}`,
     );
 
     const TASK_SEGMENT_TEXTS = [
@@ -368,9 +342,9 @@ class ChatProcessor {
       return false;
     });
 
-    // Create a combined boundary timestamp for filtering API entries
-    const startBoundary = boundary.startTime - 60 * 1000; // 1 minute before task start
-    const endBoundary = (boundary.endTime as number) + 5 * 60 * 1000; // 5 minutes after task end
+    // Create a combined task timestamp for filtering API entries
+    const startBoundary = task.startTime - 60 * 1000; // 1 minute before task start
+    const endBoundary = (task.endTime as number) + 5 * 60 * 1000; // 5 minutes after task end
 
     // Filter API entries that fall within this task's time boundaries
     const apiEntries = this.apiHistory.filter((entry) => {
@@ -403,13 +377,13 @@ class ChatProcessor {
 
     // Return the processed task segment
     return {
-      ...boundary,
+      ...task,
       apiCalls: apiEntries,
       userMessages: relevantMessages,
-      taskNumber: boundary.taskNumber,
+      taskNumber: task.taskNumber,
       apiCallCount: apiEntries.length,
       messageCount: relevantMessages.length,
-    } as TaskSegment;
+    };
   }
 
   /**

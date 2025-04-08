@@ -4,24 +4,39 @@ export const CONTROL_MARKER = 'control_instructions.md';
 export const MCP_MARKER = 'mcp_instructions.md';
 export const TASK_START_MARKER = 'Complete Task';
 
-export interface TaskSegment {
+export type ApiHistoryEntry = {
+  role: string;
+  content: Array<{
+    type: string;
+    text?: string;
+  }>;
+};
+
+export type UIMessage = {
+  type: string;
+  say?: string;
+  ask?: string;
+  from?: string;
+  text?: string;
+  ts?: number;
+  conversationHistoryIndex?: number;
+};
+
+export type TaskSegment = {
   taskNumber: number;
+  directoryId: string;
   startIndex: number;
   startTime: number;
-  apiCalls: {
-    role: 'assistant' | 'user';
-    content: {
-      type: 'text';
-      text: string;
-    }[];
-  }[];
-  userMessages: any[];
+  apiCalls: ApiHistoryEntry[];
+  userMessages: UIMessage[];
   endIndex: number | null;
   endTime: number | null;
   testType: string;
-}
+  apiCallCount?: number;
+  messageCount?: number;
+};
 
-export interface TaskMetrics {
+export type TaskMetrics = {
   taskId: number;
   mode: string;
   model: string;
@@ -42,16 +57,16 @@ export interface TaskMetrics {
   cost: number;
   success: boolean;
   notes: string;
-}
+};
 
-export interface ApiCallData {
+export type ApiCallData = {
   timestamp: number;
   tokensIn: number;
   tokensOut: number;
   cost: number;
-}
+};
 
-export interface UserMessage {
+export type UserMessage = {
   content: string;
   timestamp: number;
-}
+};
