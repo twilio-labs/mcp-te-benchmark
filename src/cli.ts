@@ -44,11 +44,7 @@ yargs(hideBin(process.argv))
     async () => {
       try {
         const subArgs = process.argv.slice(0, 2).concat(process.argv.slice(3));
-        const result = await GenerateSummary.generate(subArgs);
-
-        if (!result.success) {
-          process.exit(1);
-        }
+        await GenerateSummary.generate(subArgs);
       } catch (error) {
         logger.error('Unexpected error during summary generation:', error);
         process.exit(1);

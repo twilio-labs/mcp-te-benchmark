@@ -11,14 +11,13 @@
   },
   "files": [
     "public/",
-    "server/",
     "dist/"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-esm-fix --ext .js ./dist && chmod +x dist/cli.js",
     "cli:dashboard": "node --watch --import tsx/esm src/cli.ts dashboard",
-    "cli:extract-metrics": "node --watch --import tsx/esm src/cli.ts extract-metrics",
-    "cli:generate-summary": "node --watch --import tsx/esm src/cli.ts generate-summary",
+    "cli:extract-metrics": "node --import tsx/esm src/cli.ts extract-metrics",
+    "cli:generate-summary": "node --import tsx/esm src/cli.ts generate-summary",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "prepare": "husky"
