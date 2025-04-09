@@ -16,9 +16,9 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-esm-fix --ext .js ./dist && chmod +x dist/cli.js",
+    "cli:dashboard": "node --watch --import tsx/esm src/cli.ts dashboard",
     "cli:extract-metrics": "node --watch --import tsx/esm src/cli.ts extract-metrics",
     "cli:generate-summary": "node --watch --import tsx/esm src/cli.ts generate-summary",
-    "cli:dashboard": "node --watch --import tsx/esm src/cli.ts dashboard",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "prepare": "husky"
@@ -47,16 +47,12 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.0",
     "@types/yargs": "^17.0.32",
-    "chai": "^4.3.7",
     "eslint": "^8.36.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-unused-imports": "^3.2.0",
-    "mocha": "^10.2.0",
-    "sinon": "^15.0.2",
-    "supertest": "^6.3.3",
     "tsc-esm-fix": "^3.1.2",
     "tsx": "^4.19.3",
     "typescript": "^5.3.3"
