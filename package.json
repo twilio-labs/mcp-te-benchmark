@@ -16,11 +16,11 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-esm-fix --ext .js ./dist && chmod +x dist/cli.js",
-    "cli:extract-metrics": "node --import tsx/esm src/cli.ts extract-metrics",
-    "cli:generate-summary": "node --import tsx/esm src/cli.ts generate-summary",
-    "dashboard": "node --watch --import tsx/esm dashboard/server.ts",
-    "lint": "eslint src/**/*.ts dashboard/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts dashboard/**/*.ts --fix",
+    "cli:extract-metrics": "node --watch --import tsx/esm src/cli.ts extract-metrics",
+    "cli:generate-summary": "node --watch --import tsx/esm src/cli.ts generate-summary",
+    "cli:dashboard": "node --watch --import tsx/esm src/cli.ts dashboard",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
     "prepare": "husky"
   },
   "lint-staged": {

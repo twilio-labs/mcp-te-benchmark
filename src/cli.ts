@@ -2,6 +2,7 @@
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
+import startDashboard from './dashboard';
 import ExtractMetrics from './extract-metrics';
 import GenerateSummary from './generate-summary';
 import { logger } from './utils';
@@ -50,6 +51,20 @@ yargs(hideBin(process.argv))
         }
       } catch (error) {
         logger.error('Unexpected error during summary generation:', error);
+        process.exit(1);
+      }
+    },
+  )
+  .command(
+    'dashboard',
+    'Start the dashboard web server',
+    () => {},
+    async () => {
+      try {
+        const subArgs = process.argv.slice(0, 2).concat(process.argv.slice(3));
+        startDashboard(subArgs);
+      } catch (error) {
+        logger.error('Unexpected error while starting server:', error);
         process.exit(1);
       }
     },
