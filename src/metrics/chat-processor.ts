@@ -39,7 +39,6 @@ class ChatProcessor {
    */
   async process(): Promise<TaskSegment[]> {
     try {
-      // Initialize and validate in a single step
       const initialized = await this.initialize();
       if (!initialized) {
         logger.error(
@@ -48,7 +47,6 @@ class ChatProcessor {
         return [];
       }
 
-      // Identify test type with validation
       const testType = this.getTestType();
       if (!testType) {
         logger.warn(
@@ -57,7 +55,6 @@ class ChatProcessor {
         return [];
       }
 
-      // Extract and process task segments
       return await this.extractTaskSegments(testType);
     } catch (error) {
       logger.error(
@@ -122,30 +119,24 @@ class ChatProcessor {
       return Promise.resolve([]);
     }
 
-    // Find task boundaries
     const taskBoundaries = findTaskBoundaries(
       this.uiMessages,
       this.directoryId,
       testType,
     );
 
-    // If no task boundaries found, return empty array
     if (taskBoundaries.length === 0) {
       logger.warn(`No task boundaries found in ${this.directoryId}`);
       return Promise.resolve([]);
     }
 
-    // Get the last valid message timestamp
     const lastValidMessageTs = getLastValidMessageTimestamp(this.uiMessages);
-
-    // Validate and set end boundaries
     const validatedBoundaries = validateTaskBoundaries(
       taskBoundaries,
       lastValidMessageTs,
       this.uiMessages.length,
     );
 
-    // Process task segments in parallel
     return Promise.all(
       validatedBoundaries.map((task) => this.processTaskSegment(task)),
     );
@@ -177,16 +168,11 @@ class ChatProcessor {
       `Processing ${messages.length} messages for task ${task.taskNumber}`,
     );
 
-    // Filter messages to include only relevant ones
     const relevantMessages = filterRelevantMessages(messages);
-
-    // Create timestamp boundaries for filtering API entries
     const [startBoundary, endBoundary] = createTimestampBoundaries(
       task.startTime,
       task.endTime as number,
     );
-
-    // Filter API entries that fall within this task's time boundaries
     const apiEntries = this.apiHistory.filter((entry) => {
       const timestamp = getTimestampFromApiEntry(entry);
       return (
@@ -194,7 +180,6 @@ class ChatProcessor {
       );
     });
 
-    // Extract conversation history index from UI messages
     for (const msg of relevantMessages) {
       const index = extractConversationHistoryIndex(msg);
       if (index !== undefined) {
@@ -202,7 +187,6 @@ class ChatProcessor {
       }
     }
 
-    // Return the processed task segment
     return {
       ...task,
       apiCalls: apiEntries,
