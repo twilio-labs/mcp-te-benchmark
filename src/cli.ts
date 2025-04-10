@@ -2,9 +2,9 @@
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
-import startDashboard from './dashboard';
 import ExtractMetrics from './extract-metrics';
 import GenerateSummary from './generate-summary';
+import ServerDashboard from './server-dashboard';
 import { logger } from './utils';
 
 // Define the main CLI command structure
@@ -58,7 +58,7 @@ yargs(hideBin(process.argv))
     async () => {
       try {
         const subArgs = process.argv.slice(0, 2).concat(process.argv.slice(3));
-        startDashboard(subArgs);
+        await ServerDashboard.createServer(subArgs);
       } catch (error) {
         logger.error('Unexpected error while starting server:', error);
         process.exit(1);

@@ -1,12 +1,16 @@
+import { promises as fs } from 'fs';
+import os from 'os';
+import path from 'path';
+
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 import SummaryGenerator from './metrics/summary-generator';
-import { config, logger } from './utils';
+import { logger } from './utils';
 
 type SummaryOptions = {
   verbose: boolean;
-  metricsDir?: string;
+  directory: string;
 };
 
 type SummaryResult = {
@@ -15,7 +19,7 @@ type SummaryResult = {
 };
 
 class GenerateSummary {
-  private metricsDir: string;
+  private directory: string;
 
   private verbose: boolean;
 
@@ -24,14 +28,14 @@ class GenerateSummary {
    * @param options Configuration options
    */
   constructor(options: SummaryOptions) {
-    this.metricsDir = options.metricsDir || config.metrics.dataPath;
+    this.directory = options.directory;
     this.verbose = options.verbose;
 
     if (this.verbose) {
       logger.debug('Verbose mode enabled - will show detailed logging');
     }
-    if (options.metricsDir) {
-      logger.info(`Using custom metrics directory: ${this.metricsDir}`);
+    if (options.directory) {
+      logger.info(`Using custom metrics directory: ${this.directory}`);
     }
   }
 
@@ -49,23 +53,25 @@ class GenerateSummary {
         description: 'Enable verbose logging for debugging',
         default: false,
       })
-      .option('metricsDir', {
+      .option('directory', {
         alias: 'd',
         type: 'string',
         description: 'Specify a custom metrics directory path',
+        default: path.join(os.homedir(), '.mcp-te-benchmark'),
       })
       .help()
       .alias('help', 'h')
       .parseSync();
 
-    // Create options object from parsed arguments
-    const options: SummaryOptions = {
-      verbose: parsedArgs.verbose,
-      metricsDir: parsedArgs.metricsDir,
-    };
+    await fs.mkdir(parsedArgs.directory, { recursive: true });
+    await fs.mkdir(path.join(parsedArgs.directory, 'tasks'), {
+      recursive: true,
+    });
 
-    // Create an instance with the parsed options and run the summary generation
-    const generator = new GenerateSummary(options);
+    const generator = new GenerateSummary({
+      verbose: parsedArgs.verbose,
+      directory: parsedArgs.directory,
+    });
     return generator.regenerateSummary();
   }
 
@@ -78,7 +84,7 @@ class GenerateSummary {
         'Regenerating summary.json from existing individual metric files...',
       );
 
-      const summaryGenerator = new SummaryGenerator(this.metricsDir);
+      const summaryGenerator = new SummaryGenerator(this.directory);
       const result = await summaryGenerator.generateSummaryFromFiles();
 
       if (result.success) {

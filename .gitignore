@@ -25,3 +25,6 @@ Thumbs.db
 
 example_task_logs/
 dist/
+
+.mcp-te-benchmark/tasks
+.mcp-te-benchmark/summary.json

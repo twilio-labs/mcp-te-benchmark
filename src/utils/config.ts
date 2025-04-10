@@ -1,6 +1,3 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,18 +17,11 @@ interface LoggingConfig {
   level: string;
 }
 
-interface MetricsConfig {
-  dataPath: string;
-}
-
 interface Config {
   server: ServerConfig;
   twilio: TwilioConfig;
   logging: LoggingConfig;
-  metrics: MetricsConfig;
 }
-
-const dirName = path.dirname(fileURLToPath(import.meta.url));
 
 const config: Config = {
   server: {
@@ -45,10 +35,6 @@ const config: Config = {
   },
   logging: {
     level: process.env.LOG_LEVEL || 'info',
-  },
-  metrics: {
-    dataPath:
-      process.env.METRICS_DATA_PATH || path.resolve(dirName, '../../metrics'),
   },
 };
 
