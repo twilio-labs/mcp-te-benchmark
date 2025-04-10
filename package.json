@@ -1,6 +1,6 @@
 {
   "name": "@twilio-alpha/mcp-te-benchmark",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "MCP Tool Efficiency (TE) Benchmark",
   "license": "MIT",
   "author": "",
