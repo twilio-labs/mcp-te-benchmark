@@ -26,8 +26,6 @@ interface Config {
   logging: LoggingConfig;
 }
 
-const dirName = path.dirname(fileURLToPath(import.meta.url));
-
 const config: Config = {
   server: {
     metricsPort: parseInt(process.env.METRICS_PORT || '3000', 10),
