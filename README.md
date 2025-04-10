@@ -43,6 +43,10 @@ By default, this will read from `~/.mcp-te-benchmark/tasks` directory and write 
 
 This will create a server you can then via on `https://localhost:3001`. By default, this will read from `~/.mcp-te-benchmark/summary.json` file. You can pass `--directory` to specify a different location. Try `--help` for all available options.
 
+## Security Recommendations
+
+To guard against injection attacks that may allow untrusted systems access to your Twilio data, the ETI team advises users of Twilio MCP servers to avoid installing or running any community MCP servers alongside our official ones. Doing so helps ensure that only trusted MCP servers have access to tools interacting with your Twilio account, reducing the risk of unauthorized data access.
+
 ## Leaderboard
 
 ### Overall Performance (Model: claude-3.7-sonnet)
