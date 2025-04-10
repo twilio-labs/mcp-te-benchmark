@@ -14,22 +14,34 @@ import {
 } from './metrics-utils';
 import { ApiHistoryEntry, TaskSegment, UIMessage } from './types';
 
+type Options = {
+  chatDir: string;
+  mcpMarker: string;
+  controlMarker: string;
+};
+
 class ChatProcessor {
-  private chatDir: string;
+  private readonly chatDir: string;
 
   private apiHistory: ApiHistoryEntry[];
 
   private uiMessages: UIMessage[];
 
-  private directoryId: string;
+  private readonly directoryId: string;
 
   private initialized: boolean;
 
-  constructor(chatDir: string) {
-    this.chatDir = chatDir;
+  private readonly mcpMarker: string;
+
+  private readonly controlMarker: string;
+
+  constructor(options: Options) {
+    this.chatDir = options.chatDir;
+    this.mcpMarker = options.mcpMarker;
+    this.controlMarker = options.controlMarker;
     this.apiHistory = [];
     this.uiMessages = [];
-    this.directoryId = path.basename(chatDir);
+    this.directoryId = path.basename(this.chatDir);
     this.initialized = false;
   }
 
@@ -105,7 +117,12 @@ class ChatProcessor {
       return undefined;
     }
 
-    return identifyTestType(this.uiMessages, this.apiHistory);
+    return identifyTestType(
+      this.uiMessages,
+      this.apiHistory,
+      this.mcpMarker,
+      this.controlMarker,
+    );
   }
 
   /**

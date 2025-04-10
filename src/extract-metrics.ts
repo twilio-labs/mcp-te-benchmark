@@ -9,7 +9,7 @@ import ChatProcessor from './metrics/chat-processor';
 import MetricsCalculator from './metrics/metrics-calculator';
 import SummaryGenerator from './metrics/summary-generator';
 import { TaskMetrics } from './metrics/types';
-import { config, logger } from './utils';
+import { logger } from './utils';
 
 type DirectoryResult = {
   success: boolean;
@@ -23,6 +23,9 @@ type ProcessingResult = {
 };
 
 type ExtractOptions = {
+  directory: string;
+  mcpMarker: string;
+  controlMarker: string;
   forceRegenerate: boolean;
   verbose: boolean;
   modelArg?: string;
@@ -40,17 +43,21 @@ type ExtractionResult = {
 class ExtractMetrics {
   private claudeLogsDir: string;
 
-  private metricsDir: string;
+  private readonly mcpMarker: string;
 
-  private forceRegenerate: boolean;
+  private readonly controlMarker: string;
 
-  private verbose: boolean;
+  private readonly directory: string;
 
-  private modelArg?: string;
+  private readonly forceRegenerate: boolean;
 
-  private clientArg?: string;
+  private readonly verbose: boolean;
 
-  private serverArg?: string;
+  private readonly modelArg?: string;
+
+  private readonly clientArg?: string;
+
+  private readonly serverArg?: string;
 
   /**
    * Create a new ExtractMetrics instance with the specified options
@@ -61,12 +68,14 @@ class ExtractMetrics {
       os.homedir(),
       'Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/tasks',
     );
-    this.metricsDir = config.metrics.dataPath;
+    this.directory = options.directory;
     this.forceRegenerate = options.forceRegenerate;
     this.verbose = options.verbose;
     this.modelArg = options.modelArg;
     this.clientArg = options.clientArg;
     this.serverArg = options.serverArg;
+    this.mcpMarker = options.mcpMarker;
+    this.controlMarker = options.controlMarker;
 
     // Log argument usage
     if (this.verbose) {
@@ -121,21 +130,49 @@ class ExtractMetrics {
         type: 'string',
         description: 'Specify the MCP server name to use',
       })
+      .options('directory', {
+        alias: 'd',
+        type: 'string',
+        description: 'Specify the directory to use for metrics',
+        default: path.join(os.homedir(), '.mcp-te-benchmark'),
+      })
+      .options('clear', {
+        type: 'boolean',
+        description: 'Clear the metrics directory before extraction',
+        default: false,
+      })
+      .options('control-marker', {
+        type: 'string',
+        description: 'Specify the control marker to use',
+        default: 'control_instructions.md',
+      })
+      .options('mcp-marker', {
+        type: 'string',
+        description: 'Specify the MCP marker to use',
+        default: 'mcp_instructions.md',
+      })
       .help()
       .alias('help', 'h')
       .parseSync();
 
-    // Create options object from parsed arguments
-    const options: ExtractOptions = {
+    if (parsedArgs.clear) {
+      await fs.rm(parsedArgs.directory, { recursive: true, force: true });
+    }
+    await fs.mkdir(parsedArgs.directory, { recursive: true });
+    await fs.mkdir(path.join(parsedArgs.directory, 'tasks'), {
+      recursive: true,
+    });
+
+    const extractor = new ExtractMetrics({
+      mcpMarker: parsedArgs.mcpMarker,
+      controlMarker: parsedArgs.controlMarker,
+      directory: parsedArgs.directory,
       forceRegenerate: parsedArgs.force,
       verbose: parsedArgs.verbose,
       modelArg: parsedArgs.model,
       clientArg: parsedArgs.client,
       serverArg: parsedArgs.server,
-    };
-
-    // Create an instance with the parsed options and run the extraction
-    const extractor = new ExtractMetrics(options);
+    });
     return extractor.extractChatMetrics();
   }
 
@@ -205,9 +242,13 @@ class ExtractMetrics {
    * @param {string} dir - The directory path
    * @returns {Promise<ProcessingResult>} Processing result
    */
-  private async processDirectory(dir: string): Promise<ProcessingResult> {
+  private async processDirectory(chatDir: string): Promise<ProcessingResult> {
     try {
-      const chatProcessor = new ChatProcessor(dir);
+      const chatProcessor = new ChatProcessor({
+        chatDir,
+        mcpMarker: this.mcpMarker,
+        controlMarker: this.controlMarker,
+      });
 
       // Use the new process method that centralizes error handling
       const taskSegments = await chatProcessor.process();
@@ -216,17 +257,17 @@ class ExtractMetrics {
         return { metrics: [], error: undefined };
       }
 
-      logger.info(`Processing test in directory: ${path.basename(dir)}`);
+      logger.info(`Processing test in directory: ${path.basename(chatDir)}`);
       logger[this.verbose ? 'debug' : 'info'](
         `Found ${taskSegments.length} task segments`,
       );
 
       const taskSegment = taskSegments[0];
       const { testType } = taskSegment;
-      const directoryId = path.basename(dir);
+      const directoryId = path.basename(chatDir);
 
       if (!this.forceRegenerate) {
-        const summaryGenerator = new SummaryGenerator(this.metricsDir);
+        const summaryGenerator = new SummaryGenerator(this.directory);
         if (
           await summaryGenerator.metricFileExists(
             testType,
@@ -259,10 +300,10 @@ class ExtractMetrics {
           : `Failed to calculate metrics for ${directoryId}`,
       };
     } catch (error) {
-      logger.error(`Error processing directory ${dir}:`, error);
+      logger.error(`Error processing directory ${chatDir}:`, error);
       return {
         metrics: [],
-        error: `Error processing ${path.basename(dir)}: ${(error as Error).message}`,
+        error: `Error processing ${path.basename(chatDir)}: ${(error as Error).message}`,
       };
     }
   }
@@ -304,13 +345,13 @@ class ExtractMetrics {
   private async extractChatMetrics(): Promise<ExtractionResult> {
     // Ensure metrics directory exists
     try {
-      await fs.access(this.metricsDir);
+      await fs.access(this.directory);
     } catch (error) {
       logger.error(
-        `Metrics directory ${this.metricsDir} does not exist. Please create it before running this script.`,
+        `Metrics directory ${this.directory} does not exist. Please create it before running this script.`,
       );
       return ExtractMetrics.error(
-        `Metrics directory ${this.metricsDir} does not exist`,
+        `Metrics directory ${this.directory} does not exist`,
       );
     }
 
@@ -345,7 +386,7 @@ class ExtractMetrics {
       }
 
       // Create a summary generator
-      const summaryGenerator = new SummaryGenerator(this.metricsDir);
+      const summaryGenerator = new SummaryGenerator(this.directory);
 
       // If we have new metrics, write individual metric files
       if (allMetrics.length > 0) {

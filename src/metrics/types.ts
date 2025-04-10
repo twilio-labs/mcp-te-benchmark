@@ -1,6 +1,3 @@
-export const CONTROL_MARKER = 'control_instructions.md';
-export const MCP_MARKER = 'mcp_instructions.md';
-
 export type ApiHistoryEntry = {
   role: string;
   content: Array<{

@@ -1,11 +1,47 @@
 <p align="center"><img src="docs/twilioAlphaLogoLight.png#gh-dark-mode-only" height="100" alt="Twilio Alpha"/><img src="docs/twilioAlphaLogoDark.png#gh-light-mode-only" height="100" alt="Twilio Alpha"/></p>
-<h1 align="center">MCP-TE Benchmark</h1> 
+<h1 align="center">MCP-TE Benchmark</h1>
 
 A standardized framework for evaluating the efficiency gains and trade-offs of AI agents using Model Context Protocol (MCP) compared to traditional methods.
 
 ## Abstract
 
 MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measure the efficiency gains, resource utilization changes, and qualitative differences when AI coding agents utilize structured context protocols (like MCP) compared to traditional development methods (e.g., file search, terminal execution, web search). As AI coding assistants become more integrated into development workflows, understanding how they interact with APIs and structured protocols is crucial for optimizing developer productivity and evaluating overall cost-effectiveness.
+
+## Quick Start
+
+### Running Tests
+
+We currently only support Cline and Anthropic
+
+#### Using Cline + Anthropic
+
+1.  Open Cline (or the specified MCP Client) and start a new chat with the target model (e.g., Claude).
+2.  Upload the appropriate instruction file as context. You will need two instructions: `control` and `mcp`. For example, take a look at our demo:
+    *   For control tests: `./.mcp-te-benchmark/instructions/control_instructions.md`
+    *   For MCP tests: `./.mcp-te-benchmark/instructions/mcp_instructions.md`
+3.  Start the test with the prompt: `Complete Task [TASK_NUMBER] using the commands in the instructions`
+4.  Allow the AI assistant to complete the task. Metrics will be collected from the chat logs later.
+5.  Repeat for all desired tasks and modes.
+
+### Extracting Metrics from Chat Logs
+
+After running tests, extract metrics from the chat logs:
+
+`npx @twilio-alpha/mcp-te-benchmark extract-metrics`
+
+By default, this will put the tasks into `~/.mcp-te-benchmark/tasks` directory. You can pass `--directory` to specify a different location. Try `--help` for all available options.
+
+### Generate Summary from Tasks
+
+`npx @twilio-alpha/mcp-te-benchmark generate-summary`
+
+By default, this will read from `~/.mcp-te-benchmark/tasks` directory and write to `~/.mcp-te-benchmark/summary.json`. You can pass `--directory` to specify a different location. Try `--help` for all available options.
+
+### View Summary
+
+`npx @twilio-alpha/mcp-te-benchmark dashboard`
+
+This will create a server you can then via on `https://localhost:3001`. By default, this will read from `~/.mcp-te-benchmark/summary.json` file. You can pass `--directory` to specify a different location. Try `--help` for all available options.
 
 ## Leaderboard
 
@@ -27,6 +63,7 @@ MCP-TE Benchmark (where "TE" stands for "Task Efficiency") is designed to measur
 *Note: Calculations based on data in `metrics/summary.json`.*
 
 *Key Findings (claude-3.7-sonnet):*
+
 *   **Efficiency Gains:** MCP usage resulted in faster task completion (-20.5% duration), fewer API calls (-19.3%), and slightly fewer user interactions (-3.3%). Token usage also saw a modest decrease (-6.3%).
 *   **Increased Resource Utilization:** MCP significantly increased cache reads (+28.5%) and cache writes (+53.7%).
 *   **Cost Increase:** The increased resource utilization, particularly cache operations or potentially different API call patterns within MCP, led to a notable increase in average task cost (+27.5%).
@@ -115,7 +152,7 @@ The current benchmark includes the following tasks specific to the Twilio MCP Se
 
 (Setup, Running Tests, Extracting Metrics, Dashboard, CLI Summary sections remain largely the same as they accurately describe the repo structure and tools)
 
-## Setup
+## Manual
 
 1.  Clone this repository:
     ```bash
@@ -132,41 +169,6 @@ The current benchmark includes the following tasks specific to the Twilio MCP Se
     ```
 4.  Edit the `.env` file with your necessary credentials (e.g., Twilio).
 5.  *(Optional)* If needed, run any project-specific setup scripts (check `scripts/` directory if applicable).
-
-## Running Tests
-
-### Testing Protocol
-
-1.  Open Cline (or the specified MCP Client) and start a new chat with the target model (e.g., Claude).
-2.  Upload the appropriate instruction file as context:
-    *   For control tests: `agent-instructions/control_instructions.md`
-    *   For MCP tests: `agent-instructions/mcp_instructions.md`
-3.  Start the test with the prompt: `Complete Task [TASK_NUMBER] using the commands in the instructions`
-4.  Allow the AI assistant to complete the task. Metrics will be collected from the chat logs later.
-5.  Repeat for all desired tasks and modes.
-
-### Extracting Metrics from Chat Logs
-
-After running tests, extract metrics from the chat logs:
-
-#### Via npx (Recommended for quick use)
-
-You can run the metrics extraction directly without cloning the repository:
-
-```bash
-npx @twilio-alpha/mcp-te-benchmark [options]
-```
-
-For example, to see available options:
-```bash
-npx @twilio-alpha/mcp-te-benchmark --help
-```
-
-To run extraction with specific parameters:
-```bash
-# Make sure Claude logs are present at the default location first
-npx @twilio-alpha/mcp-te-benchmark --model claude-3.7-sonnet --client Cline --server Twilio --verbose
-```
 
 #### Local Installation / Development
 

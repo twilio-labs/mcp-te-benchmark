@@ -18,14 +18,14 @@ import { TaskMetrics } from './types';
  * Generator for summary metrics from task data
  */
 class SummaryGenerator {
-  private metricsDir: string;
+  private directory: string;
 
   /**
    * Create a new SummaryGenerator
-   * @param {string} metricsDir Directory containing metrics files
+   * @param {string} directory Directory containing metrics files
    */
-  constructor(metricsDir: string) {
-    this.metricsDir = metricsDir;
+  constructor(directory: string) {
+    this.directory = directory;
   }
 
   /**
@@ -63,10 +63,10 @@ class SummaryGenerator {
       const uniqueMetrics = Array.from(directoryMap.values());
 
       // Write the summary file
-      const summaryPath = path.join(this.metricsDir, 'summary.json');
+      const summaryPath = path.join(this.directory, 'summary.json');
       await fs.writeFile(summaryPath, JSON.stringify(uniqueMetrics, null, 2));
 
-      printSummaryStatistics(uniqueMetrics, this.metricsDir);
+      printSummaryStatistics(uniqueMetrics, this.directory);
 
       return {
         success: true,
@@ -104,7 +104,7 @@ class SummaryGenerator {
 
     const successfulWrites: string[] = [];
     const failedWrites: string[] = [];
-    const tasksDir = path.join(this.metricsDir, 'tasks');
+    const tasksDir = path.join(this.directory, 'tasks');
     try {
       await fs.mkdir(tasksDir, { recursive: true });
     } catch (mkdirError) {
@@ -169,7 +169,7 @@ class SummaryGenerator {
     logger.info('Generating summary from individual metric files...');
 
     // Look for metric files in the 'tasks' subdirectory
-    const tasksDir = path.join(this.metricsDir, 'tasks');
+    const tasksDir = path.join(this.directory, 'tasks');
     let files: string[];
     try {
       files = await fs.readdir(tasksDir);
@@ -206,7 +206,7 @@ class SummaryGenerator {
     const failedFiles: string[] = [];
 
     const readPromises = metricFiles.map(async (file) => {
-      const filePath = path.join(this.metricsDir, 'tasks', file);
+      const filePath = path.join(this.directory, 'tasks', file);
       try {
         const fileContent = await fs.readFile(filePath, 'utf8');
         const metric = JSON.parse(fileContent);
@@ -247,10 +247,10 @@ class SummaryGenerator {
 
     try {
       // Write the summary file
-      const summaryPath = path.join(this.metricsDir, 'summary.json');
+      const summaryPath = path.join(this.directory, 'summary.json');
       await fs.writeFile(summaryPath, JSON.stringify(allMetrics, null, 2));
 
-      printSummaryStatistics(allMetrics, this.metricsDir);
+      printSummaryStatistics(allMetrics, this.directory);
 
       return {
         success: true,
@@ -287,7 +287,7 @@ class SummaryGenerator {
     }
 
     let existingMetrics: TaskMetrics[] = [];
-    const summaryPath = path.join(this.metricsDir, 'summary.json');
+    const summaryPath = path.join(this.directory, 'summary.json');
 
     try {
       const content = await fs.readFile(summaryPath, 'utf8');
@@ -371,7 +371,7 @@ class SummaryGenerator {
     }
 
     try {
-      const tasksDir = path.join(this.metricsDir, 'tasks');
+      const tasksDir = path.join(this.directory, 'tasks');
       const files = await fs.readdir(tasksDir);
 
       if (directoryId) {

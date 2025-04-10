@@ -1,12 +1,5 @@
 import { logger } from '../utils';
-import {
-  ApiHistoryEntry,
-  CONTROL_MARKER,
-  MCP_MARKER,
-  TaskMetrics,
-  TaskSegment,
-  UIMessage,
-} from './types';
+import { ApiHistoryEntry, TaskMetrics, TaskSegment, UIMessage } from './types';
 
 // Interfaces for working with metrics
 export interface MetricAverages {
@@ -223,11 +216,11 @@ export function printPerformanceComparison(
 /**
  * Print summary statistics
  * @param {TaskMetrics[]} taskMetrics Array of task metrics
- * @param {string} metricsDir Directory where metrics are stored
+ * @param {string} directory Directory where metrics are stored
  */
 export function printSummaryStatistics(
   taskMetrics: TaskMetrics[],
-  metricsDir: string,
+  directory: string,
 ): void {
   if (!taskMetrics?.length) {
     logger.info('No metrics to display');
@@ -258,7 +251,7 @@ export function printSummaryStatistics(
     printPerformanceComparison(controlTasks, mcpTasks);
   }
 
-  logger.info(`Summary file generated at: ${metricsDir}/summary.json`);
+  logger.info(`Summary file generated at: ${directory}/summary.json`);
 }
 
 /**
@@ -368,6 +361,8 @@ export function validateDuration(metric: TaskMetrics): TaskMetrics {
 export function identifyTestType(
   uiMessages: UIMessage[],
   apiHistory: ApiHistoryEntry[],
+  mcpMarker: string,
+  controlMarker: string,
 ): string | undefined {
   if (!uiMessages?.length || !apiHistory?.length) {
     return undefined;
@@ -377,17 +372,17 @@ export function identifyTestType(
   for (const message of uiMessages) {
     if (message.type === 'say' && message.say === 'text' && message.text) {
       if (
-        message.text.includes("'agent-instructions/control_instructions.md'") ||
-        message.text.includes('"agent-instructions/control_instructions.md"') ||
-        message.text.includes(CONTROL_MARKER)
+        message.text.includes("'instructions/control_instructions.md'") ||
+        message.text.includes('"instructions/control_instructions.md"') ||
+        message.text.includes(controlMarker)
       ) {
         return 'control';
       }
 
       if (
-        message.text.includes("'agent-instructions/mcp_instructions.md'") ||
-        message.text.includes('"agent-instructions/mcp_instructions.md"') ||
-        message.text.includes(MCP_MARKER)
+        message.text.includes("'instructions/mcp_instructions.md'") ||
+        message.text.includes('"instructions/mcp_instructions.md"') ||
+        message.text.includes(controlMarker)
       ) {
         return 'mcp';
       }
@@ -409,17 +404,17 @@ export function identifyTestType(
       const content = entry.content.map((c) => c.text ?? '').join(' ');
 
       if (
-        content.includes(CONTROL_MARKER) ||
-        content.includes("'agent-instructions/control_instructions.md'") ||
-        content.includes('"agent-instructions/control_instructions.md"')
+        content.includes(controlMarker) ||
+        content.includes("'instructions/control_instructions.md'") ||
+        content.includes('"instructions/control_instructions.md"')
       ) {
         return 'control';
       }
 
       if (
-        content.includes(MCP_MARKER) ||
-        content.includes("'agent-instructions/mcp_instructions.md'") ||
-        content.includes('"agent-instructions/mcp_instructions.md"')
+        content.includes(controlMarker) ||
+        content.includes("'instructions/mcp_instructions.md'") ||
+        content.includes('"instructions/mcp_instructions.md"')
       ) {
         return 'mcp';
       }
